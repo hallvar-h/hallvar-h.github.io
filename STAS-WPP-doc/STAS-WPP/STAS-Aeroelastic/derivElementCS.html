@@ -1,0 +1,180 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of derivElementCS</title>
+  <meta name="keywords" content="derivElementCS">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; derivElementCS.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>derivElementCS
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This computes the derivatives of the T_s^B transform with
+ respect to the input nodal positions and orientations. 
+
+ Version:        Changes:
+ --------        -------------
+ 06.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 06.12.2017      Verified by complex step derivatives.
+
+ Inputs:
+ -------
+ qn1, qn2        : Nodal DOF vectors.
+ Pn1, Pn2        : Undeformed nodal vectors.
+ TsB             : Transform, 3-by-3.
+
+ Outputs:
+ --------
+ dTsB            : dTsB/dr and dTsB/dth.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/dambnorm.html" class="code" title="function d = dambnorm (a,b)">dambnorm</a>	d   a - b</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/daxbnorm.html" class="code" title="function d = daxbnorm (a,b)">daxbnorm</a>	d   a x b</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="airfoilToNodal.html" class="code" title="function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)">airfoilToNodal</a>	</li>
+<li><a href="airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a>	</li>
+<li><a href="internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a>	</li>
+<li><a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a>	</li>
+<li><a href="stresses.html" class="code" title="function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE)">stresses</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This computes the derivatives of the T_s^B transform with</span>
+0004 <span class="comment">% respect to the input nodal positions and orientations.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 06.12.2017      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 06.12.2017      Verified by complex step derivatives.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% qn1, qn2        : Nodal DOF vectors.</span>
+0017 <span class="comment">% Pn1, Pn2        : Undeformed nodal vectors.</span>
+0018 <span class="comment">% TsB             : Transform, 3-by-3.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">% --------</span>
+0022 <span class="comment">% dTsB            : dTsB/dr and dTsB/dth.</span>
+0023 
+0024 dTsB = zeros(3,3*12);
+0025 
+0026 Ts0Bjm1 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn1(4:6));
+0027 Ts0Bj   = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn2(4:6));
+0028 [Tnn0k,dTnn0k] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn1(4:6));
+0029 [Tnn0k1,dTnn0k1] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn2(4:6));
+0030 
+0031 Tn0ks0j = (Ts0Bj.')*Ts0Bjm1;
+0032 Teks0j  = Tn0ks0j*Tnn0k*(Tn0ks0j.');
+0033 Tek1s0j = Tnn0k1;
+0034 
+0035 xs = TsB(:,1);
+0036 ys = TsB(:,2);
+0037 zs = TsB(:,3);
+0038 
+0039 ysp = 0.5*Ts0Bj*(Teks0j(:,2) + Tek1s0j(:,2));
+0040 
+0041 xn1 = zeros(6,1);
+0042 xn2 = zeros(6,1);
+0043 xn1(1:3) = Pn1(1:3) + qn1(1:3);
+0044 xn1(4:6) = qn1(4:6);
+0045 xn2(1:3) = Pn2(1:3) + qn2(1:3);
+0046 xn2(4:6) = qn2(4:6);
+0047 
+0048 dxdr  = -<a href="../../STAS-WPP/STAS-Utilities/dambnorm.html" class="code" title="function d = dambnorm (a,b)">dambnorm</a> (xn1(1:3),xn2(1:3));
+0049 dydx  = -<a href="../../STAS-WPP/STAS-Utilities/daxbnorm.html" class="code" title="function d = daxbnorm (a,b)">daxbnorm</a> (xs,zs);
+0050 dydz  =  <a href="../../STAS-WPP/STAS-Utilities/daxbnorm.html" class="code" title="function d = daxbnorm (a,b)">daxbnorm</a> (zs,xs);
+0051 dzdx  =  <a href="../../STAS-WPP/STAS-Utilities/daxbnorm.html" class="code" title="function d = daxbnorm (a,b)">daxbnorm</a> (xs,ysp);
+0052 dzdyp = -<a href="../../STAS-WPP/STAS-Utilities/daxbnorm.html" class="code" title="function d = daxbnorm (a,b)">daxbnorm</a> (ysp,xs);
+0053 
+0054 <span class="comment">% Derivatives wrt xn1 r's.</span>
+0055 <span class="keyword">for</span> jj = 1:3
+0056    jc3 = 3*(jj-1);
+0057    dTsB(:,jc3+[1:3]) = [dxdr(:,jj)                             <span class="keyword">...</span>
+0058                        dydx*dxdr(:,jj) + dydz*dzdx*dxdr(:,jj) <span class="keyword">...</span>
+0059                        dzdx*dxdr(:,jj)];
+0060 <span class="keyword">end</span>
+0061 
+0062 <span class="comment">% Derivatives wrt xn1 th's.</span>
+0063 <span class="keyword">for</span> jj = 1:3
+0064 
+0065    j3  = 3*(jj-1);
+0066    jc3 = 3*(jj+3-1);
+0067 
+0068    dyspdth = 0.5*Ts0Bj*Tn0ks0j*dTnn0k(:,j3+[1:3])*(Tn0ks0j(2,:).');
+0069 
+0070    vec = dzdyp*dyspdth;
+0071    dTsB(:,jc3+[1:3]) = [zeros(3,1) dydz*vec vec];
+0072 
+0073 <span class="keyword">end</span>
+0074 
+0075 <span class="comment">% Derivatives wrt xn2 r's.</span>
+0076 dxdr = -dxdr;
+0077 
+0078 <span class="keyword">for</span> jj = 1:3
+0079    jc3 = 3*(jj+6-1);
+0080    dTsB(:,jc3+[1:3]) = [dxdr(:,jj)                             <span class="keyword">...</span>
+0081                         dydx*dxdr(:,jj) + dydz*dzdx*dxdr(:,jj) <span class="keyword">...</span>
+0082                         dzdx*dxdr(:,jj)];
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% Derivatives wrt xn2 th's.</span>
+0086 <span class="keyword">for</span> jj = 1:3
+0087 
+0088    j3 = 3*(jj-1);
+0089    jc3 = 3*(jj+9-1);
+0090 
+0091    dyspdth = 0.5*Ts0Bj*dTnn0k1(:,j3+2);
+0092 
+0093    vec = dzdyp*dyspdth;
+0094    dTsB(:,jc3+[1:3]) = [zeros(3,1) dydz*vec vec];
+0095 
+0096 <span class="keyword">end</span>
+0097 
+0098 
+0099 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d3Tdth3</title>
+  <meta name="keywords" content="d3Tdth3">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d3Tdth3.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d3Tdth3
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d3T = d3Tdth3 (th,T,dT,d2T) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute through the third derivatives of a transform matrix in terms
+ of the exponential map rotations.
+
+ Version:        Changes:
+ --------        -------------
+ 03.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 03.11.2017      Verified by finite difference.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Fdth2.html" class="code" title="function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)">d2Fdth2</a>	</li>
+<li><a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d3T = d3Tdth3 (th,T,dT,d2T)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute through the third derivatives of a transform matrix in terms</span>
+0004 <span class="comment">% of the exponential map rotations.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 03.11.2017      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 03.11.2017      Verified by finite difference.</span>
+0013 <span class="comment">%</span>
+0014 
+0015 d3T   = zeros(3,81);
+0016 
+0017 normth = sqrt((th.')*th);
+0018 
+0019 <span class="keyword">if</span> (abs(normth) &lt; eps^0.25)  <span class="comment">% Complex magnitude is intentionally included</span>
+0020                              <span class="comment">% in this norm.</span>
+0021    
+0022    TTH   = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (th);
+0023    normth2 = normth^2;
+0024 
+0025    c = (-(1/3) + normth2/30);
+0026 
+0027    <span class="keyword">for</span> jj = 1:3
+0028 
+0029       jc27 = 27*(jj-1);
+0030 
+0031       ej = zeros(3,1);
+0032       ej(jj) = 1;
+0033       Sigj = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (ej);
+0034       thj = th(jj);
+0035 
+0036       <span class="keyword">for</span> kk = 1:3
+0037 
+0038          kc9 = 9*(kk-1);
+0039 
+0040          ek = zeros(3,1);
+0041          ek(kk) = 1;
+0042          Sigk = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (ek);
+0043          djk = (jj == kk);
+0044          thk = th(kk);
+0045 
+0046          <span class="keyword">for</span> pp = 1:3
+0047 
+0048             pc3 = 3*(pp-1);
+0049 
+0050             ep = zeros(3,1);
+0051             ep(pp) = 1;
+0052             Sigp = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (ep);
+0053             djp = (jj == pp);
+0054             dkp = (kk == pp);
+0055             thp = th(pp);
+0056             
+0057             d3T(:,jc27+kc9+pc3+[1:3]) =                          <span class="keyword">...</span>
+0058                  (thk*djp + thj*dkp + thp*djk)*TTH/15            <span class="keyword">...</span>
+0059                + (thj*thk*Sigp + thp*thj*Sigk + thp*thk*Sigj)/15 <span class="keyword">...</span>
+0060                + c*(djk*Sigp + djp*Sigk + dkp*Sigj)              <span class="keyword">...</span>
+0061                - (djk*(Sigp*TTH + TTH*Sigp)                      <span class="keyword">...</span>
+0062                +  djp*(Sigk*TTH + TTH*Sigk)                      <span class="keyword">...</span>
+0063                +  dkp*(Sigj*TTH + TTH*Sigj))/12                  <span class="keyword">...</span>
+0064                - (thj*(Sigk*Sigp + Sigp*Sigk)                    <span class="keyword">...</span>
+0065                +  thk*(Sigj*Sigp + Sigp*Sigj)                    <span class="keyword">...</span>
+0066                +  thp*(Sigk*Sigj + Sigj*Sigk))/12;
+0067 
+0068          <span class="keyword">end</span>
+0069       <span class="keyword">end</span>
+0070    <span class="keyword">end</span>
+0071 
+0072 <span class="keyword">else</span>
+0073 
+0074    TTH   = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (th);
+0075    dTTH  = [<a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>([1;0;0]) <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>([0;1;0]) <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>([0;0;1])];
+0076    IT    = eye(3) - T;
+0077    TTHIT = TTH*IT;
+0078 
+0079    magth = (th.')*th;
+0080 
+0081    <span class="keyword">for</span> ii = 1:3
+0082 
+0083       ii3 = 3*(ii-1);
+0084       ii27 = 27*(ii-1);
+0085 
+0086       eei = zeros(3,1);
+0087       eei(ii) = 1;
+0088 
+0089       R = (th(ii)*TTH + <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(TTHIT(:,ii)))/magth;
+0090 
+0091       <span class="keyword">for</span> jj = 1:3
+0092 
+0093          jj3 = 3*(jj-1);
+0094          jj9 = 9*(jj-1);
+0095 
+0096          <span class="keyword">if</span> (ii == jj)
+0097             dij = 1;
+0098          <span class="keyword">else</span>
+0099             dij = 0;
+0100          <span class="keyword">end</span>
+0101 
+0102          dRj = ((dij*TTH + th(ii)*dTTH(:,jj3+[1:3])                         <span class="keyword">...</span>
+0103              +   <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>((dTTH(:,jj3+[1:3])*IT-TTH*dT(:,jj3+[1:3]))*eei)) <span class="keyword">...</span>
+0104              - (2*th(jj)*R))/magth;
+0105 
+0106          <span class="keyword">for</span> kk = 1:3
+0107 
+0108             kk3 = 3*(kk-1);
+0109 
+0110             <span class="keyword">if</span> (jj == kk)
+0111                djk = 1;
+0112             <span class="keyword">else</span>
+0113                djk = 0;
+0114             <span class="keyword">end</span>
+0115 
+0116             <span class="keyword">if</span> (ii == kk)
+0117                dik = 1;
+0118             <span class="keyword">else</span>
+0119                dik = 0;
+0120             <span class="keyword">end</span>
+0121 
+0122             dRk = ((dik*TTH + th(ii)*dTTH(:,kk3+[1:3])                         <span class="keyword">...</span>
+0123                 +   <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>((dTTH(:,kk3+[1:3])*IT-TTH*dT(:,kk3+[1:3]))*eei)) <span class="keyword">...</span>
+0124                 - (2*th(kk)*R))/magth;
+0125 
+0126             d2R = ((-2*djk*R - 2*th(kk)*dRj - 2*th(jj)*dRk)          <span class="keyword">...</span>
+0127                 +  (dij*dTTH(:,kk3+[1:3]) + dik*dTTH(:,jj3+[1:3])    <span class="keyword">...</span>
+0128                 +   <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(-dTTH(:,jj3+[1:3])*dT(:,kk3+[1:3])*eei <span class="keyword">...</span>
+0129                 -             dTTH(:,kk3+[1:3])*dT(:,jj3+[1:3])*eei  <span class="keyword">...</span>
+0130                 -             TTH*d2T(:,jj9+kk3+[1:3])*eei)))        <span class="keyword">...</span>
+0131                 / magth;
+0132 
+0133             d3T(:,ii27+jj9+kk3+[1:3]) = d2R*T + dRj*dT(:,kk3+[1:3]) <span class="keyword">...</span>
+0134                                       + dRk*dT(:,jj3+[1:3]) + R*d2T(:,jj9+kk3+[1:3]);
+0135 
+0136          <span class="keyword">end</span>
+0137 
+0138       <span class="keyword">end</span>
+0139 
+0140    <span class="keyword">end</span>
+0141 
+0142 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

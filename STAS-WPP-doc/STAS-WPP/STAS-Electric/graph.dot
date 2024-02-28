@@ -1,0 +1,27 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  ACexport -> PiLine;
+  ACexport -> Transformer;
+  PMSG -> inductance;
+  Transformer -> inductance;
+  buildTurbineElectric -> DCLink;
+  buildTurbineElectric -> PMSG;
+  buildTurbineElectric -> Transformer;
+  buildTurbineElectric -> converterControlGen;
+  buildTurbineElectric -> converterControlNet;
+  buildTurbineElectric -> gridFrequency;
+  converterControlGen -> inductance;
+  converterControlNet -> inductance;
+
+  ACexport [URL="ACexport.html"];
+  DCLink [URL="DCLink.html"];
+  PMSG [URL="PMSG.html"];
+  PiLine [URL="PiLine.html"];
+  Transformer [URL="Transformer.html"];
+  buildTurbineElectric [URL="buildTurbineElectric.html"];
+  connectGrid [URL="connectGrid.html"];
+  converterControlGen [URL="converterControlGen.html"];
+  converterControlNet [URL="converterControlNet.html"];
+  gridFrequency [URL="gridFrequency.html"];
+  inductance [URL="inductance.html"];
+}

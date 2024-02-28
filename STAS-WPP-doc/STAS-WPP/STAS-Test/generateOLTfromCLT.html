@@ -1,0 +1,375 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of generateOLTfromCLT</title>
+  <meta name="keywords" content="generateOLTfromCLT">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; generateOLTfromCLT.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>generateOLTfromCLT
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMsetup.html" class="code" title="function [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = BEMsetup (s,a)">BEMsetup</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/eigVal.html" class="code" title="function [slap,shp,ifrq] = eigVal (A)">eigVal</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 clear;
+0003 
+0004 pkg load control;
+0005 
+0006 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0007  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0008  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0009  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0010 
+0011 nm = <span class="string">'DTU10MW'</span>;
+0012 inpnm = <span class="string">'_P060_'</span>;
+0013 opnm = <span class="string">'_P060_'</span>;
+0014 convertToAeroModes = 0;
+0015 
+0016 Vmag = 10;
+0017 thV = 0;
+0018 Vg0 = [Vmag*cos(thV); Vmag*sin(thV); 0];
+0019 
+0020 yaw = 0;
+0021 betas = [0;0;0];
+0022 azi = 0;
+0023 cp0 = cos(azi);
+0024 sp0 = sin(azi);
+0025 
+0026 Tpw = 6;
+0027 Hsw = 2;
+0028 wang = 0;
+0029 fw = 1/Tpw;
+0030 aw = 2*pi*fw;
+0031 zetw = 0.1;
+0032 atw = 0.01*(2*pi);
+0033 Fw0 = 1*[cos(wang), sin(wang)].';
+0034 
+0035 aV = 0.05*(2*pi);
+0036 <span class="comment">% a3P computed based on W.</span>
+0037 zet3P = 0.1;
+0038 
+0039 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0040 eval([<span class="string">'epar  = STASElectric_'</span> nm <span class="string">' ();'</span>]);
+0041 eval([<span class="string">'ppar  = STASPitch_'</span>    nm <span class="string">' ();'</span>]);
+0042 eval([<span class="string">'ypar  = STASYaw_'</span>      nm <span class="string">' ();'</span>]);
+0043 eval([<span class="string">'c     = STASControl_'</span>  nm <span class="string">' ();'</span>]);
+0044 eval([<span class="string">'m     = STASSensor_'</span>   nm <span class="string">' ();'</span>]);
+0045 
+0046 a.dens = 1.225                     / ndens;
+0047 a.visc = 1.789e-5                  / nvisc;
+0048 grav   = [0;0;0];  <span class="comment">% Consistent with asymWind, gravity is implemented as</span>
+0049                    <span class="comment">% an external force rather than part of the matrices.</span>
+0050 
+0051 vs     = [33000;0]                 / voltage;    <span class="comment">% Grid electrical voltage.</span>
+0052 we     = 50*(2*pi)                 * time;       <span class="comment">% Grid electrical frequency.</span>
+0053 th_e   = 0;                                      <span class="comment">% Ref. elec. angle.</span>
+0054 Vhdc   = c.Vhdc;                                 <span class="comment">% DC link voltage command.</span>
+0055 Qh     = 0                         / power;      <span class="comment">% Reactive power command.</span>
+0056 
+0057 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0058 [imdofs,Nmd] = <a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a> (s);
+0059 Ndj = Ndof + 6;
+0060 Nnod = Ndof/6;
+0061 
+0062 Pin = <a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0063 [q,P,Ts0_B,TB0_g] =                                                     <span class="keyword">...</span>
+0064       <a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a> (Pin,yaw,s.nacelle.delta,azi,s.driveshaft.phi, <span class="keyword">...</span>
+0065                           betas,0,idofs,idofm,inods,inodm);
+0066 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0067 
+0068 Nb  = a.Nb;
+0069 Neb = a.Neb;
+0070 Nae = Nb*Neb;
+0071 
+0072 Nmud = s.foundation.Nmud;
+0073 Nwater = s.foundation.Nwater;
+0074 
+0075 <span class="comment">% Load the operating-point state vector and closed-loop matrices</span>
+0076 <span class="comment">% based on the default controller.</span>
+0077 txt = inpnm;
+0078 <span class="keyword">if</span> (Vmag &gt;= 10)
+0079    Vstr = [<span class="string">'V'</span> int2str(10*Vmag)];
+0080 <span class="keyword">else</span>
+0081    Vstr = [<span class="string">'V0'</span> int2str(10*Vmag)];
+0082 <span class="keyword">end</span>
+0083 
+0084 eval([&quot;load <span class="string">'xpsi&quot; txt Vstr &quot;.txt'</span>;&quot;]);
+0085 eval([&quot;load <span class="string">'dxpsi&quot; txt Vstr &quot;.txt'</span>;&quot;]);
+0086 eval([&quot;load <span class="string">'Rgrav&quot; txt Vstr &quot;.txt'</span>;&quot;]);
+0087 eval([&quot;load <span class="string">'ypsi&quot; txt Vstr &quot;.txt'</span>;&quot;]);
+0088 eval([&quot;load <span class="string">'upsi&quot; txt Vstr &quot;.txt'</span>;&quot;]);
+0089 eval([&quot;load <span class="string">'Lpsi&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0090 eval([&quot;load <span class="string">'Apsi&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0091 eval([&quot;load <span class="string">'Bpsi&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0092 eval([&quot;load <span class="string">'Cpsi&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0093 eval([&quot;load <span class="string">'Dpsi&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0094 eval([&quot;load <span class="string">'dret&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0095 eval([&quot;load <span class="string">'shape&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0096 eval([&quot;load <span class="string">'mdamp&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0097 eval([&quot;load <span class="string">'bldof&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0098 eval([&quot;xpsi = xpsi&quot; txt Vstr &quot;;&quot;]);
+0099 eval([&quot;dxpsi = dxpsi&quot; txt Vstr &quot;;&quot;]);
+0100 eval([&quot;Rgrav = Rgrav&quot; txt Vstr &quot;;&quot;]);
+0101 eval([&quot;ypsi = ypsi&quot; txt Vstr &quot;;&quot;]);
+0102 eval([&quot;upsi = upsi&quot; txt Vstr &quot;;&quot;]);
+0103 
+0104 slv = <a href="../../STAS-WPP/STAS-Aeroelastic/slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a> (idofs);
+0105 vec = [1:Ndj].';
+0106 [jnk,ret,jnk2] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a> (vec,slv,[]);
+0107 Nret = size(ret,1);
+0108 
+0109 Neta = size(shape0,2);
+0110 Nxs  = 2*Neta;
+0111 Nus  = Ndj + Neta;
+0112 Nys  = 4*Ndj;
+0113 Nxa  = 7*3*size(a.icp,1);
+0114 Nua  = 3*Nae;
+0115 Nya  = 0;
+0116 Nxb  = 6;
+0117 Nub  = 3;
+0118 Nyb  = 3;
+0119 Nxy  = 2;
+0120 Nuy  = 1;
+0121 Nyy  = 1;
+0122 Nxe  = 25;
+0123 Nue  = 8;
+0124 Nye  = 3;
+0125 Nxm  = 10;
+0126 Num  = 0;
+0127 Nym  = 10;
+0128 Nxc  = 3;
+0129 Nuc  = 1;
+0130 Nyc  = 2;
+0131 Nysl = 4*Ndj + 9*Nnod;
+0132 Nyal = 137*Nae + 5;
+0133 Nybl = 9;
+0134 Nyyl = 3;
+0135 Nyel = 4;
+0136 
+0137 jxs  = 0;
+0138 jus  = 0;
+0139 jys  = 0;
+0140 jxa  = jxs + Nxs;
+0141 jua  = jus + Nus;
+0142 jya  = jys + Nys;
+0143 jxb  = jxa + Nxa;
+0144 jub  = jua + Nua;
+0145 jyb  = jya + Nya;
+0146 jxy  = jxb + Nxb;
+0147 juy  = jub + Nub;
+0148 jyy  = jyb + Nyb;
+0149 jxe  = jxy + Nxy;
+0150 jue  = juy + Nuy;
+0151 jye  = jyy + Nyy;
+0152 jxm  = jxe + Nxe;
+0153 jum  = jue + Nue;
+0154 jym  = jye + Nye;
+0155 jxc  = jxm + Nxm;
+0156 juc  = jum + Num;
+0157 jyc  = jym + Nym;
+0158 
+0159 Nx = jxc + Nxc;
+0160 Nu = juc + Nuc;
+0161 Ny = jyc + Nyc;
+0162 
+0163 iazi = Neta - 4;
+0164 iW   = 2*Neta - 4;
+0165 igen = [idofs(3)+[1:6] idofm(5)+[1:6] idofs(4)+[1:6] idofs(5)+[1:6]].';
+0166 ipit = [Ndof+[4:6]].';
+0167 iyaw = Ndof + 1;
+0168 
+0169 <span class="comment">% Retain structures, aero, actuators, and electrical systems</span>
+0170 <span class="comment">% from xpsi.  Add in sensor and gen P control states and build</span>
+0171 <span class="comment">% an appropriate input vector.</span>
+0172 oret = [1:jxm].';
+0173 Pes = (xpsi(jxe+[17 18]).')*xpsi(jxe+[19 20]);
+0174 qB  = ypsi(idofs(2)+[1:6]);
+0175 qBd = ypsi(Ndj+idofs(2)+[1:6]);
+0176 PB  = P(idofs(2)+[1:6]);
+0177 qn  = ypsi(idofm(3)+[1:6]);
+0178 qnd = ypsi(Ndj+idofm(3)+[1:6]);
+0179 Pn  = P(idofm(3)+[1:6]);
+0180 [vnac,ddyv] = <a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,qnd,qBd);
+0181 
+0182 xop  = zeros(Nx,1);
+0183 dxop = zeros(Nx,1);
+0184 uop  = zeros(Nu,1);
+0185 
+0186 xgp = xpsi(jxm+[16 17 18]);   <span class="comment">% From default controller.</span>
+0187 xop(1:jxm)    = xpsi(oret);
+0188 xop(jxm+1:Nx) = [xpsi(2*Neta-4);       <span class="keyword">...</span><span class="comment">  % W</span>
+0189                  xpsi(Neta-[2 1 0]);   <span class="keyword">...</span><span class="comment">  % beta</span>
+0190                  xpsi(Neta-5);         <span class="keyword">...</span><span class="comment">  % yaw</span>
+0191                  Pes;                  <span class="keyword">...</span>
+0192                  vnac(1:2);            <span class="keyword">...</span>
+0193                  Vmag;                 <span class="keyword">...</span>
+0194                  0;                    <span class="keyword">...</span><span class="comment">  % thw</span>
+0195                  xgp];
+0196 
+0197 dxop(1:jxm) = dxpsi(oret);
+0198 dxop(jxm+1:Nx) = zeros(Nx-jxm,1);
+0199 
+0200 uop = [upsi(1:Ndj); dxpsi(Neta+[1:Neta]); upsi(Ndj+[1:3*Nae]); <span class="keyword">...</span>
+0201        xpsi(Neta-[2 1 0]); xpsi(Neta-5); we; th_e; vs;         <span class="keyword">...</span>
+0202        xpsi(2*Neta+Nxa+8+1); 0; Vhdc; Qh; Pes];  <span class="comment">% ighq will be determined by P control.</span>
+0203 
+0204 qpsi   = ypsi(1:Ndj);
+0205 qdpsi  = ypsi(Ndj+[1:Ndj]);
+0206 qddpsi = ypsi(2*Ndj+[1:Ndj]);
+0207 Fpsi   = ypsi(3*Ndj+[1:Ndj]);
+0208 [b1,b2,b3] = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a> (Ndj,idofs);
+0209 [TpsiB_Ndj,TBpsi_Ndj] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Ndj,b1,b2,b3,azi);
+0210 q   = TpsiB_Ndj*qpsi;
+0211 qd  = TpsiB_Ndj*qdpsi;
+0212 
+0213 <span class="comment">% Aerodynamic parameters and modes.</span>
+0214 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0215 [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = <a href="../../STAS-WPP/STAS-Aeroelastic/BEMsetup.html" class="code" title="function [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = BEMsetup (s,a)">BEMsetup</a> (s,a);
+0216 
+0217 Td_n = [cp0 -sp0 0;sp0 cp0 0;0 0 1];
+0218 Try = Tn_y;
+0219 Tyy0 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (q(idofs(3)+[4:6]));
+0220 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(idofs(3)+[4:6]));
+0221 Trg = Ty0g*Tyy0*Try;
+0222 
+0223 [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wga] = <span class="keyword">...</span>
+0224                       <a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a> (s,a,q,qd,P,Tas);
+0225 
+0226 [zr,Area,Dp,rp,Lp,xeg,xhg,xyg] = <span class="keyword">...</span>
+0227          <a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a> (s,a,q,P,Try,Trg);
+0228 
+0229 bsh = <a href="../../STAS-WPP/STAS-Aeroelastic/bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a> (s,ret,shape0);
+0230 Psia = <a href="../../STAS-WPP/STAS-Aeroelastic/aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a> (a,rp,bsh);
+0231 
+0232 <span class="comment">% Conversion matrix from aero spline to mode.</span>
+0233 <span class="keyword">if</span> (convertToAeroModes == 1)
+0234 
+0235    abm = a;
+0236    abm.icp = [-1, -3].';  <span class="comment">% First two flap modes.</span>
+0237    Psiam = <a href="../../STAS-WPP/STAS-Aeroelastic/aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a> (abm,rp,bsh);
+0238    Nxam = size(Psiam,2);
+0239    Nxar = Nx - (Nxa-Nxam);
+0240 
+0241    <span class="comment">% Psia needs to be in body coordinates, while to transform xop I need</span>
+0242    <span class="comment">% MBC coordinates.  This will involve some transforming to and from</span>
+0243    <span class="comment">% MBC, then.</span>
+0244    b1 = [1:Nxa/3].';
+0245    b2 = Nxa/3 + [1:Nxa/3].';
+0246    b3 = 2*Nxa/3 + [1:Nxa/3].';
+0247    [TpsiBa,TBpsia] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nxa,b1,b2,b3,azi);
+0248    b1 = [1:Nxam/3].';
+0249    b2 = Nxam/3 + [1:Nxam/3].';
+0250    b3 = 2*Nxam/3 + [1:Nxam/3].';
+0251    [TpsiBm,TBpsim] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nxam,b1,b2,b3,azi);
+0252 
+0253    Tsm = sparse (Nxar,Nx);
+0254    Tsm(1:jxa,1:jxa) = speye(Nxs);
+0255    Tsm(jxa+[1:Nxam],jxa+1:jxb) = TBpsim*(Psiam.')*Psia*TpsiBa;
+0256    Tsm(jxa+Nxam+[1:Nx-jxb],jxb+1:Nx) = speye(Nx-jxb);
+0257 
+0258    xop = Tsm*xop;
+0259    dxop = Tsm*dxop;
+0260    a = abm;
+0261    Psia = Psiam;
+0262 
+0263    <span class="comment">% Re-index.</span>
+0264    Nxa  = Nxam;
+0265    Nx   = Nxar;
+0266    jxb  = jxa + Nxa;
+0267    jxy  = jxb + Nxb;
+0268    jxe  = jxy + Nxy;
+0269    jxm  = jxe + Nxe;
+0270    jxc  = jxm + Nxm;
+0271 
+0272 <span class="keyword">end</span>
+0273 
+0274 <span class="comment">% Generate the open-loop turbine matrices in MBC coordinates.</span>
+0275 <span class="comment">% xop, dxop, uop are input in MBC.  Aero inputs including Psia</span>
+0276 <span class="comment">% are in body coordinates.</span>
+0277 [Lop,Rop,yop,Aop,Bop,Cop,Dop] =                    <span class="keyword">...</span>
+0278          <a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a> (1,xop,dxop,uop,s,a,               <span class="keyword">...</span>
+0279                  epar,ppar,ypar,m,c,               <span class="keyword">...</span>
+0280                  grav,P,shape0,mdamp0,             <span class="keyword">...</span>
+0281                  Tas,Try,ch,Lel,foilwt,aoaz,aoast, <span class="keyword">...</span>
+0282                  xas,yas,Psia,igen,ipit,iyaw);
+0283 
+0284 txt = opnm;
+0285 
+0286 <span class="keyword">if</span> (Vmag &gt;= 10)
+0287    Vstr = [<span class="string">'V'</span> int2str(10*Vmag)];
+0288 <span class="keyword">else</span>
+0289    Vstr = [<span class="string">'V0'</span> int2str(10*Vmag)];
+0290 <span class="keyword">end</span>
+0291 
+0292 eval([&quot;save(<span class="string">'-ascii'</span>, <span class="string">'xop&quot; txt Vstr &quot;.txt'</span>,<span class="string">'xop'</span>);&quot;]);
+0293 eval([&quot;save(<span class="string">'-ascii'</span>, <span class="string">'uop&quot; txt Vstr &quot;.txt'</span>,<span class="string">'uop'</span>);&quot;]);
+0294 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'dxop&quot; txt Vstr &quot;.txt'</span>,<span class="string">'dxop'</span>);&quot;]);
+0295 eval([&quot;save(<span class="string">'-ascii'</span>, <span class="string">'yop&quot; txt Vstr &quot;.txt'</span>,<span class="string">'yop'</span>);&quot;]);
+0296 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lop&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Lop'</span>);&quot;]);
+0297 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Aop&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Aop'</span>);&quot;]);
+0298 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bop&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Bop'</span>);&quot;]);
+0299 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cop&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Cop'</span>);&quot;]);
+0300 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dop&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Dop'</span>);&quot;]);
+0301 
+0302 dret = [[1:Neta-6] Neta-[5 3 2 1 0] [(Neta+1):Nx]].'; 
+0303 [slap,shp,ifrq] = <a href="../../STAS-WPP/STAS-Utilities/eigVal.html" class="code" title="function [slap,shp,ifrq] = eigVal (A)">eigVal</a> (Lop(dret,dret)\Aop(dret,dret));
+0304 
+0305 
+0306 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

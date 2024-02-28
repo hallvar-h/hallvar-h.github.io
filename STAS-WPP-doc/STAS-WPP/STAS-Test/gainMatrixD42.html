@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of gainMatrixD42</title>
+  <meta name="keywords" content="gainMatrixD42">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; gainMatrixD42.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>gainMatrixD42
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Main/RiccatiDT.html" class="code" title="function GG = RiccatiDT (meth,AA,BB,CC,QQ,RR,G0,tol)">RiccatiDT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 clear;
+0003 
+0004 pkg load control;
+0005 
+0006 Vmag = 10;
+0007 dt = 0.05;
+0008 fco = 0.5;
+0009 
+0010 txt = <span class="string">'_P060_'</span>;
+0011 <span class="keyword">if</span> (Vmag &gt;= 10)
+0012    Vstr = [<span class="string">'V'</span> int2str(round(10*Vmag))];
+0013 <span class="keyword">else</span>
+0014    Vstr = [<span class="string">'V0'</span> int2str(round(10*Vmag))];
+0015 <span class="keyword">end</span>
+0016 
+0017 eval([&quot;load <span class="string">'ADT&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0018 eval([&quot;load <span class="string">'BDT&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0019 eval([&quot;load <span class="string">'Ao&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0020 eval([&quot;load <span class="string">'Bo&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0021 eval([&quot;load <span class="string">'Co&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0022 eval([&quot;load <span class="string">'Do&quot; txt Vstr &quot;.bin'</span>;&quot;]);
+0023 
+0024 Nx = size(ADT,1);
+0025 Ny = size(Co,1);
+0026 Nu = size(BDT,2);
+0027 
+0028 <span class="comment">% u         : 1: P, 2: beta, 3: yaw, 4: V, 5: thV, 6: Fw.</span>
+0029 <span class="comment">% y(sensors): 1: W, 2: beta0, 3: yaw, 4: Pe, 5-6: vnac, 7: V, 8: thV,</span>
+0030 <span class="comment">% y(other)  : 9: a, 10: FT, 11: Pa, 12-23: qfnd, 24-59: qbl, 60-61: isd,q.</span>
+0031 iuc = [1:3].';
+0032 iue = [4:6].';
+0033 iyc = [4, 2, 3].';
+0034 iys = [1, 5, 6, 7, 8].';
+0035 Nys = size(iys,1);
+0036 Nyc = size(iyc,1);
+0037 Nuc = size(iuc,1);
+0038 Nue = size(iue,1);
+0039 
+0040 Qdiag = [1.0, 0.1, 1.0];
+0041 Rdiag = [0.00005, 0.001, 0.001, 1.0, 0.0001];
+0042 QQ = diag(Qdiag);
+0043 RR = diag(Rdiag);
+0044 tol = 1.e-3;
+0045 G0 = zeros(Nx,Nys);
+0046 GG = <a href="../../STAS-WPP/STAS-Main/RiccatiDT.html" class="code" title="function GG = RiccatiDT (meth,AA,BB,CC,QQ,RR,G0,tol)">RiccatiDT</a> (2,ADT,BDT(:,iue),Co(iys,:),QQ,RR,G0,tol);
+0047 
+0048 IGC = speye(Nx) - GG*Co(iys,:);
+0049 AG = IGC*ADT;
+0050 BG = BDT(:,iuc);  <span class="comment">% The external commands.</span>
+0051 CG = Co;
+0052 DG = Do(:,iuc);
+0053 
+0054 <span class="comment">% Check some step functions.</span>
+0055 Nt = 1200;
+0056 yy = zeros(Nt,Nys*Nys);
+0057 yu = zeros(Nt,Nys*Nuc);
+0058 xy = zeros(Nx,Nys);
+0059 ys = zeros(Nys,1);
+0060 xu = zeros(Nx,Nuc);
+0061 u = zeros(Nuc,1);
+0062 ts = zeros(Nt,1);
+0063 <span class="keyword">for</span> it = 2:Nt
+0064 
+0065    ts(it) = ts(it-1) + dt;
+0066 
+0067    <span class="keyword">if</span> (it &gt; 10)
+0068       u = ones(Nuc,1);
+0069       ys = ones(Nys,1);
+0070    <span class="keyword">end</span>
+0071    <span class="keyword">for</span> iu = 1:Nuc
+0072       icn = Nys*(iu-1);
+0073       u1 = zeros(Nuc,1);
+0074       u1(iu) = 1;
+0075       xu(:,iu) = AG*xu(:,iu) + BG*u1;
+0076       yu(it,icn+[1:Nys]) = (CG(iys,:)*xu(:,iu) + DG(iys,:)*u1).';
+0077    <span class="keyword">end</span>
+0078    <span class="keyword">for</span> iy = 1:Nys
+0079       icn = Nys*(iy-1);
+0080       y1 = zeros(Nys,1);
+0081       y1(iy) = ys(iy);
+0082       xy(:,iy) = AG*xy(:,iy) + GG*y1;
+0083       yy(it,icn+[1:Nys]) = (CG(iys,:)*xy(:,iy)).';
+0084    <span class="keyword">end</span>
+0085 
+0086 <span class="keyword">end</span>
+0087 
+0088 eval([&quot;save (<span class="string">'-binary'</span>,<span class="string">'AG&quot; txt Vstr &quot;.bin'</span>,<span class="string">'AG'</span>);&quot;]);
+0089 eval([&quot;save (<span class="string">'-binary'</span>,<span class="string">'BG&quot; txt Vstr &quot;.bin'</span>,<span class="string">'BG'</span>);&quot;]);
+0090 eval([&quot;save (<span class="string">'-binary'</span>,<span class="string">'CG&quot; txt Vstr &quot;.bin'</span>,<span class="string">'CG'</span>);&quot;]);
+0091 eval([&quot;save (<span class="string">'-binary'</span>,<span class="string">'DG&quot; txt Vstr &quot;.bin'</span>,<span class="string">'DG'</span>);&quot;]);
+0092 eval([&quot;save (<span class="string">'-binary'</span>,<span class="string">'GG&quot; txt Vstr &quot;.bin'</span>,<span class="string">'GG'</span>);&quot;]);
+0093 
+0094 <span class="comment">% y(sensors): 1: W, 2: beta0, 3: yaw, 4: Pe, 5-6: vnac, 7: V, 8: thV,</span>
+0095 clrz = [0.0 0.0 0.0; <span class="keyword">...</span>
+0096         0.0 0.0 0.4; <span class="keyword">...</span>
+0097         0.0 0.0 0.7; <span class="keyword">...</span>
+0098         0.4 0.0 0.0; <span class="keyword">...</span>
+0099         0.7 0.0 0.0];
+0100 
+0101 figure(1);
+0102 clf;
+0103 <span class="keyword">for</span> iyin = 1:Nys
+0104    icn = Nys*(iyin-1);
+0105    subplot(2,3,iyin);
+0106    hold on;
+0107    <span class="keyword">for</span> iyout = 1:Nys
+0108       plot (ts,yy(:,icn+iyout),<span class="string">'color'</span>,clrz(iyout,:),<span class="string">'linewidth'</span>,2.0);
+0109    <span class="keyword">end</span>
+0110    hold off;
+0111 <span class="keyword">end</span>
+0112 
+0113 figure(2);
+0114 clf;
+0115 <span class="keyword">for</span> iuin = 1:Nuc
+0116    icn = Nys*(iuin-1);
+0117    subplot(1,3,iuin);
+0118    hold on;
+0119    <span class="keyword">for</span> iyout = 1:Nys
+0120       plot (ts,yu(:,icn+iyout),<span class="string">'color'</span>,clrz(iyout,:),<span class="string">'linewidth'</span>,2.0);
+0121    <span class="keyword">end</span>
+0122    hold off;
+0123 <span class="keyword">end</span>
+0124 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

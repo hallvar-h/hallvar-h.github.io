@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of airfoilToNodal</title>
+  <meta name="keywords" content="airfoilToNodal">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; airfoilToNodal.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>airfoilToNodal
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Convert an airfoil force vector to nodal forces in pitch coordinates.
+
+ Version:        Changes:
+ --------        -------------
+ 17.04.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 17.04.2018      
+
+ Inputs:
+ -------
+ 
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="airfoilToPitch.html" class="code" title="function [Fp,Dy] = airfoilToPitch (Fa,TsB,dTsB,Tas)">airfoilToPitch</a>	</li>
+<li><a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Convert an airfoil force vector to nodal forces in pitch coordinates.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Version:        Changes:</span>
+0006 <span class="comment">% --------        -------------</span>
+0007 <span class="comment">% 17.04.2018      Original code.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Verification:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 17.04.2018</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Inputs:</span>
+0014 <span class="comment">% -------</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Outputs:</span>
+0018 <span class="comment">% --------</span>
+0019 <span class="comment">%</span>
+0020 
+0021 Ndj = size(qq,1);
+0022 F   = zeros(Ndj,1);
+0023 
+0024 <span class="keyword">for</span> ibod = 5:7
+0025 
+0026    <span class="keyword">if</span> (ibod == 5)
+0027       idref = idofs(6);
+0028       Nel   = s.blade(1).Nel;
+0029       conns = s.blade(1).conn;
+0030    <span class="keyword">elseif</span> (ibod == 6)
+0031       idref = idofs(7);
+0032       Nel   = s.blade(2).Nel;
+0033       conns = s.blade(2).conn;
+0034    <span class="keyword">elseif</span> (ibod == 7)
+0035       idref = idofs(8);
+0036       Nel   = s.blade(3).Nel;
+0037       conns = s.blade(3).conn;
+0038    <span class="keyword">end</span>
+0039 
+0040    <span class="keyword">for</span> iel = 1:Nel
+0041 
+0042       ic3 = 3*Nel*(ibod-5) + 3*(iel-1);
+0043       ic6 = 6*Nel*(ibod-5) + 6*(iel-1);
+0044 
+0045       conn  = conns(:,iel);
+0046       rdof  = idref + 6*(conn(1)-1);
+0047       n1dof = idref + 6*(conn(2)-1);
+0048       n2dof = idref + 6*(conn(3)-1);
+0049 
+0050       qB  = qq(rdof+[1:6]);
+0051       qn1 = qq(n1dof+[1:6]);
+0052       qn2 = qq(n2dof+[1:6]);
+0053       PB  = Pn(rdof+[1:6]);
+0054       Pn1 = Pn(n1dof+[1:6]);
+0055       Pn2 = Pn(n2dof+[1:6]);
+0056 
+0057       <span class="keyword">if</span> (n1dof == rdof)
+0058 
+0059          qn1 = zeros(6,1);
+0060          Pn1(1:3) = zeros(3,1);
+0061 
+0062          <span class="comment">% For purposes of computing Qu's, give the reference node the</span>
+0063          <span class="comment">% same undeformed orientation as the second node.</span>
+0064          Pn1(4:6) = Pn(n1dof+6+[4:6]);  
+0065 
+0066       <span class="keyword">end</span>
+0067 
+0068       <span class="keyword">if</span> (n2dof == rdof)
+0069          qn2 = zeros(6,1);
+0070          Pn2(1:3) = zeros(3,1);
+0071          Pn2(4:6) = Pn(n2dof+6+[4:6]);
+0072       <span class="keyword">end</span>
+0073 
+0074       [xe,TsB] = <a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0075       dTsB     = <a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB);
+0076 
+0077       [Fpe,Dy] = <a href="airfoilToPitch.html" class="code" title="function [Fp,Dy] = airfoilToPitch (Fa,TsB,dTsB,Tas)">airfoilToPitch</a> (Fa(ic6+[1:6]),TsB,dTsB,Tas(:,ic3+[1:3]));
+0078 
+0079       F(n1dof+[1:6]) = F(n1dof+[1:6]) + 0.5*Fpe;
+0080       F(n2dof+[1:6]) = F(n2dof+[1:6]) + 0.5*Fpe;
+0081 
+0082    <span class="keyword">end</span>
+0083 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

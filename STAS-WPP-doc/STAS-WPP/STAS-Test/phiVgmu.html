@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of phiVgmu</title>
+  <meta name="keywords" content="phiVgmu">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; phiVgmu.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>phiVgmu
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function phi = phiVgmu (Vm,mus,sig,bet) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute p(V_m|mu_V), the probability of a set of measured values Vm
+ given a set of possible values mus.
+
+ Version:        Changes:
+ --------        -------------
+ 30.06.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 30.06.2020      
+
+ Inputs:
+ -------
+ Vm              : Set of measured values.
+ mus             : Possible values of mu, must encompass range of Vm's.
+ sig             : Standard deviation of the Gaussian part.
+ bet             : Constant &quot;background&quot; probability density.
+
+ Outputs:
+ --------
+ phi             : p(V_m|mu_V), NV-by-Nmu
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="phimugV.html" class="code" title="function phi = phimugV (Vm,mus,sig,bet,phim)">phimugV</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function phi = phiVgmu (Vm,mus,sig,bet)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute p(V_m|mu_V), the probability of a set of measured values Vm</span>
+0004 <span class="comment">% given a set of possible values mus.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 30.06.2020      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 30.06.2020</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% Vm              : Set of measured values.</span>
+0017 <span class="comment">% mus             : Possible values of mu, must encompass range of Vm's.</span>
+0018 <span class="comment">% sig             : Standard deviation of the Gaussian part.</span>
+0019 <span class="comment">% bet             : Constant &quot;background&quot; probability density.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Outputs:</span>
+0022 <span class="comment">% --------</span>
+0023 <span class="comment">% phi             : p(V_m|mu_V), NV-by-Nmu</span>
+0024 
+0025 NV = size(Vm,1);
+0026 Nmu = size(mus,1);
+0027 
+0028 del = Vm - mus.';
+0029 <span class="comment">%delr = [[mus(1)-mus(Nmu:-1:2)];[mus-mus(1)]];  % Range of del.</span>
+0030 <span class="comment">%Ndel = size(delr,1);</span>
+0031 <span class="comment">%w = delr(Ndel) + 0.5*(delr(Ndel)-delr(Ndel-1)) ...</span>
+0032 <span class="comment">%  - delr(1)    - 0.5*(delr(2)-delr(1));</span>
+0033 w = mus(Nmu) + 0.5*(mus(Nmu)-mus(Nmu-1)) <span class="keyword">...</span>
+0034   - mus(1)   - 0.5*(mus(2)-mus(1));
+0035 
+0036 <span class="comment">%pbet = w*bet;  % Total probability of the background part.</span>
+0037 <span class="comment">%phi = bet + (1 - pbet)*normpdf(del,0.0,sig);</span>
+0038 
+0039 phi = (bet/w) + (1 - bet)*normpdf(del,0.0,sig);
+0040 
+0041 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

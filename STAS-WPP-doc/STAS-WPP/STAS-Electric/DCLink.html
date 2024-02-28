@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of DCLink</title>
+  <meta name="keywords" content="DCLink">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; DCLink.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>DCLink
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C,Dy] = DCLink (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ An equivalent-circuit model of the converters and DC link, with
+ converters represented only by an efficiency.  The governing 
+ equation of the DC link is
+ dVdc/dt = (1/Cdc) (IIn - IIg)
+
+   states:           y vector:
+   Vdc        1      igd,q     1,2    in   (generator)
+                     vgd,q     3,4    in   (converter control)
+                     ipd,q     5,6    in   (transformer)
+                     vpd,q     7,8    in   (converter control)
+                     IIg        9     out
+                     IIn       10     out
+
+ Vdc is the DC link voltage.  IIg is the current fed to the DC link
+ by the generator-side converter.  IIn is the current extracted by
+ the network-side converter.  ig is the AC generator current in the
+ dq frame, vg is the AC generator voltage, ip is the AC current at
+ the transformer primary terminals, vp is the AC voltage at the
+ transformer primary terminals.
+
+ Version:        Changes:
+ --------        -------------
+ 02.05.2016      Original code.
+ 11.07.2017      Adapted for complex step derivatives.
+ 27.08.2018      Modified for linear/nonlinear equation pairs.
+
+ Version:        Verification:
+ --------        -------------
+ 02.05.2016      
+ 11.07.2017      
+ 27.08.2018      
+
+ Inputs:
+ -------
+ Linflag         : set to 1 to perform linearization.
+ x               : 1:   Vdc   (V)   DC link voltage
+ yin             : 1,2: ig    (A)   stator current, dq frame
+                   3,4: vg    (V)   stator voltage, dq frame
+                   5,6: ip    (A)   transformer-side current, dq frame
+                   7,8: vp    (V)   transformer-side voltage, dq frame
+ params          : 1:   Cdc   (F)   DC link capacitance.
+                   2:   etac  (-)   Converter efficiency.
+
+ Outputs:
+ --------
+ A, By, C, Dy
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C,Dy] = DCLink (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% An equivalent-circuit model of the converters and DC link, with</span>
+0004 <span class="comment">% converters represented only by an efficiency.  The governing</span>
+0005 <span class="comment">% equation of the DC link is</span>
+0006 <span class="comment">% dVdc/dt = (1/Cdc) (IIn - IIg)</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   states:           y vector:</span>
+0009 <span class="comment">%   Vdc        1      igd,q     1,2    in   (generator)</span>
+0010 <span class="comment">%                     vgd,q     3,4    in   (converter control)</span>
+0011 <span class="comment">%                     ipd,q     5,6    in   (transformer)</span>
+0012 <span class="comment">%                     vpd,q     7,8    in   (converter control)</span>
+0013 <span class="comment">%                     IIg        9     out</span>
+0014 <span class="comment">%                     IIn       10     out</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Vdc is the DC link voltage.  IIg is the current fed to the DC link</span>
+0017 <span class="comment">% by the generator-side converter.  IIn is the current extracted by</span>
+0018 <span class="comment">% the network-side converter.  ig is the AC generator current in the</span>
+0019 <span class="comment">% dq frame, vg is the AC generator voltage, ip is the AC current at</span>
+0020 <span class="comment">% the transformer primary terminals, vp is the AC voltage at the</span>
+0021 <span class="comment">% transformer primary terminals.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Changes:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 02.05.2016      Original code.</span>
+0026 <span class="comment">% 11.07.2017      Adapted for complex step derivatives.</span>
+0027 <span class="comment">% 27.08.2018      Modified for linear/nonlinear equation pairs.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Version:        Verification:</span>
+0030 <span class="comment">% --------        -------------</span>
+0031 <span class="comment">% 02.05.2016</span>
+0032 <span class="comment">% 11.07.2017</span>
+0033 <span class="comment">% 27.08.2018</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Inputs:</span>
+0036 <span class="comment">% -------</span>
+0037 <span class="comment">% Linflag         : set to 1 to perform linearization.</span>
+0038 <span class="comment">% x               : 1:   Vdc   (V)   DC link voltage</span>
+0039 <span class="comment">% yin             : 1,2: ig    (A)   stator current, dq frame</span>
+0040 <span class="comment">%                   3,4: vg    (V)   stator voltage, dq frame</span>
+0041 <span class="comment">%                   5,6: ip    (A)   transformer-side current, dq frame</span>
+0042 <span class="comment">%                   7,8: vp    (V)   transformer-side voltage, dq frame</span>
+0043 <span class="comment">% params          : 1:   Cdc   (F)   DC link capacitance.</span>
+0044 <span class="comment">%                   2:   etac  (-)   Converter efficiency.</span>
+0045 <span class="comment">%</span>
+0046 <span class="comment">% Outputs:</span>
+0047 <span class="comment">% --------</span>
+0048 <span class="comment">% A, By, C, Dy</span>
+0049 
+0050 Nx = 1;
+0051 Ny = 10;
+0052 
+0053 dxdt = 0;
+0054 yout = zeros(2,1);
+0055 
+0056 A  = sparse(Nx,Nx);
+0057 By = sparse(Nx,Ny);
+0058 C  = sparse(Ny,Nx);
+0059 Dy = sparse(Ny,Ny);
+0060 
+0061 Vdc = x;
+0062 
+0063 ig = yin(1:2);
+0064 vg = yin(3:4);
+0065 ip = yin(5:6);
+0066 vp = yin(7:8);
+0067 
+0068 Cdc = params(1);
+0069 eta = params(2);
+0070 
+0071 IIg = eta*(ig.')*vg/Vdc;
+0072 IIn = (ip.')*vp/(eta*Vdc);
+0073 
+0074 yout(1) = IIg;
+0075 yout(2) = IIn;
+0076 dxdt = (IIg - IIn)/Cdc;
+0077 
+0078 <span class="keyword">if</span> (Linflag == 1)
+0079 
+0080    <span class="comment">% DC link dynamics.</span>
+0081    L = 1;
+0082    By(9)  = 1/Cdc;
+0083    By(10) = -By(9);
+0084 
+0085    <span class="comment">% IIg current equation.</span>
+0086    C(9) = -IIg/Vdc;
+0087    Dy(9,1:2) = eta*(vg.')/Vdc;
+0088    Dy(9,3:4) = eta*(ig.')/Vdc;
+0089 
+0090    <span class="comment">% IIn current equation.</span>
+0091    C(10) = -IIn/Vdc;
+0092    Dy(10,5:6) = (vp.')/(eta*Vdc);
+0093    Dy(10,7:8) = (ip.')/(eta*Vdc);
+0094 
+0095 <span class="keyword">end</span>
+0096 
+0097 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of linkplantcontrol</title>
+  <meta name="keywords" content="linkplantcontrol">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; linkplantcontrol.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>linkplantcontrol
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/SSDiscreteTime.html" class="code" title="function [A,B,dt] = SSDiscreteTime (meth,aa,bb,dti)">SSDiscreteTime</a>	</li>
+<li><a href="plantControl.html" class="code" title="function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag)">plantControl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 clear;
+0003 
+0004 pkg load statistics;
+0005 
+0006 nm = <span class="string">'DTU10MW'</span>;
+0007 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0008 eval([&quot;load <span class="string">'cpct_&quot; nm &quot;.txt'</span>;&quot;]);
+0009 eval([&quot;cpct = cpct_&quot; nm &quot;;&quot;]);
+0010 
+0011 [length,time,mass,current,voltage,              <span class="keyword">...</span>
+0012  velocity,force,power,stress,density,viscosity, <span class="keyword">...</span>
+0013  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>,       <span class="keyword">...</span>
+0014  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0015 
+0016 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0017 Ndj = Ndof + 6;
+0018 
+0019 <span class="comment">% Load subsystem matrices.</span>
+0020 inpnm = <span class="string">'_P060_V100'</span>;
+0021 eval([&quot;load <span class="string">'AT&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0022 eval([&quot;load <span class="string">'BT&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0023 eval([&quot;load <span class="string">'Cq&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0024 eval([&quot;load <span class="string">'Dq&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0025 eval([&quot;load <span class="string">'AG&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0026 eval([&quot;load <span class="string">'BG&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0027 eval([&quot;load <span class="string">'CG&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0028 eval([&quot;load <span class="string">'DG&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0029 eval([&quot;load <span class="string">'GG&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0030 eval([&quot;load <span class="string">'xt&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0031 eval([&quot;load <span class="string">'ut&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0032 eval([&quot;load <span class="string">'yt&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0033 eval([&quot;load <span class="string">'xo&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0034 eval([&quot;load <span class="string">'uo&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0035 eval([&quot;load <span class="string">'yo&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0036 eval([&quot;load <span class="string">'xc&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0037 eval([&quot;load <span class="string">'uc&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0038 eval([&quot;load <span class="string">'Phat&quot; inpnm &quot;.bin'</span>;&quot;]);
+0039 eval([&quot;load <span class="string">'xpsi&quot; inpnm &quot;.txt'</span>;&quot;]);
+0040 eval([&quot;load <span class="string">'ypsi&quot; inpnm &quot;.txt'</span>;&quot;]);
+0041 eval([&quot;xpsi = xpsi&quot; inpnm &quot;;&quot;]);
+0042 eval([&quot;ypsi = ypsi&quot; inpnm &quot;;&quot;]);
+0043 
+0044 
+0045 Nxt = size(AT,1);
+0046 Nut = size(BT,2);
+0047 Nyt = size(Cq,1);
+0048 
+0049 Nxo = size(AG,1);
+0050 Nuo = size(BG,2);
+0051 Nyo = size(CG,1);
+0052 
+0053 <span class="comment">% Mean values.</span>
+0054 Vinf = 10                               / velocity;
+0055 P0 = Phat;
+0056 bet0 = -ypsi(idofs(6)+4) + yt(2); 
+0057 
+0058 R = 89.15                               / length;
+0059 W0 = uc(6);
+0060 [cp,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,R,Vinf,W0,bet0);
+0061 Area = pi*(R^2);
+0062 dens = 1.225                            / density;
+0063 FT0 = uc(5);
+0064 
+0065 [cp,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,R,Vinf,W0,0);
+0066 Pa0 = cp*0.5*dens*Area*(Vinf^3);
+0067 
+0068 a1table = interp1 ([0, 0.25,  0.50,  0.75,   1], <span class="keyword">...</span>
+0069                    [1, 0.975, 0.95,  0.925,  0.90],<span class="string">'pchip'</span>,<span class="string">'pp'</span>);
+0070 a2table = interp1 ([0, 0.25,  0.50,  0.75,   1], <span class="keyword">...</span>
+0071                    [1, 0.75,  0.50,  0.25,   0.00],<span class="string">'pchip'</span>,<span class="string">'pp'</span>);
+0072 atables.a1 = a1table;
+0073 atables.a2 = a2table;
+0074 
+0075 p = [1.0;
+0076      0.4                                * time; <span class="keyword">...</span>
+0077      6.0                                / velocity; <span class="keyword">...</span>
+0078      0.03*(2*pi)                        * time; <span class="keyword">...</span>
+0079     -1.e6                               / power; <span class="keyword">...</span>
+0080      1.e6                               / power; <span class="keyword">...</span>
+0081      0.10; <span class="keyword">...</span>
+0082      Area; <span class="keyword">...</span>
+0083      dens; <span class="keyword">...</span>
+0084      0.05*(2*pi)                        * time; <span class="keyword">...</span>
+0085      0.24*(2*pi)                        * time; <span class="keyword">...</span>
+0086      0.04; <span class="keyword">...</span>
+0087      0.40];
+0088 
+0089 Ppcc = uc(1);
+0090 v = 0;
+0091 asum = 31;
+0092 
+0093 dt = 0.05                               / time;
+0094 Nt = 100;
+0095 t = 0;
+0096 ts = dt*[0:Nt-1];
+0097 
+0098 xs = [xt;xo;xc];
+0099 ys = [yt;Phat];
+0100 
+0101 [dxdt,Phat,aac,bbc,ccc,ddc] = <a href="plantControl.html" class="code" title="function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag)">plantControl</a> (xc,uc,p,atables,cpct,1);
+0102 [ACT,BCT,dt] = <a href="../../STAS-WPP/STAS-Main/SSDiscreteTime.html" class="code" title="function [A,B,dt] = SSDiscreteTime (meth,aa,bb,dti)">SSDiscreteTime</a> (2,aac,bbc,dt);  <span class="comment">% Discrete time.</span>
+0103 
+0104 Nxc = size(aac,1);
+0105 Nuc = size(bbc,2);
+0106 Nyc = size(ccc,1);
+0107 
+0108 Nxs = Nxt + Nxo + Nxc;
+0109 Nys = Nyt+Nyo+Nyc;
+0110 
+0111 <span class="comment">% y vector:        u vector:</span>
+0112 <span class="comment">% (controls)       muV      1</span>
+0113 <span class="comment">% Phat     1       Dam      2</span>
+0114 <span class="comment">% Pe       2       a1sum    3</span>
+0115 <span class="comment">% beta     3       a2sum    4</span>
+0116 <span class="comment">% yaw      4       PhPCC    5</span>
+0117 <span class="comment">% (sensors)        PmPCC    6</span>
+0118 <span class="comment">% W        5       V        7  % Rotor-avg V at turbine.</span>
+0119 <span class="comment">% vnacx,y 6-7</span>
+0120 <span class="comment">% V,thV   8-9</span>
+0121 <span class="comment">% (estimates)</span>
+0122 <span class="comment">% Vst     10</span>
+0123 <span class="comment">% FTst    11</span>
+0124 <span class="comment">% Past    12</span>
+0125 <span class="comment">% (grid)</span>
+0126 <span class="comment">% ist   13,14</span>
+0127 Ny = 14;
+0128 Nu = 7;
+0129 aa = zeros(Nxs,Nxs);
+0130 bbu = zeros(Nxs,Nu);
+0131 bby = zeros(Nxs,Ny);
+0132 cc = zeros(Ny,Nxs);
+0133 ddu = zeros(Ny,Nu);
+0134 ddy = zeros(Ny,Ny);
+0135 
+0136 
+0137 <span class="comment">% Turbine and its connections to interface variables.</span>
+0138 aa(1:Nxt,1:Nxt) = AT;
+0139 bbu(1:Nxt,7)  = BT(:,2);                         <span class="comment">% External wind.</span>
+0140 bby(1:Nxt,1)  = BT(:,1);                         <span class="comment">% Power command from control.</span>
+0141 cc(2:9,1:Nxt) = Cq([4, 2, 3, 1, 5, 6, 7, 8],:);  <span class="comment">% Controls and sensors.</span>
+0142 cc(13:14,1:Nxt) = Cq(60:61,:);                   <span class="comment">% Grid currents.</span>
+0143 ddu(2:9,7)    = Dq([4, 2, 3, 1, 5, 6, 7, 8],2); 
+0144 ddu(13:14,7)  = Dq(60:61,2);
+0145 ddy(2:9,1)    = Dq([4, 2, 3, 1, 5, 6, 7, 8],1);
+0146 ddy(13:14,1)  = Dq(60:61,1);
+0147 
+0148 <span class="comment">% Observer.</span>
+0149 aa(Nxt+[1:Nxo],Nxt+[1:Nxo]) = AG;
+0150 <span class="comment">% (no external inputs.)</span>
+0151 bby(Nxt+[1:Nxo],2:4) = BG;  <span class="comment">% Control inputs.</span>
+0152 bby(Nxt+[1:Nxo],5:9) = GG;  <span class="comment">% Sensor inputs.</span>
+0153 cc(10:12,Nxt+[1:Nxo]) = CG([7, 10, 11],:);
+0154 ddy(10:12,2:4) = DG([7, 10, 11],:);
+0155 
+0156 <span class="comment">% Controller.</span>
+0157 aa(Nxt+Nxo+[1:Nxc],Nxt+Nxo+[1:Nxc]) = ACT;
+0158 bbu(Nxt+Nxo+[1:Nxc],1:6) = BCT(:,[3, 7, 8, 9, 1, 2]);  <span class="comment">% muV, Dam, a1sum, a2sum, PhPCC, PmPCC</span>
+0159 bby(Nxt+Nxo+[1:Nxc],11:12) = BCT(:,[5, 4]);         <span class="comment">% FTst, Past.</span>
+0160 bby(Nxt+Nxo+[1:Nxc],5) = BCT(:,6);                  <span class="comment">% Omega.</span>
+0161 cc(1,Nxt+Nxo+[1:Nxc]) = ccc;
+0162 ddu(1,1:6) = ddc(:,[3, 7, 8, 9, 1, 2]);
+0163 ddy(1,11:12) = ddc(:,[5, 4]);
+0164 ddy(1,5) = ddc(:,6);
+0165 
+0166 [ACL,BCL,CCL,DCL] = <a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>(aa,bbu,bby,cc,ddu,ddy,ones(Ny,1));
+0167 
+0168 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'ACL&quot; inpnm &quot;.bin'</span>,<span class="string">'ACL'</span>);&quot;]);
+0169 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'BCL&quot; inpnm &quot;.bin'</span>,<span class="string">'BCL'</span>);&quot;]);
+0170 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'CCL&quot; inpnm &quot;.bin'</span>,<span class="string">'CCL'</span>);&quot;]);
+0171 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'DCL&quot; inpnm &quot;.bin'</span>,<span class="string">'DCL'</span>);&quot;]);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

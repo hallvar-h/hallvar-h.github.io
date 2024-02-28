@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aoadyn</title>
+  <meta name="keywords" content="aoadyn">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; aoadyn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>aoadyn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dasdt,A,By] = aoadyn (ch,as,aq,ast,U) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The dynamic angle-of-attack.
+
+   States:           y vector:         u vector:
+   aoa               aq
+   a1                Umag
+   a2
+
+ Version:        Changes:
+ --------        -------------
+ 21.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.12.2017      Checked by complex step, using dasdt.  At present the
+                 scheduling of tau at deep-stall AOA's is deactivated.
+
+ Inputs:
+ -------
+ ch              : Chord length.
+ as              : [aoa,a1,a2].
+ aq              : QS aoa.
+ ast             : Deep-stall angle of attack.
+ U               : Magnitude of local flow velocity.
+
+ Outputs:
+ --------
+ dasdt           : d/dt[aoa,a1,a2]
+ A               : 3-by-3 state matrix.
+ By              : 3-by-2 matrix.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dasdt,A,By] = aoadyn (ch,as,aq,ast,U)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The dynamic angle-of-attack.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   States:           y vector:         u vector:</span>
+0006 <span class="comment">%   aoa               aq</span>
+0007 <span class="comment">%   a1                Umag</span>
+0008 <span class="comment">%   a2</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 21.12.2017      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 21.12.2017      Checked by complex step, using dasdt.  At present the</span>
+0017 <span class="comment">%                 scheduling of tau at deep-stall AOA's is deactivated.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Inputs:</span>
+0020 <span class="comment">% -------</span>
+0021 <span class="comment">% ch              : Chord length.</span>
+0022 <span class="comment">% as              : [aoa,a1,a2].</span>
+0023 <span class="comment">% aq              : QS aoa.</span>
+0024 <span class="comment">% ast             : Deep-stall angle of attack.</span>
+0025 <span class="comment">% U               : Magnitude of local flow velocity.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Outputs:</span>
+0028 <span class="comment">% --------</span>
+0029 <span class="comment">% dasdt           : d/dt[aoa,a1,a2]</span>
+0030 <span class="comment">% A               : 3-by-3 state matrix.</span>
+0031 <span class="comment">% By              : 3-by-2 matrix.</span>
+0032 
+0033 <span class="comment">%{</span>
+0034 <span class="string">'---------aoadyn----------'</span>
+0035 ch
+0036 as
+0037 aq
+0038 ast
+0039 U
+0040 <span class="comment">%}</span>
+0041 
+0042 A1    = 0.165;
+0043 A2    = 0.335;
+0044 b1    = 0.0455;
+0045 b2    = 0.3;
+0046 twoUC = 2*U/ch;
+0047 A32   = -b1*b2*(twoUC^2);
+0048 A33   = -(b1 + b2)*twoUC;
+0049 K1    = (A1 + A2)*b1*b2*(twoUC^2);
+0050 K2    = (A1*b1 + A2*b2)*twoUC;
+0051 K3    = 1 - A1 - A2;
+0052 
+0053 tau   = 4.3*ch/U;
+0054 
+0055 <span class="comment">%{</span>
+0056 <span class="comment">% Special logic: tau is decreased at high angles-of-attack such that</span>
+0057 <span class="comment">% the dynamic and quasi-steady aoa's match over the relevant frequency</span>
+0058 <span class="comment">% band.  [This causes problems for the matching linearization, and it's</span>
+0059 <span class="comment">% probably not worth the trouble for the sorts of cases I'll be looking</span>
+0060 <span class="comment">% at.]</span>
+0061 aoastp = ast(1);
+0062 aoastn = ast(2);
+0063 <span class="keyword">if</span> (real(aq) &gt; aoastp)
+0064    tau = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>(<a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>((1 - ((aq - aoastp)/0.1)*0.8), 0.2), 1)*tau;
+0065 <span class="keyword">elseif</span> (real(aq) &lt; aoastn)
+0066    tau = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>(<a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>((1 + ((aq - aoastn)/0.1)*0.8), 0.2), 1)*tau;
+0067 <span class="keyword">end</span>
+0068 <span class="comment">%}</span>
+0069 
+0070 taum1 = 1/tau;
+0071 
+0072 <span class="comment">%{</span>
+0073 <span class="string">'------'</span>
+0074 4.3*ch/U
+0075 tau
+0076 taum1
+0077 K1
+0078 K2
+0079 K3
+0080 <span class="comment">%}</span>
+0081 
+0082 Amat = [-taum1 taum1*K1 taum1*K2;0 0 1;0 A32 A33];
+0083 Bmat = [taum1*K3;0;1];
+0084 dasdt = Amat*as + Bmat*aq;
+0085 
+0086 dAdU = zeros(3,3);
+0087 dAdU(1,1) = -1/(4.3*ch);
+0088 dAdU(1,2) = K1/(4.3*ch) + 4*(A1 + A2)*b1*b2*twoUC/(tau*ch);
+0089 dAdU(1,3) = K2/(4.3*ch) + 2*(A1*b1 + A2*b2)/(tau*ch);
+0090 dAdU(3,2) = -8*b1*b2*U/(ch^2);
+0091 dAdU(3,3) = -2*(b1 + b2)/ch;
+0092 
+0093 dBdU = zeros(3,1);
+0094 dBdU(1) = K3/(4.3*ch);
+0095 
+0096 A = Amat;
+0097 By = zeros(3,2);
+0098 By(:,1) = Bmat;
+0099 By(:,2) = dAdU*as + dBdU*aq;
+0100 
+0101 <span class="comment">%'---end aoadyn---'</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

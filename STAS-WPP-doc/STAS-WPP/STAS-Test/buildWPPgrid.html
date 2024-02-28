@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildWPPgrid</title>
+  <meta name="keywords" content="buildWPPgrid">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; buildWPPgrid.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildWPPgrid
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,A,B] = buildWPPgrid (linFlag,x,u,gpar,xpar,nod,nsub) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+   States:              y vector:             u vector:
+                                              we          1
+                                              vpccd,q    2,3
+                                              itd,q     2*Nnod
+ -------------------------- Collection grid -------------------------   
+   iLd,q  (2*Ncable)    we    (in) (u1)
+   vd,q   (2*Nnod)
+   ird,q  (2*Nnod)      ied,q (in) (2*Nnod)
+
+ ----------------------------- AC export ----------------------------
+   i12d,q   1,2         we    (in) (u1)
+   ir2d,q   3,4         v1d,q (in) (u2,3)
+   v2d,q    5,6         v4d,q (in) (u4,5)
+   i23d,q   7,8
+   ir3d,q   9,10
+   v3d,q   11,12
+   i34d,q  13,14
+
+ gpar            Ncab:  R     (Ohms)  Phase resistance in line j
+                 Ncab:  L     (H)     Phase inductance in line j
+                 Nnod:  C     (F)     Phase capacitance to ground at node k
+ xpar            :  1:  a12   (-)     Np/Ns turns ratio.
+                  2-5:  I12   (A)     RMS phase currents for nonlinear inductance
+                  6-9:  L12   (H)     Lp + (a^2)Ls nonlinear phase inductances
+                   10:  R12   (Ohms)  Phase resistance
+                   11:  L2    (H)     Effective inductance,  Bus 2 -&gt; ground
+                   12:  R2    (Ohms)  Effective resistance,  Bus 2 -&gt; ground
+                   13:  C2    (F)     Effective capacitance, Bus 2 -&gt; ground
+                   14:  L23   (H)     Phase inductance in cable
+                   15:  R23   (Ohms)  Phase resistance in cable
+                   16:  L3    (H)     Effective inductance,  Bus 3 -&gt; ground
+                   17:  R3    (Ohms)  Effective resistance,  Bus 3 -&gt; ground
+                   18:  C3    (F)     Effective capacitance, Bus 3 -&gt; ground
+                   19:  a34   (-)     Np/Ns turns ratio.
+                20-23:  I34   (A)     RMS phase currents for nonlinear inductance
+                24-27:  L34   (H)     Lp + (a^2)Ls nonlinear phase inductances
+                   28:  R34   (Ohms)  Phase resistance
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Electric/ACexport.html" class="code" title="function [dxdt,A,B] = ACexport (linFlag,x,u,p)">ACexport</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/connectGrid.html" class="code" title="function [dxdt,A,B] = connectGrid (linFlag,x,u,p,nod)">connectGrid</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="TCD42grid.html" class="code" title="">TCD42grid</a>	Newton-Raphson solution of the TC RWP grid with turbines, and</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,A,B] = buildWPPgrid (linFlag,x,u,gpar,xpar,nod,nsub)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">%   States:              y vector:             u vector:</span>
+0004 <span class="comment">%                                              we          1</span>
+0005 <span class="comment">%                                              vpccd,q    2,3</span>
+0006 <span class="comment">%                                              itd,q     2*Nnod</span>
+0007 <span class="comment">% -------------------------- Collection grid -------------------------</span>
+0008 <span class="comment">%   iLd,q  (2*Ncable)    we    (in) (u1)</span>
+0009 <span class="comment">%   vd,q   (2*Nnod)</span>
+0010 <span class="comment">%   ird,q  (2*Nnod)      ied,q (in) (2*Nnod)</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% ----------------------------- AC export ----------------------------</span>
+0013 <span class="comment">%   i12d,q   1,2         we    (in) (u1)</span>
+0014 <span class="comment">%   ir2d,q   3,4         v1d,q (in) (u2,3)</span>
+0015 <span class="comment">%   v2d,q    5,6         v4d,q (in) (u4,5)</span>
+0016 <span class="comment">%   i23d,q   7,8</span>
+0017 <span class="comment">%   ir3d,q   9,10</span>
+0018 <span class="comment">%   v3d,q   11,12</span>
+0019 <span class="comment">%   i34d,q  13,14</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% gpar            Ncab:  R     (Ohms)  Phase resistance in line j</span>
+0022 <span class="comment">%                 Ncab:  L     (H)     Phase inductance in line j</span>
+0023 <span class="comment">%                 Nnod:  C     (F)     Phase capacitance to ground at node k</span>
+0024 <span class="comment">% xpar            :  1:  a12   (-)     Np/Ns turns ratio.</span>
+0025 <span class="comment">%                  2-5:  I12   (A)     RMS phase currents for nonlinear inductance</span>
+0026 <span class="comment">%                  6-9:  L12   (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0027 <span class="comment">%                   10:  R12   (Ohms)  Phase resistance</span>
+0028 <span class="comment">%                   11:  L2    (H)     Effective inductance,  Bus 2 -&gt; ground</span>
+0029 <span class="comment">%                   12:  R2    (Ohms)  Effective resistance,  Bus 2 -&gt; ground</span>
+0030 <span class="comment">%                   13:  C2    (F)     Effective capacitance, Bus 2 -&gt; ground</span>
+0031 <span class="comment">%                   14:  L23   (H)     Phase inductance in cable</span>
+0032 <span class="comment">%                   15:  R23   (Ohms)  Phase resistance in cable</span>
+0033 <span class="comment">%                   16:  L3    (H)     Effective inductance,  Bus 3 -&gt; ground</span>
+0034 <span class="comment">%                   17:  R3    (Ohms)  Effective resistance,  Bus 3 -&gt; ground</span>
+0035 <span class="comment">%                   18:  C3    (F)     Effective capacitance, Bus 3 -&gt; ground</span>
+0036 <span class="comment">%                   19:  a34   (-)     Np/Ns turns ratio.</span>
+0037 <span class="comment">%                20-23:  I34   (A)     RMS phase currents for nonlinear inductance</span>
+0038 <span class="comment">%                24-27:  L34   (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0039 <span class="comment">%                   28:  R34   (Ohms)  Phase resistance</span>
+0040 <span class="comment">%</span>
+0041 
+0042 Ncab = size(nod,2);
+0043 Nnod = max(max(nod));
+0044 
+0045 Nxg = 2*Ncab + 4*Nnod;  <span class="comment">%number of states in collection grid</span>
+0046 Nxx = 14;               <span class="comment">%number of states in export system</span>
+0047 Nxf  = Nxg + Nxx;
+0048 
+0049 ixg = 0;
+0050 ixx = ixg + Nxg;
+0051 
+0052 Nu  = 3 + 2*Nnod;
+0053 
+0054 iut = 3;
+0055 
+0056 <span class="comment">% Identify locked DOFs at all the nodes, where there is no inductor path</span>
+0057 <span class="comment">% to ground. This is all the strings; only the export cable is compensated.</span>
+0058 ldofs = [2*Ncab+2*Nnod+[1:2*Nnod] ixx+[3:4]].';
+0059 [ip,ret,cr] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a> ([1:Nxf].',ldofs,[]);
+0060 Ndel = size(ldofs,1);
+0061 Nret = size(ret,1);
+0062 xf   = zeros(Nxf,1);
+0063 xf(ret) = x;
+0064 
+0065 Lr = ones(Nnod,1);
+0066 Rr = zeros(Nnod,1);
+0067 gp = [gpar;Rr;Lr];
+0068 xg = xf(ixg+[1:Nxg]);
+0069 
+0070 ug = [u(1);u(iut+[1:2*Nnod])];
+0071 isub = 1+2*(nsub-1)+[1:2];
+0072 ug(isub) = ug(isub) - xf(ixx+[1:2]);
+0073 [dxgdt,aag,bbg] = <a href="../../STAS-WPP/STAS-Electric/connectGrid.html" class="code" title="function [dxdt,A,B] = connectGrid (linFlag,x,u,p,nod)">connectGrid</a> (linFlag,xg,ug,gp,nod);
+0074 
+0075 xx = xf(ixx+[1:Nxx]);
+0076 ux = [u(1);xf(ixg+2*Ncab+2*(nsub-1)+[1:2]);u(2:3)];
+0077 [dxxdt,aax,bbx] = <a href="../../STAS-WPP/STAS-Electric/ACexport.html" class="code" title="function [dxdt,A,B] = ACexport (linFlag,x,u,p)">ACexport</a> (linFlag,xx,ux,xpar);
+0078 
+0079 dxfdt = [dxgdt;dxxdt];
+0080 dxdt = dxfdt(ret);
+0081 
+0082 <span class="keyword">if</span> (linFlag == 1)
+0083 
+0084    Af = spalloc (Nxf,Nxf,0.1*Nxf*Nxf);
+0085    Bf = spalloc (Nxf,Nu,0.1*Nxf*Nu);
+0086    
+0087    ir = ixg + [1:Nxg];
+0088    ic = ir;
+0089    Af(ir,ic) = aag;
+0090    ic = 1;
+0091    Bf(ir,ic) = Bf(ir,ic) + bbg(:,1);
+0092    ic = ixx+[1:2];
+0093    Af(ir,ic) = Af(ir,ic) - bbg(:,isub);
+0094    ic = iut + [1:2*Nnod];
+0095    Bf(ir,ic) = Bf(ir,ic) + bbg(:,1+[1:2*Nnod]);
+0096 
+0097    ir = ixx + [1:Nxx];
+0098    ic = ir;
+0099    Af(ir,ic) = aax;
+0100    ic = 1;
+0101    Bf(ir,ic) = Bf(ir,ic) + bbx(:,1);
+0102    ic = ixg+2*Ncab+2*(nsub-1)+[1:2];
+0103    Af(ir,ic) = Af(ir,ic) + bbx(:,2:3);
+0104    ic = [2:3];
+0105    Bf(ir,ic) = Bf(ir,ic) + bbx(:,4:5);
+0106 
+0107 <span class="keyword">else</span>
+0108 
+0109    Af = sparse(Nxf,Nxf);
+0110    Bf = sparse(Nxf,Nu);
+0111 
+0112 <span class="keyword">end</span>
+0113 
+0114 A = Af(ret,ret);
+0115 B = Bf(ret,:);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

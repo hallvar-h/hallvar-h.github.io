@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of TFromTheta</title>
+  <meta name="keywords" content="TFromTheta">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; TFromTheta.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>TFromTheta
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function T = TFromTheta (th) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/Qgnod.html" class="code" title="function Q = Qgnod (qn,qB,Pn,PB)">Qgnod</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/aeroPower.html" class="code" title="function [Pow,y,Du] = aeroPower (qpsi,dqpsidt,Fpsi,P,idofs,blxdof,dret,Nbnod)">aeroPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/angularVelocity.html" class="code" title="function D = angularVelocity (q,inods,inodm,P0)">angularVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a>	function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/d2mudq2.html" class="code" title="function d2mu = d2mudq2 (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB)">d2mudq2</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dQgdq.html" class="code" title="function dQ = dQgdq (qn,qB,Pn,PB)">dQgdq</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/derivConstraints.html" class="code" title="function dL = derivConstraints (qB,PB,Tbh,idofs,idofm)">derivConstraints</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/genSpeed.html" class="code" title="function [Wg,Dy] = genSpeed (qgen,dqgen,Pgen)">genSpeed</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/jointTorque.html" class="code" title="function [Mm,Dy] = jointTorque (qm,Pm,Tjm,Mj)">jointTorque</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/projectElement.html" class="code" title="function [xeg,xnr1,xnr2,xer,r,Lp,Dy] = projectElement (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,xhg)">projectElement</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/projectElements.html" class="code" title="function [y,Dia,Dy,Dd] = projectElements (q,P,iq,idofs,idofm,Tn_y)">projectElements</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/soilNL.html" class="code" title="function F = soilNL (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/soilPower.html" class="code" title="function [y,Du] = soilPower (s,qf,dqfdt,P)">soilPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/appliedPower.html" class="code" title="function [Pow,y,Du,TBg] = appliedPower (s,qq,dqqdt,F,PP,idofs)">appliedPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/getPsia.html" class="code" title="function Psia = getPsia (modalAero,s,a,azi,q,qd,P,shape0)">getPsia</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function T = TFromTheta (th)</a>
+0002 
+0003 TTH = <a href="vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a> (th);
+0004 T = expm (TTH);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

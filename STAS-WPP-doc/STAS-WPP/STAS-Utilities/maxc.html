@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of maxc</title>
+  <meta name="keywords" content="maxc">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; maxc.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>maxc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function z = maxc (a,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMNL.html" class="code" title="function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega)">BEMNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMinit.html" class="code" title="function x0 = BEMinit (psiFlag,Viguess,Tar,Trg,Vg,wg,zr,ch,Lel,aoast,rho,A,Dia,azi,omega)">BEMinit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/aoadyn.html" class="code" title="function [dasdt,A,By] = aoadyn (ch,as,aq,ast,U)">aoadyn</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/prandtl.html" class="code" title="function f = prandtl (Uz,Ut,r,Dia)">prandtl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/converterControlNet.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params)">converterControlNet</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/fbem.html" class="code" title="function f = fbem (Vi,VV,DD,ri,WW,chord,aoas,kfoils,foilwt,xib)">fbem</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function z = maxc (a,b)</a>
+0002 
+0003 ind = (real(a) &lt; real(b));
+0004 z = a;
+0005 z(ind) = b(ind);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

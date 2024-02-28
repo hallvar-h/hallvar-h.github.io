@@ -1,0 +1,13 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  MBCCLT -> buildClosedLoopTurbine;
+  MBCOLT -> buildOpenLoopTurbine;
+  buildClosedLoopTurbine -> buildOpenLoopTurbine;
+
+  MBCCLT [URL="MBCCLT.html"];
+  MBCOLT [URL="MBCOLT.html"];
+  MBCtoBodyCoeffs [URL="MBCtoBodyCoeffs.html"];
+  MBCtoBodySpectra [URL="MBCtoBodySpectra.html"];
+  buildClosedLoopTurbine [URL="buildClosedLoopTurbine.html"];
+  buildOpenLoopTurbine [URL="buildOpenLoopTurbine.html"];
+}

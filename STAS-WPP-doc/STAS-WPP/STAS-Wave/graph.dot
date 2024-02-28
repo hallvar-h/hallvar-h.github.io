@@ -1,0 +1,34 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  jonswap -> ochiHubble;
+  potentialWave -> waveFourier;
+  potentialWave -> waveVelocity;
+  potentialWave_lin -> waveFourier;
+  potentialWave_lin -> waveVelocity;
+  runWave -> forceSpectra;
+  runWave -> waveForce;
+  waveForce -> potentialWave;
+  waveForce_lin -> potentialWave_lin;
+  waveFourier -> DNVgamma;
+  waveFourier -> DNVsigma;
+  waveFourier -> getdf;
+  waveFourier -> getk;
+  waveFourier -> jonswap;
+
+  DBprob [URL="DBprob.html"];
+  DNVgamma [URL="DNVgamma.html"];
+  DNVsigma [URL="DNVsigma.html"];
+  forceSpectra [URL="forceSpectra.html"];
+  getFrequencies [URL="getFrequencies.html"];
+  getdf [URL="getdf.html"];
+  getk [URL="getk.html"];
+  jonswap [URL="jonswap.html"];
+  ochiHubble [URL="ochiHubble.html"];
+  potentialWave [URL="potentialWave.html"];
+  potentialWave_lin [URL="potentialWave_lin.html"];
+  runWave [URL="runWave.html"];
+  waveForce [URL="waveForce.html"];
+  waveForce_lin [URL="waveForce_lin.html"];
+  waveFourier [URL="waveFourier.html"];
+  waveVelocity [URL="waveVelocity.html"];
+}

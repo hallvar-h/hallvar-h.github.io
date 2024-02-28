@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of soilPower</title>
+  <meta name="keywords" content="soilPower">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; soilPower.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>soilPower
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y,Du] = soilPower (s,qf,dqfdt,P) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the power transmitted through the soil springs. 
+
+   States:           y vector:         u vector:
+                     vg       6*Nnod   qf        6*Nnod
+                     Fspr     6*Nnod   dqfdt     6*Nnod
+
+ Version:        Changes:
+ --------        -------------
+ 20.11.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 20.11.2019      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ s               : Data structure from STASTurbine input.
+ qf,dqfdt        : Nodal displacements and velocities of the
+                   foundation.
+ P               : Vector of nodal offsets for the foundation.
+
+ Outputs:
+ --------
+ y               : [vg;Fsoil]
+ Du              : dy/d[q;dqdt].
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a>	</li>
+<li><a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+<li><a href="soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y,Du] = soilPower (s,qf,dqfdt,P)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the power transmitted through the soil springs.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   States:           y vector:         u vector:</span>
+0006 <span class="comment">%                     vg       6*Nnod   qf        6*Nnod</span>
+0007 <span class="comment">%                     Fspr     6*Nnod   dqfdt     6*Nnod</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Changes:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 20.11.2019      Original code.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 20.11.2019      Derivatives verified by complex step.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% s               : Data structure from STASTurbine input.</span>
+0020 <span class="comment">% qf,dqfdt        : Nodal displacements and velocities of the</span>
+0021 <span class="comment">%                   foundation.</span>
+0022 <span class="comment">% P               : Vector of nodal offsets for the foundation.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Outputs:</span>
+0025 <span class="comment">% --------</span>
+0026 <span class="comment">% y               : [vg;Fsoil]</span>
+0027 <span class="comment">% Du              : dy/d[q;dqdt].</span>
+0028 
+0029 Ndf = size(qf,1);
+0030 Nu = 2*Ndf;
+0031 Ny = 2*Ndf;
+0032 Nnod = s.foundation.Nnod;
+0033 
+0034 <span class="comment">% ksoil: [kxg kyg kzg kthzg cxg cyg czg cthzg].' for each node.</span>
+0035 ksoil = s.foundation.k.';
+0036 
+0037 Du = sparse(Ny,Nu);
+0038 y = zeros(Ny,1);
+0039 
+0040 [F,dFdq,dFdqd] = <a href="soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a> (ksoil(:,1),ksoil(:,2),ksoil(:,3),ksoil(:,4), <span class="keyword">...</span>
+0041                           ksoil(:,5),ksoil(:,6),ksoil(:,7),ksoil(:,8), <span class="keyword">...</span>
+0042                           P,qf,dqfdt);
+0043 
+0044 y(Ndf+[1:Ndf]) = F;
+0045 Du(Ndf+[1:Ndf],[1:Ndf]) = dFdq;
+0046 Du(Ndf+[1:Ndf],Ndf+[1:Ndf]) = dFdqd;
+0047 
+0048 rdof = 0;
+0049 TB0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(rdof+[4:6]));
+0050 
+0051 <span class="comment">% Reference node.</span>
+0052 qn = zeros(6,1);
+0053 qB = qf(rdof+[1:6]);
+0054 Pn = zeros(6,1);
+0055 PB = P(rdof+[1:6]);
+0056 dqndt = zeros(6,1);
+0057 dqBdt = dqfdt(rdof+[1:6]);
+0058 [xng,ddyp] = <a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a> (qB,PB,qn,Pn);
+0059 [vg,ddyv] = <a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,dqndt,dqBdt);
+0060 
+0061 y(rdof+[1:6]) = vg;
+0062 Du(rdof+[1:6],[rdof+[1:6] Ndf+rdof+[1:6]]) = ddyv(:,[[1:6] [13:18]]);
+0063 
+0064 <span class="keyword">for</span> inod = 2:s.foundation.Nmud+1
+0065 
+0066    dof = 6*(inod-1);
+0067 
+0068    qn = qf(dof+[1:6]);
+0069    qB = qf(rdof+[1:6]);
+0070    Pn = P(dof+[1:6]);
+0071    PB = P(rdof+[1:6]);
+0072    dqndt = dqfdt(dof+[1:6]);
+0073    dqBdt = dqfdt(rdof+[1:6]);
+0074 
+0075    [xng,ddyp] = <a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a> (qB,PB,qn,Pn);
+0076    [vg,ddyv] = <a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,dqndt,dqBdt);
+0077 
+0078    y(dof+[1:6]) = vg;
+0079    indv = [rdof+[1:6] dof+[1:6] Ndf+rdof+[1:6] Ndf+dof+[1:6]];
+0080    Du(dof+[1:6],indv) = ddyv;
+0081 
+0082 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

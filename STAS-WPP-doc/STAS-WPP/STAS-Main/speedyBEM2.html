@@ -1,0 +1,275 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of speedyBEM2</title>
+  <meta name="keywords" content="speedyBEM2">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Main</a> &gt; speedyBEM2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Main&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>speedyBEM2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This subroutine performs a very simple static BEM calculation
+ that does not include yawed flow.
+
+ Version:        Changes:
+ --------        -------------
+ 10.06.2016      Rewritten based on speedyBEM.m, employing fsolve instead
+                 of my relaxation method.
+ 30.06.2017      Adapted for complex step.
+ 08.08.2017      Updated airfoil coefficient computation to employ a new,
+                 easier spline format.  Got rid of global variables.
+
+ Version:        Verification:
+ --------        -------------
+ 10.06.2016      
+ 30.06.2017      
+ 08.08.2017      
+
+ Inputs:
+ -------
+ Vinf            : Incoming axial velocity at each element.
+ omega           : Rotational speed.
+ psi             : Driveshaft azimuth angle.
+ beta            : Vector length 3, pitch angle for each blade.
+ xi              : Twist angles (rad).
+ Dia             : Rotor diameter.
+ r               : Element radii from axis of rotation.
+ Lel             : Element lengths.
+ chord           : Element chords.
+ xpc             : Distance from LE to pitch axis, fraction of chord.
+ aoas            : Angles-of-attack in data file, radians.
+ kfoils          : Spline coefficients describing airfoil coefficients.
+                   Generate these with runACS.m.
+ foilwt          : An Nfoils-by-NN array containing the weight to
+                   apply to each airfoil type's coefficients, for
+                   each blade element.
+ density, viscosity
+
+ Outputs:
+ --------
+ Vir             : Axial and tangential induced velocity in
+                   rotorplane coordinates.
+ Vmag            : Local velocity at each element.
+ f               : Prandtl factor.
+ aoa             : Angle-of-attack (rad).
+ phi             : Inflow angle (rad).
+ Cl,Cd           : Lift and drag coefficients.
+ dCl,dCd         : dCl/daoa, dCd/daoa.
+ Fld             : Vector of (Fl,Fd) lift/drag force pairs.
+ Fas             : Airfoil forces and moments in section
+                   coordinates.
+ Fap             : Airfoil forces and moments in pitch
+                   coordinates.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a>	</li>
+<li><a href="fbem.html" class="code" title="function f = fbem (Vi,VV,DD,ri,WW,chord,aoas,kfoils,foilwt,xib)">fbem</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =           </a><span class="keyword">...</span>
+0002                             speedyBEM2 (Neb,Vinf,omega,psi,beta,xi, <span class="keyword">...</span>
+0003                                         Dia,r,Lel,chord,xpc,        <span class="keyword">...</span>
+0004                                         aoas,kfoils,foilwt,         <span class="keyword">...</span>
+0005                                         density,viscosity)
+0006 <span class="comment">%</span>
+0007 <span class="comment">% This subroutine performs a very simple static BEM calculation</span>
+0008 <span class="comment">% that does not include yawed flow.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 10.06.2016      Rewritten based on speedyBEM.m, employing fsolve instead</span>
+0013 <span class="comment">%                 of my relaxation method.</span>
+0014 <span class="comment">% 30.06.2017      Adapted for complex step.</span>
+0015 <span class="comment">% 08.08.2017      Updated airfoil coefficient computation to employ a new,</span>
+0016 <span class="comment">%                 easier spline format.  Got rid of global variables.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Version:        Verification:</span>
+0019 <span class="comment">% --------        -------------</span>
+0020 <span class="comment">% 10.06.2016</span>
+0021 <span class="comment">% 30.06.2017</span>
+0022 <span class="comment">% 08.08.2017</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Inputs:</span>
+0025 <span class="comment">% -------</span>
+0026 <span class="comment">% Vinf            : Incoming axial velocity at each element.</span>
+0027 <span class="comment">% omega           : Rotational speed.</span>
+0028 <span class="comment">% psi             : Driveshaft azimuth angle.</span>
+0029 <span class="comment">% beta            : Vector length 3, pitch angle for each blade.</span>
+0030 <span class="comment">% xi              : Twist angles (rad).</span>
+0031 <span class="comment">% Dia             : Rotor diameter.</span>
+0032 <span class="comment">% r               : Element radii from axis of rotation.</span>
+0033 <span class="comment">% Lel             : Element lengths.</span>
+0034 <span class="comment">% chord           : Element chords.</span>
+0035 <span class="comment">% xpc             : Distance from LE to pitch axis, fraction of chord.</span>
+0036 <span class="comment">% aoas            : Angles-of-attack in data file, radians.</span>
+0037 <span class="comment">% kfoils          : Spline coefficients describing airfoil coefficients.</span>
+0038 <span class="comment">%                   Generate these with runACS.m.</span>
+0039 <span class="comment">% foilwt          : An Nfoils-by-NN array containing the weight to</span>
+0040 <span class="comment">%                   apply to each airfoil type's coefficients, for</span>
+0041 <span class="comment">%                   each blade element.</span>
+0042 <span class="comment">% density, viscosity</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">% Outputs:</span>
+0045 <span class="comment">% --------</span>
+0046 <span class="comment">% Vir             : Axial and tangential induced velocity in</span>
+0047 <span class="comment">%                   rotorplane coordinates.</span>
+0048 <span class="comment">% Vmag            : Local velocity at each element.</span>
+0049 <span class="comment">% f               : Prandtl factor.</span>
+0050 <span class="comment">% aoa             : Angle-of-attack (rad).</span>
+0051 <span class="comment">% phi             : Inflow angle (rad).</span>
+0052 <span class="comment">% Cl,Cd           : Lift and drag coefficients.</span>
+0053 <span class="comment">% dCl,dCd         : dCl/daoa, dCd/daoa.</span>
+0054 <span class="comment">% Fld             : Vector of (Fl,Fd) lift/drag force pairs.</span>
+0055 <span class="comment">% Fas             : Airfoil forces and moments in section</span>
+0056 <span class="comment">%                   coordinates.</span>
+0057 <span class="comment">% Fap             : Airfoil forces and moments in pitch</span>
+0058 <span class="comment">%                   coordinates.</span>
+0059 
+0060 NN = size(Vinf)(1);
+0061 
+0062 Vir = zeros(2*NN,1);
+0063 Fld = zeros(2*NN,1);
+0064 Fas = zeros(6*NN,1);
+0065 Fap = zeros(6*NN,1);
+0066 
+0067 xib = xi + [beta(1)*ones(Neb,1);beta(2)*ones(Neb,1);beta(3)*ones(Neb,1)];
+0068 
+0069 <span class="keyword">if</span> (real(omega) == 0)
+0070 
+0071    <span class="comment">% Compute rotor aero loads, no induced velocity, so BEM is not needed.</span>
+0072    phi = pi/2*ones(NN,1);
+0073    aoa = phi - xib;
+0074    V = <a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>(Vinf);
+0075    C = zeros(6,NN);
+0076    <span class="keyword">for</span> iel = 1:NN
+0077       C(:,iel) = <a href="../../STAS-WPP/STAS-Aeroelastic/airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a> (aoas,kfoils,foilwt(:,iel),aoa(iel));
+0078    <span class="keyword">end</span>
+0079    Cl = C(1,:).';
+0080    Cd = C(2,:).';
+0081 
+0082    Viz = zeros(NN,1);
+0083    Vit = zeros(NN,1);
+0084    f = ones(NN,1);
+0085 
+0086 <span class="keyword">else</span>
+0087 
+0088    Viz = zeros(NN,1);
+0089    Vit = zeros(NN,1);
+0090 
+0091    <span class="keyword">for</span> iel = 1:NN
+0092 
+0093       <span class="comment">% Initial guess for induced velocities.</span>
+0094       Viz0 = -Vinf(iel)/3;
+0095       Vit0 = 0;
+0096       vinit = [Viz0;Vit0];
+0097 
+0098       [v,fvec,info,output,fjac] = <span class="keyword">...</span>
+0099          fsolve (@(Vi) <a href="fbem.html" class="code" title="function f = fbem (Vi,VV,DD,ri,WW,chord,aoas,kfoils,foilwt,xib)">fbem</a> (Vi,Vinf(iel),Dia,r(iel),omega,chord(iel), <span class="keyword">...</span>
+0100                              aoas,kfoils,foilwt(:,iel),xib(iel)), vinit);
+0101 
+0102       Viz(iel) = v(1);
+0103       Vit(iel) = v(2);
+0104 
+0105    <span class="keyword">end</span>
+0106 
+0107 <span class="keyword">end</span>
+0108 
+0109 Vz = Vinf + Viz;
+0110 Vt = r(1:NN).*omega + Vit;
+0111 Vmag = sqrt(Vz.^2 + Vt.^2);
+0112 
+0113 <span class="comment">% Compute final forces and induced velocity.</span>
+0114 val = 0.5d0*density*chord(1:NN).*Lel(1:NN).*Vmag.^2;
+0115 phi = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(Vz,Vt);
+0116 cp = cos(phi);
+0117 sp = sin(phi);
+0118 aoa = phi - xib(1:NN);
+0119 C = zeros(6,NN);
+0120 <span class="keyword">for</span> iel = 1:NN
+0121    C(:,iel) = <a href="../../STAS-WPP/STAS-Aeroelastic/airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a> (aoas,kfoils,foilwt(:,iel),aoa(iel));
+0122 <span class="keyword">end</span>
+0123 sa = sin(aoa);
+0124 ca = cos(aoa);
+0125 sx = sin(xi(1:NN));
+0126 cx = cos(xi(1:NN));
+0127 Cl = C(1,:).';
+0128 Cd = C(2,:).';
+0129 Cm = C(3,:).';
+0130 dCl = C(4,:).';
+0131 dCd = C(5,:).';
+0132 
+0133 f = zeros(NN,1);
+0134 ind = (real(sp) &lt; 1e-3 &amp; real(sp) &gt;= 0) | (real(sp) &lt; 0);
+0135 nind = ~ind;
+0136 f(ind) = 1;
+0137 f(nind) = <a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>((2/pi)*acos(exp(-3*(0.5*Dia - r(nind)) <span class="keyword">...</span>
+0138         ./(2*r(nind).*sp(nind)))),0.1*ones(size(r(nind),1),1));
+0139 
+0140 <span class="comment">%ifx = [1:6:6*NN-5].';</span>
+0141 ify = [2:6:6*NN-4].';
+0142 ifz = [3:6:6*NN-3].';
+0143 imx = [4:6:6*NN-2].';
+0144 <span class="comment">%imy = [5:6:6*NN-1].';</span>
+0145 <span class="comment">%imz = [6:6:6*NN].';</span>
+0146 
+0147 Fas(ify) = val.*(Cl.*sa - Cd.*ca);
+0148 Fas(ifz) = val.*(Cl.*ca + Cd.*sa);
+0149 Fas(imx) = val.*chord(1:NN).*Cm <span class="keyword">...</span>
+0150          + Fas(ifz).*(xpc(1:NN) - 0.25).*chord(1:NN);
+0151 
+0152 Fap(ify) =  Fas(ify).*cx + Fas(ifz).*sx;
+0153 Fap(ifz) = -Fas(ify).*sx + Fas(ifz).*cx;
+0154 Fap(imx) =  Fas(imx);
+0155 
+0156 iz = [1:2:2*NN-1].';
+0157 it = [2:2:2*NN].';
+0158 
+0159 Fld(iz) = val.*Cl;
+0160 Fld(it) = val.*Cd;
+0161 
+0162 Vir(iz) = Viz;
+0163 Vir(it) = Vit;
+0164 
+0165 
+0166 
+0167 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

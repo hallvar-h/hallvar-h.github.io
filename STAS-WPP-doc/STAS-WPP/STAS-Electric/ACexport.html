@@ -1,0 +1,249 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ACexport</title>
+  <meta name="keywords" content="ACexport">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; ACexport.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>ACexport
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,A,B] = ACexport (linFlag,x,u,p) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ State-space model of a generic AC transmission line with transformers
+ and reactive compensation at each end.
+
+ Bus 1 | Transformer | Bus 2 | Cable | Bus 3 | Transformer | Bus 4
+                    react.comp.     react.comp.
+
+   States:              y vector:             u vector:
+   i12d,q   1,2                               we          1
+   ir2d,q   3,4                               v1d,q      2,3
+   v2d,q    5,6                               v4d,q      4,5
+   i23d,q   7,8
+   ir3d,q   9,10
+   v3d,q   11,12
+   i34d,q  13,14
+   
+
+ Version:        Changes:
+ --------        -------------
+ 08.03.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 08.03.2019      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ p               :  1:  a12   (-)     Np/Ns turns ratio.
+                  2-5:  I12   (A)     RMS phase currents for nonlinear inductance
+                  6-9:  L12   (H)     Lp + (a^2)Ls nonlinear phase inductances
+                   10:  R12   (Ohms)  Phase resistance
+                   11:  L2    (H)     Effective inductance,  Bus 2 -&gt; ground
+                   12:  R2    (Ohms)  Effective resistance,  Bus 2 -&gt; ground
+                   13:  C2    (F)     Effective capacitance, Bus 2 -&gt; ground
+                   14:  L23   (H)     Phase inductance in cable
+                   15:  R23   (Ohms)  Phase resistance in cable
+                   16:  L3    (H)     Effective inductance,  Bus 3 -&gt; ground
+                   17:  R3    (Ohms)  Effective resistance,  Bus 3 -&gt; ground
+                   18:  C3    (F)     Effective capacitance, Bus 3 -&gt; ground
+                   19:  a34   (-)     Np/Ns turns ratio.
+                20-23:  I34   (A)     RMS phase currents for nonlinear inductance
+                24-27:  L34   (H)     Lp + (a^2)Ls nonlinear phase inductances
+                   28:  R34   (Ohms)  Phase resistance
+
+ Outputs:
+ --------
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="PiLine.html" class="code" title="function [dxdt,A,By] = PiLine (Linflag,x,yin,params)">PiLine</a>	</li>
+<li><a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/buildWPPgrid.html" class="code" title="function [dxdt,A,B] = buildWPPgrid (linFlag,x,u,gpar,xpar,nod,nsub)">buildWPPgrid</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,A,B] = ACexport (linFlag,x,u,p)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% State-space model of a generic AC transmission line with transformers</span>
+0004 <span class="comment">% and reactive compensation at each end.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Bus 1 | Transformer | Bus 2 | Cable | Bus 3 | Transformer | Bus 4</span>
+0007 <span class="comment">%                    react.comp.     react.comp.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   States:              y vector:             u vector:</span>
+0010 <span class="comment">%   i12d,q   1,2                               we          1</span>
+0011 <span class="comment">%   ir2d,q   3,4                               v1d,q      2,3</span>
+0012 <span class="comment">%   v2d,q    5,6                               v4d,q      4,5</span>
+0013 <span class="comment">%   i23d,q   7,8</span>
+0014 <span class="comment">%   ir3d,q   9,10</span>
+0015 <span class="comment">%   v3d,q   11,12</span>
+0016 <span class="comment">%   i34d,q  13,14</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Changes:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 08.03.2019      Original code.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Verification:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 08.03.2019      Derivatives verified by complex step.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Inputs:</span>
+0028 <span class="comment">% -------</span>
+0029 <span class="comment">% p               :  1:  a12   (-)     Np/Ns turns ratio.</span>
+0030 <span class="comment">%                  2-5:  I12   (A)     RMS phase currents for nonlinear inductance</span>
+0031 <span class="comment">%                  6-9:  L12   (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0032 <span class="comment">%                   10:  R12   (Ohms)  Phase resistance</span>
+0033 <span class="comment">%                   11:  L2    (H)     Effective inductance,  Bus 2 -&gt; ground</span>
+0034 <span class="comment">%                   12:  R2    (Ohms)  Effective resistance,  Bus 2 -&gt; ground</span>
+0035 <span class="comment">%                   13:  C2    (F)     Effective capacitance, Bus 2 -&gt; ground</span>
+0036 <span class="comment">%                   14:  L23   (H)     Phase inductance in cable</span>
+0037 <span class="comment">%                   15:  R23   (Ohms)  Phase resistance in cable</span>
+0038 <span class="comment">%                   16:  L3    (H)     Effective inductance,  Bus 3 -&gt; ground</span>
+0039 <span class="comment">%                   17:  R3    (Ohms)  Effective resistance,  Bus 3 -&gt; ground</span>
+0040 <span class="comment">%                   18:  C3    (F)     Effective capacitance, Bus 3 -&gt; ground</span>
+0041 <span class="comment">%                   19:  a34   (-)     Np/Ns turns ratio.</span>
+0042 <span class="comment">%                20-23:  I34   (A)     RMS phase currents for nonlinear inductance</span>
+0043 <span class="comment">%                24-27:  L34   (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0044 <span class="comment">%                   28:  R34   (Ohms)  Phase resistance</span>
+0045 <span class="comment">%</span>
+0046 <span class="comment">% Outputs:</span>
+0047 <span class="comment">% --------</span>
+0048 <span class="comment">%</span>
+0049 
+0050 Nx = 14;
+0051 Nu = 5;
+0052 
+0053 i12 = x(1:2);
+0054 ir2 = x(3:4);
+0055 v2  = x(5:6);
+0056 i23 = x(7:8);
+0057 ir3 = x(9:10);
+0058 v3  = x(11:12);
+0059 i34 = x(13:14);
+0060 we  = u(1);
+0061 v1  = u(2:3);
+0062 v4  = u(4:5);
+0063 a12 = p(1);
+0064 L2  = p(11);
+0065 R2  = p(12);
+0066 C2  = p(13);
+0067 L3  = p(16);
+0068 R3  = p(17);
+0069 
+0070 x12 = i12;
+0071 u12 = [v1;v2;we];
+0072 p12 = p(1:10);
+0073 [dx12dt,y12out,aa12,bby12,cc12] = <a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a> (linFlag,x12,u12,p12);
+0074 
+0075 x23 = [i23;v3];
+0076 u23 = [i34+ir3;v2;we];
+0077 p23 = [p(15);p(14);p(18)];
+0078 [dx23dt,aa23,bby23] = <a href="PiLine.html" class="code" title="function [dxdt,A,By] = PiLine (Linflag,x,yin,params)">PiLine</a> (linFlag,x23,u23,p23);
+0079 
+0080 x34 = i34;
+0081 u34 = [v3;v4;we];
+0082 p34 = p(19:28);
+0083 [dx34dt,y34out,aa34,bby34,cc34] = <a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a> (linFlag,x34,u34,p34);
+0084 
+0085 dxdt = zeros(Nx,1);
+0086 dxdt(1:2) = dx12dt;
+0087 dxdt([7 8 11 12]) = dx23dt;
+0088 dxdt(13:14) = dx34dt;
+0089 
+0090 <span class="comment">% Capacitance at Bus 2.</span>
+0091 <span class="comment">% C2 dv2/dt = -w C2 spin v2 + a12*i12 - ir2 - i23.</span>
+0092 dxdt(5:6) = -we*[0 -1;1 0]*v2 + (a12*i12 - ir2 - i23)/C2;
+0093 
+0094 <span class="comment">% Inductance at Bus 2.</span>
+0095 <span class="comment">% L2 dir2/dt = - (w L2 spin + R) ir2 + v2.</span>
+0096 dxdt(3:4) = -(we*[0 -1;1 0] + (R2/L2)*speye(2))*ir2 + v2/L2;
+0097 
+0098 <span class="comment">% Inductance at Bus 3.</span>
+0099 <span class="comment">% L3 dir3/dt = - (w L3 spin + R) ir3 + v3.</span>
+0100 dxdt(9:10) = -(we*[0 -1;1 0] + (R3/L3)*speye(2))*ir3 + v3/L3;
+0101 
+0102 <span class="keyword">if</span> (linFlag == 1)
+0103 
+0104    A = spalloc(Nx,Nx,0.2*Nx*Nx);
+0105    B = spalloc(Nx,Nu,0.1*Nx*Nu);
+0106 
+0107    ir = [1:2];
+0108    A(ir,ir) = aa12;
+0109    ic = [5:6];
+0110    A(ir,ic) = bby12(:,3:4);
+0111    ic = [2 3 1];
+0112    B(ir,ic) = bby12(:,[1 2 5]);
+0113 
+0114    ir = [7 8 11 12];
+0115    A(ir,ir) = aa23;
+0116    ic = [13 14 9 10 5 6];
+0117    A(ir,ic) = [bby23(:,1:2) bby23(:,1:2) bby23(:,3:4)];
+0118    ic = 1;
+0119    B(ir,ic) = bby23(:,5);
+0120 
+0121    ir = [13:14];
+0122    A(ir,ir) = aa34;
+0123    ic = [11:12];
+0124    A(ir,ic) = bby34(:,1:2);
+0125    ic = [4 5 1];
+0126    B(ir,ic) = bby34(:,3:5);
+0127 
+0128    ir = [5:6];
+0129    A(ir,ir) = -we*[0 -1;1 0];
+0130    A(ir,1:2) = (a12/C2)*speye(2);
+0131    A(ir,3:4) = (-1/C2)*speye(2);
+0132    A(ir,7:8) = (-1/C2)*speye(2);
+0133    B(ir,1) = -[0 -1;1 0]*v2;
+0134 
+0135    ir = [3:4];
+0136    A(ir,ir) = -we*[0 -1;1 0] - (R2/L2)*speye(2);
+0137    A(ir,5:6) = (1/L2)*speye(2);
+0138    B(ir,1) = -[0 -1;1 0]*ir2;
+0139 
+0140    ir = [9:10];
+0141    A(ir,ir) = -we*[0 -1;1 0] - (R3/L3)*speye(2);
+0142    A(ir,11:12) = (1/L3)*speye(2);
+0143    B(ir,1) = -[0 -1;1 0]*ir3;
+0144 
+0145 <span class="keyword">else</span>
+0146 
+0147    A = sparse(Nx,Nx);
+0148    B = sparse(Nx,Nu);
+0149 
+0150 <span class="keyword">end</span> 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

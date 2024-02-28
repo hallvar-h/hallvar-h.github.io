@@ -1,0 +1,197 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of converterControlGen</title>
+  <meta name="keywords" content="converterControlGen">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; converterControlGen.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>converterControlGen
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C,Dy] = converterControlGen (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The generator-side converter is controlled so as to provide a commanded
+ active power, and zero d-axis current.  With the present convention
+ used for the generator, with the d axis following the rotor magnetic
+ N pole and the assumed direction of the windings, a positive (braking)
+ torque is obtained with a negative iq.
+
+   states:           y vector:
+   imgd,q    1,2     wg         1     in   (shaft)
+   Psig      3:4     igd,q     2,3    in   (generator)
+   wemg       5      ihgd,q    4,5    in   (active power control)
+                     vgd,q     6,7    out
+
+ Version:        Changes:
+ --------        -------------
+ 02.05.2016      Code based on buildGenerator.m.
+ 11.07.2017      Adapted for complex step derivatives.
+ 27.08.2018      Modified for linear/nonlinear equation pairs and
+                 nonlinear inductance.
+
+ Version:        Verification:
+ --------        -------------
+ 02.05.2016      
+ 11.07.2017      
+ 27.08.2018      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : 1,2:  img   (A)     Measured stator currents.
+                   3,4:  Psig  (A/s)   Integrated current error KI*eps.
+                   5:    wemg  (rad/s) Measured generator electrical speed.
+ yin             : 1:    wg    (rad/s) Generator electrical speed.
+                   2,3:  ig    (A)     Generator stator current.
+                   4,5:  ihg   (A)     Current command from act. pow. control.
+ params          : 1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   5-8:  Lg    (H)     Nonlinear phase inductances.
+                   9:    lamr  (Wb)    d-component flux linkage per phase.
+                   10:   KP    (1/s)   Proportional gain.
+                   11:   KI    (1/s^2) Integral gain.
+                   12:   KF    (-)     Feed-forward gain on flux linkage.
+                   13:   ag    (rad/s) Generator current filter frequency.
+                   14:   aw    (rad/s) Generator electric speed filter frequency.
+
+ Outputs:
+ --------
+ yout            : 1,2   vg    (V)     Generator terminal voltage.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C,Dy] = converterControlGen (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The generator-side converter is controlled so as to provide a commanded</span>
+0004 <span class="comment">% active power, and zero d-axis current.  With the present convention</span>
+0005 <span class="comment">% used for the generator, with the d axis following the rotor magnetic</span>
+0006 <span class="comment">% N pole and the assumed direction of the windings, a positive (braking)</span>
+0007 <span class="comment">% torque is obtained with a negative iq.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   states:           y vector:</span>
+0010 <span class="comment">%   imgd,q    1,2     wg         1     in   (shaft)</span>
+0011 <span class="comment">%   Psig      3:4     igd,q     2,3    in   (generator)</span>
+0012 <span class="comment">%   wemg       5      ihgd,q    4,5    in   (active power control)</span>
+0013 <span class="comment">%                     vgd,q     6,7    out</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Changes:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 02.05.2016      Code based on buildGenerator.m.</span>
+0018 <span class="comment">% 11.07.2017      Adapted for complex step derivatives.</span>
+0019 <span class="comment">% 27.08.2018      Modified for linear/nonlinear equation pairs and</span>
+0020 <span class="comment">%                 nonlinear inductance.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Version:        Verification:</span>
+0023 <span class="comment">% --------        -------------</span>
+0024 <span class="comment">% 02.05.2016</span>
+0025 <span class="comment">% 11.07.2017</span>
+0026 <span class="comment">% 27.08.2018      Derivatives verified by complex step.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Inputs:</span>
+0029 <span class="comment">% -------</span>
+0030 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0031 <span class="comment">% x               : 1,2:  img   (A)     Measured stator currents.</span>
+0032 <span class="comment">%                   3,4:  Psig  (A/s)   Integrated current error KI*eps.</span>
+0033 <span class="comment">%                   5:    wemg  (rad/s) Measured generator electrical speed.</span>
+0034 <span class="comment">% yin             : 1:    wg    (rad/s) Generator electrical speed.</span>
+0035 <span class="comment">%                   2,3:  ig    (A)     Generator stator current.</span>
+0036 <span class="comment">%                   4,5:  ihg   (A)     Current command from act. pow. control.</span>
+0037 <span class="comment">% params          : 1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0038 <span class="comment">%                   5-8:  Lg    (H)     Nonlinear phase inductances.</span>
+0039 <span class="comment">%                   9:    lamr  (Wb)    d-component flux linkage per phase.</span>
+0040 <span class="comment">%                   10:   KP    (1/s)   Proportional gain.</span>
+0041 <span class="comment">%                   11:   KI    (1/s^2) Integral gain.</span>
+0042 <span class="comment">%                   12:   KF    (-)     Feed-forward gain on flux linkage.</span>
+0043 <span class="comment">%                   13:   ag    (rad/s) Generator current filter frequency.</span>
+0044 <span class="comment">%                   14:   aw    (rad/s) Generator electric speed filter frequency.</span>
+0045 <span class="comment">%</span>
+0046 <span class="comment">% Outputs:</span>
+0047 <span class="comment">% --------</span>
+0048 <span class="comment">% yout            : 1,2   vg    (V)     Generator terminal voltage.</span>
+0049 
+0050 Nx  = 5;
+0051 Ny  = 7;
+0052 Nyi = 5;
+0053 Nyo = 2;
+0054 
+0055 dxdt = zeros(Nx,1);
+0056 yout = zeros(2,1);
+0057 C    = zeros(Ny,Nx);
+0058 Dy   = zeros(Ny,Ny);
+0059 
+0060 I0   = params(1:4);
+0061 L0   = params(5:8);
+0062 lamr = params(9);
+0063 KP   = params(10);
+0064 KI   = params(11);
+0065 KF   = params(12);
+0066 ag   = params(13);
+0067 aw   = params(14);
+0068 
+0069 A    = [-ag 0  0  0  0; <span class="keyword">...</span>
+0070          0 -ag 0  0  0; <span class="keyword">...</span>
+0071         -KI 0  0  0  0; <span class="keyword">...</span>
+0072          0 -KI 0  0  0; <span class="keyword">...</span>
+0073          0  0  0  0 -aw];
+0074 By   = [0  ag 0  0  0  0  0; <span class="keyword">...</span>
+0075         0  0  ag 0  0  0  0; <span class="keyword">...</span>
+0076         0  0  0  KI 0  0  0; <span class="keyword">...</span>
+0077         0  0  0  0  KI 0  0; <span class="keyword">...</span>
+0078         aw 0  0  0  0  0  0];
+0079 
+0080 dxdt = A*x + By(:,1:Nyi)*yin;
+0081 
+0082 epsg = yin(4:5) - x(1:2);
+0083 IIm = sqrt(x(1)^2 + x(2)^2);
+0084 [Lm,dLm] = <a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> (I0,L0,IIm);
+0085 term = KP*epsg + x(3:4) + x(5)*[0,-1;1,0]*x(1:2) + KF*x(5)*lamr;
+0086 yout = -Lm*term;
+0087 
+0088 <span class="keyword">if</span> (Linflag == 1)
+0089 
+0090    C(Nyi+[1:2],1:2)  =  Lm*([KP 0;0 KP] - x(5)*[0,-1;1,0]) <span class="keyword">...</span>
+0091                      -  term*dLm*[x(1) x(2)]/IIm;
+0092    C(Nyi+[1:2],3:4)  = -Lm*eye(2);
+0093    C(Nyi+[1:2],5)    = -Lm*([0,-1;1,0]*x(1:2) + KF*lamr);
+0094 
+0095    Dy(Nyi+[1:2],4:5) = -Lm*[KP 0;0 KP];
+0096 
+0097 <span class="keyword">end</span>
+0098 
+0099 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

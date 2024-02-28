@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of nodalDOFs</title>
+  <meta name="keywords" content="nodalDOFs">
+  <meta name="description" content="CHECK THIS  Q = C ETA IS INCORRECT, I THINK.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; nodalDOFs.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>nodalDOFs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>CHECK THIS  Q = C ETA IS INCORRECT, I THINK.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function C = nodalDOFs (shape,Lambda,ret,slv) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">CHECK THIS  Q = C ETA IS INCORRECT, I THINK.
+
+ It is often convenient to have the unconstrained, un-reduced nodal DOFs.
+ These are back-calculated from the states by undoing the reduction,
+ constraint, and partitioning procedures.
+
+ q = C eta,  dq/dt = C deta/dt.
+
+   States:           y vector:         u vector:
+   -------           ---------         ---------
+   eta               q
+   deta/dt           dq/dt
+
+ Version:        Changes:
+ --------        -------------
+ 21.01.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.01.2017      
+
+ Inputs:
+ -------
+ shape           : Mode shapes, Nrdof-by-Nx.
+ Lambda          : Constraint matrix, Ndof-by-Nrdof, Ndof partitioned into
+                   [ret;slv].
+ ret,slv         : Retained and slave DOFs, out of Ndof total.
+
+ Outputs:
+ --------
+ C               : State matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function C = nodalDOFs (shape,Lambda,ret,slv)</a>
+0002 <span class="comment">%CHECK THIS  Q = C ETA IS INCORRECT, I THINK.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% It is often convenient to have the unconstrained, un-reduced nodal DOFs.</span>
+0005 <span class="comment">% These are back-calculated from the states by undoing the reduction,</span>
+0006 <span class="comment">% constraint, and partitioning procedures.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% q = C eta,  dq/dt = C deta/dt.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%   States:           y vector:         u vector:</span>
+0011 <span class="comment">%   -------           ---------         ---------</span>
+0012 <span class="comment">%   eta               q</span>
+0013 <span class="comment">%   deta/dt           dq/dt</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Changes:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 21.01.2017      Original code.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Verification:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 21.01.2017</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Inputs:</span>
+0024 <span class="comment">% -------</span>
+0025 <span class="comment">% shape           : Mode shapes, Nrdof-by-Nx.</span>
+0026 <span class="comment">% Lambda          : Constraint matrix, Ndof-by-Nrdof, Ndof partitioned into</span>
+0027 <span class="comment">%                   [ret;slv].</span>
+0028 <span class="comment">% ret,slv         : Retained and slave DOFs, out of Ndof total.</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% Outputs:</span>
+0031 <span class="comment">% --------</span>
+0032 <span class="comment">% C               : State matrices.</span>
+0033 
+0034 Nx    = size (shape,2);
+0035 Nrdof = size (ret,1);
+0036 Ndof  = size (Lambda,1);
+0037 
+0038 C = spalloc (2*Ndof,2*Nx,2*(Nx*Ndof));
+0039 
+0040 C(ret,1:Nx) = Lambda(1:Nrdof,:)*shape;
+0041 C(slv,1:Nx) = Lambda(Nrdof+1:Ndof,:)*shape;
+0042 C(Ndof+[1:Ndof],Nx+[1:Nx]) = C(1:Ndof,1:Nx);
+0043 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

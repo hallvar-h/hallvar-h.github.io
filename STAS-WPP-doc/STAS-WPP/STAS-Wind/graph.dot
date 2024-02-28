@@ -1,0 +1,9 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  runWind -> buildSij;
+  runWind -> periodicWind;
+
+  buildSij [URL="buildSij.html"];
+  periodicWind [URL="periodicWind.html"];
+  runWind [URL="runWind.html"];
+}

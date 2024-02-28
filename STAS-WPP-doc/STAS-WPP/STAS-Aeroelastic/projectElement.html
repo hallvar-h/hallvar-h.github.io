@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of projectElement</title>
+  <meta name="keywords" content="projectElement">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; projectElement.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>projectElement
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xeg,xnr1,xnr2,xer,r,Lp,Dy] = projectElement (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,xhg) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Project the blade element onto the rotor plane.
+
+   States:           y vector:         u vector:
+                     qy     1:6
+                     qB     7:12
+                     qn1   13:18
+                     qn2   19:24
+                     xng1  25:27
+                     xng2  28:30
+                     xeg   31:33
+                     xhg   34:36
+                     xnr1  37:39
+                     xnr2  40:42
+                     xer   43:45
+
+ Version:        Changes:
+ --------        -------------
+ 26.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 26.12.2017      Partial verification with complex step via qy,qB,qn1,qn2,xhg
+                 inputs.
+
+ Inputs:
+ -------
+ qy,Py           : Nacelle body reference.
+ qp,Pp           : Blade body reference.
+ qn,Pn           : Nodes.
+ Try             : Rotor-to-yaw CS transform.
+ xhg             : Position of the rotorplane center (= hub node) in 
+                   global coordinates.
+
+ Outputs:
+ --------
+ xeg,xer         : Position of the element centroid in global and rotor
+                   coordinates.
+ xnr1,2          : Position of nodes in rotor coordinates.
+ r               : Radius of the element (distance from axis of rotation).
+ Lp              : Projected length of the element.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="projectElements.html" class="code" title="function [y,Dia,Dy,Dd] = projectElements (q,P,iq,idofs,idofm,Tn_y)">projectElements</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xeg,xnr1,xnr2,xer,r,Lp,Dy] = projectElement (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,xhg)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Project the blade element onto the rotor plane.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   States:           y vector:         u vector:</span>
+0006 <span class="comment">%                     qy     1:6</span>
+0007 <span class="comment">%                     qB     7:12</span>
+0008 <span class="comment">%                     qn1   13:18</span>
+0009 <span class="comment">%                     qn2   19:24</span>
+0010 <span class="comment">%                     xng1  25:27</span>
+0011 <span class="comment">%                     xng2  28:30</span>
+0012 <span class="comment">%                     xeg   31:33</span>
+0013 <span class="comment">%                     xhg   34:36</span>
+0014 <span class="comment">%                     xnr1  37:39</span>
+0015 <span class="comment">%                     xnr2  40:42</span>
+0016 <span class="comment">%                     xer   43:45</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Version:        Changes:</span>
+0019 <span class="comment">% --------        -------------</span>
+0020 <span class="comment">% 26.12.2017      Original code.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Version:        Verification:</span>
+0023 <span class="comment">% --------        -------------</span>
+0024 <span class="comment">% 26.12.2017      Partial verification with complex step via qy,qB,qn1,qn2,xhg</span>
+0025 <span class="comment">%                 inputs.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Inputs:</span>
+0028 <span class="comment">% -------</span>
+0029 <span class="comment">% qy,Py           : Nacelle body reference.</span>
+0030 <span class="comment">% qp,Pp           : Blade body reference.</span>
+0031 <span class="comment">% qn,Pn           : Nodes.</span>
+0032 <span class="comment">% Try             : Rotor-to-yaw CS transform.</span>
+0033 <span class="comment">% xhg             : Position of the rotorplane center (= hub node) in</span>
+0034 <span class="comment">%                   global coordinates.</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">% Outputs:</span>
+0037 <span class="comment">% --------</span>
+0038 <span class="comment">% xeg,xer         : Position of the element centroid in global and rotor</span>
+0039 <span class="comment">%                   coordinates.</span>
+0040 <span class="comment">% xnr1,2          : Position of nodes in rotor coordinates.</span>
+0041 <span class="comment">% r               : Radius of the element (distance from axis of rotation).</span>
+0042 <span class="comment">% Lp              : Projected length of the element.</span>
+0043 
+0044 Dy = zeros (14,45); <span class="comment">% 1:3=xeg, 4:6=xnr1, 7:9=xnr2, 10:12=xer, 13=r, 14=Lp.</span>
+0045 
+0046 iqy   =  [1:6].';
+0047 iqB   =  [7:12].';
+0048 iqn1  = [13:18].';
+0049 iqn2  = [19:24].';
+0050 ixng1 = [25:27].';
+0051 ixng2 = [28:30].';
+0052 ixeg  = [31:33].';
+0053 ixhg  = [34:36].';
+0054 ixnr1 = [37:39].';
+0055 ixnr2 = [40:42].';
+0056 ixer  = [43:45].';
+0057 
+0058 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Py(4:6));
+0059 [Tyy0,dTyy0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qy(4:6));
+0060 
+0061 xng = <a href="globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a> ([qB;qB],[PB;PB],[qn1;qn2],[Pn1;Pn2]);
+0062 
+0063 xeg = 0.5*(xng(1:3) + xng(4:6));
+0064 
+0065 Tgr = (Ty0g*Tyy0*Try).';
+0066 
+0067 xer  = Tgr*(xeg - xhg);
+0068 xnr1 = Tgr*(xng(1:3) - xhg);
+0069 xnr2 = Tgr*(xng(4:6) - xhg);
+0070 dx = xnr2 - xnr1;
+0071 
+0072 r  = sqrt(xer(1)^2 + xer(2)^2);
+0073 Lp = sqrt(dx(1)^2 + dx(2)^2);
+0074 
+0075 Dy(1:3,ixng1)   =  0.5*speye(3);
+0076 Dy(1:3,ixng2)   =  0.5*speye(3);
+0077 
+0078 Dy(4:6,ixng1)   =  Tgr;
+0079 Dy(4:6,ixhg)    = -Tgr;
+0080 
+0081 Dy(7:9,ixng2)   =  Tgr;
+0082 Dy(7:9,ixhg)    = -Tgr;
+0083 
+0084 Dy(10:12,ixeg)  =  Tgr;
+0085 Dy(10:12,ixhg)  = -Tgr;
+0086 
+0087 <span class="keyword">for</span> jj = 1:3
+0088    jc3 = 3*(jj-1);
+0089    mat = (Ty0g*dTyy0(:,jc3+[1:3])*Try).';
+0090    Dy(4:6,iqy(jj+3))   = mat*(xng(1:3) - xhg);
+0091    Dy(7:9,iqy(jj+3))   = mat*(xng(4:6) - xhg);
+0092    Dy(10:12,iqy(jj+3)) = mat*(xeg      - xhg);
+0093 <span class="keyword">end</span>
+0094 Dy(13,ixer)  =  [xer(1) xer(2) 0]/r;
+0095 Dy(14,ixnr2) =  [dx(1)   dx(2) 0]/Lp;  <span class="comment">%  (dx.')/Lp; (wrong, project onto</span>
+0096 Dy(14,ixnr1) = -[dx(1)   dx(2) 0]/Lp;  <span class="comment">% -(dx.')/Lp;  rotorplane)</span>
+0097 
+0098 <span class="comment">%{</span>
+0099 <span class="string">'---projectElement---'</span>
+0100 [qy qB qn1 qn2 Py PB Pn1 Pn2]
+0101 xhg
+0102 xng
+0103 xeg
+0104 Trg = (Tgr.')
+0105 xer
+0106 xnr1
+0107 xnr2
+0108 dx
+0109 r
+0110 Lp
+0111 <span class="string">'--end projectElement--'</span>
+0112 <span class="comment">%}</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

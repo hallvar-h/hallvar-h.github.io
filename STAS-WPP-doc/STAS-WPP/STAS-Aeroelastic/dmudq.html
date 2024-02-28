@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dmudq</title>
+  <meta name="keywords" content="dmudq">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dmudq.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dmudq
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ mu includes delta_x, the elastic stretch of the element, as well
+ as zeta, the elastic portion of the nodal rotation, associated
+ with a given element.  The stretch is
+
+ (r_k+1^s)x - (r_k^s)_x - L;  L = r0_k+1^s0 - r0_k^s0.
+
+ The elastic rotation is
+
+                --                     --
+              1 | (T_n^s)32 - (T_n^s)23 |
+ zeta_n\s^s = - | (T_n^s)13 - (T_n^s)31 |
+              2 | (T_n^s)21 - (T_n^s)12 |
+                --                     --
+
+ T_n^s = T_B^s*T_s0^B*T_n^n0
+
+ dT_n^s   dT_B^s                              dT_n^n0
+ ------ = ------*T_s0^B*T_n^n0 + T_B^s*T_s0^B*-------
+   dq       dq                                  dq
+
+ Version:        Changes:
+ --------        -------------
+ 11.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 11.10.2017      Verified by complex step and finite difference.
+
+ Inputs:
+ -------
+ qn1,qn2         : 6*Nel vectors for node 1 and 2 DOFs.
+ Pn1,Pn2         : 6*Nel vectors describing undeformed nodal position
+                   and orientation of nodes.
+ TsB             : 3-by-iel set of transforms from section to body
+                   coordinates.
+ dTsB            : A 3-by-3*12*Nel matrix, derivatives wrt xn1, xn2.
+
+ Outputs:
+ --------
+ dmu             : dmu/dq.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a>	</li>
+<li><a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a>	</li>
+<li><a href="stresses.html" class="code" title="function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE)">stresses</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% mu includes delta_x, the elastic stretch of the element, as well</span>
+0004 <span class="comment">% as zeta, the elastic portion of the nodal rotation, associated</span>
+0005 <span class="comment">% with a given element.  The stretch is</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% (r_k+1^s)x - (r_k^s)_x - L;  L = r0_k+1^s0 - r0_k^s0.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% The elastic rotation is</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%                --                     --</span>
+0012 <span class="comment">%              1 | (T_n^s)32 - (T_n^s)23 |</span>
+0013 <span class="comment">% zeta_n\s^s = - | (T_n^s)13 - (T_n^s)31 |</span>
+0014 <span class="comment">%              2 | (T_n^s)21 - (T_n^s)12 |</span>
+0015 <span class="comment">%                --                     --</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% T_n^s = T_B^s*T_s0^B*T_n^n0</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% dT_n^s   dT_B^s                              dT_n^n0</span>
+0020 <span class="comment">% ------ = ------*T_s0^B*T_n^n0 + T_B^s*T_s0^B*-------</span>
+0021 <span class="comment">%   dq       dq                                  dq</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Changes:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 11.10.2017      Original code.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Version:        Verification:</span>
+0028 <span class="comment">% --------        -------------</span>
+0029 <span class="comment">% 11.10.2017      Verified by complex step and finite difference.</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% Inputs:</span>
+0032 <span class="comment">% -------</span>
+0033 <span class="comment">% qn1,qn2         : 6*Nel vectors for node 1 and 2 DOFs.</span>
+0034 <span class="comment">% Pn1,Pn2         : 6*Nel vectors describing undeformed nodal position</span>
+0035 <span class="comment">%                   and orientation of nodes.</span>
+0036 <span class="comment">% TsB             : 3-by-iel set of transforms from section to body</span>
+0037 <span class="comment">%                   coordinates.</span>
+0038 <span class="comment">% dTsB            : A 3-by-3*12*Nel matrix, derivatives wrt xn1, xn2.</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% Outputs:</span>
+0041 <span class="comment">% --------</span>
+0042 <span class="comment">% dmu             : dmu/dq.</span>
+0043 <span class="comment">%</span>
+0044 
+0045 Nel = size(qn1,1)/6;
+0046 
+0047 dmu = zeros (12,12*Nel);
+0048 
+0049 <span class="keyword">for</span> iel = 1:Nel
+0050 
+0051    ir3  = 3*(iel-1);
+0052    ir6  = 6*(iel-1);
+0053    ir12 = 12*(iel-1);
+0054    ir36 = 36*(iel-1);
+0055 
+0056    Ts0B           = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn2(ir6+[4:6]));
+0057 
+0058    Tnn0           = zeros(3,6);
+0059    dTnn0          = zeros(3,18);
+0060 
+0061    [T,dT]         = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn1(ir6+[4:6]));
+0062    Tnn0(:,1:3)    = T;
+0063    dTnn0(:,1:9)   = dT;
+0064    [T,dT]         = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn2(ir6+[4:6]));
+0065    Tnn0(:,4:6)    = T;
+0066    dTnn0(:,10:18) = dT;
+0067 
+0068    xn1 = zeros(6,1);
+0069    xn2 = zeros(6,1);
+0070    xn1(1:3) = Pn1(ir6+[1:3]) + qn1(ir6+[1:3]);
+0071    xn1(4:6) = qn1(ir6+[4:6]);
+0072    xn2(1:3) = Pn2(ir6+[1:3]) + qn2(ir6+[1:3]);
+0073    xn2(4:6) = qn2(ir6+[4:6]);
+0074 
+0075    dx = xn2(1:3) - xn1(1:3);
+0076 
+0077    Ts0jB         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn2(ir6+[4:6]));
+0078    Ts0j1B        = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn1(ir6+[4:6]));
+0079    Tn0ks0j       = (Ts0jB.')*Ts0j1B;
+0080    Ts0jn0k       = Tn0ks0j.';
+0081 
+0082    <span class="keyword">for</span> ix = 1:3
+0083 
+0084       ix3  = 3*(ix-1);
+0085 
+0086       ee = zeros(3,1);
+0087       ee(ix) = 1;
+0088 
+0089       dmu(1,ir12+ix) = -[0.5 0 0]*(-(TsB(:,ir3+[1:3]).')*ee <span class="keyword">...</span>
+0090                      +             (dTsB(:,ir36+ix3+[1:3]).')*dx);
+0091 
+0092       dmu(7,ir12+ix) = -dmu(1,ir12+ix);
+0093 
+0094       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tn0ks0j*Tnn0(:,1:3)*Ts0jn0k;
+0095       dmu(4:6,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0096 
+0097       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tnn0(:,4:6);
+0098       dmu(10:12,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0099 
+0100 <span class="comment">%{</span>
+0101 <span class="string">'-------------------------------------------------'</span>
+0102 ix
+0103 dTsB(:,ir36+ix3+[1:3])
+0104 Ts0B
+0105 Tnn0(:,1:3)
+0106 dTsB(:,ir36+ix3+[1:3])*Ts0B*Tnn0(:,1:3)
+0107 <span class="comment">%}</span>
+0108 
+0109    <span class="keyword">end</span>
+0110 
+0111    <span class="keyword">for</span> ix = 4:6
+0112 
+0113       ix3  = 3*(ix-1);
+0114       in3  = 3*(ix-4);
+0115 
+0116       dmu(1,ir12+ix) = -[0.5 0 0]*(dTsB(:,ir36+ix3+[1:3]).')*dx;
+0117       dmu(7,ir12+ix) = -dmu(1,ir12+ix);
+0118 
+0119       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tn0ks0j*Tnn0(:,1:3)*Ts0jn0k <span class="keyword">...</span>
+0120            + (TsB(:,ir3+[1:3]).')*Ts0B*Tn0ks0j*dTnn0(:,in3+[1:3])*Ts0jn0k;
+0121       dmu(4:6,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0122 
+0123 <span class="comment">%{</span>
+0124 <span class="keyword">if</span> (imag(qn1(5)) ~= 0)
+0125 <span class="string">'dmudq.m'</span>
+0126 ix
+0127 del = sqrt(eps);
+0128 d2Tnsc = imag(dTns)/del;
+0129 <span class="string">'dmudq term 1'</span>
+0130 dTsB(:,ir36+ix3+[1:3]).'
+0131 Ts0B
+0132 imag(Tnn0(:,1:3))
+0133 (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tnn0(:,1:3)
+0134 <span class="string">'dmudq term 2'</span>
+0135 TsB(:,ir3+[1:3]).'
+0136 Ts0B
+0137 imag(dTnn0(:,in3+[1:3]))
+0138 (TsB(:,ir3+[1:3]).')*Ts0B*dTnn0(:,in3+[1:3])
+0139 d2Tnsc
+0140 <span class="keyword">end</span>
+0141 <span class="comment">%}</span>
+0142 
+0143       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tnn0(:,4:6);
+0144       dmu(10:12,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0145 
+0146 <span class="comment">%{</span>
+0147 <span class="string">'-------------------------------------------------'</span>
+0148 ix
+0149 full(dTsB(:,ir36+ix3+[1:3]))
+0150 full(TsB)
+0151 Ts0B
+0152 Tnn0
+0153 dTnn0(:,in3+[1:3])
+0154 
+0155 TsB(ir3+[1:3])
+0156 Ts0B
+0157 dTnn0(:,in3+[1:3])
+0158 TsB(ir3+[1:3])*Ts0B*dTnn0(:,in3+[1:3])
+0159 
+0160 dTsB(:,ir36+ix3+[1:3])*Ts0B*Tnn0(:,1:3) <span class="keyword">...</span>
+0161 + TsB(ir3+[1:3])*Ts0B*dTnn0(:,in3+[1:3])
+0162 dTsB(:,ir36+ix3+[1:3])*Ts0B*Tnn0(:,4:6)
+0163 <span class="comment">%}</span>
+0164 
+0165 
+0166    <span class="keyword">end</span>
+0167 
+0168    <span class="keyword">for</span> ix = 7:9
+0169 
+0170       ix3  = 3*(ix-1);
+0171 
+0172       ee = zeros(3,1);
+0173       ee(ix-6) = 1;
+0174 
+0175       dmu(1,ir12+ix) = -[0.5 0 0]*((TsB(:,ir3+[1:3]).')*ee <span class="keyword">...</span>
+0176                      +             (dTsB(:,ir36+ix3+[1:3]).')*dx);
+0177 
+0178       dmu(7,ir12+ix) = -dmu(1,ir12+ix);
+0179 
+0180       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tn0ks0j*Tnn0(:,1:3)*Ts0jn0k;
+0181       dmu(4:6,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0182 
+0183       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tnn0(:,4:6);
+0184       dmu(10:12,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0185 
+0186    <span class="keyword">end</span>
+0187 
+0188    <span class="keyword">for</span> ix = 10:12
+0189 
+0190       ix3  = 3*(ix-1);
+0191       in3  = 3*(ix-10);
+0192 
+0193       dmu(1,ir12+ix) = -[0.5 0 0]*(dTsB(:,ir36+ix3+[1:3]).')*dx;
+0194       dmu(7,ir12+ix) = -dmu(1,ir12+ix);
+0195 
+0196       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tn0ks0j*Tnn0(:,1:3)*Ts0jn0k;
+0197       dmu(4:6,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0198 
+0199       dTns = (dTsB(:,ir36+ix3+[1:3]).')*Ts0B*Tnn0(:,4:6) <span class="keyword">...</span>
+0200            + (TsB(:,ir3+[1:3]).')*Ts0B*dTnn0(:,in3+9+[1:3]);
+0201       dmu(10:12,ir12+ix) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>(dTns);
+0202 
+0203    <span class="keyword">end</span>
+0204 
+0205 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

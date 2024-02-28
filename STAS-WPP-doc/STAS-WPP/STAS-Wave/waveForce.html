@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of waveForce</title>
+  <meta name="keywords" content="waveForce">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; waveForce.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>waveForce
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function F = waveForce (Hs,Tp,Vc,d,rho,f,theta,z,t,znod,Dnod) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This computes the net X-direction nodal forces on a monopile
+ due to ocean waves.
+
+ Version:        Changes:
+ --------        -------------
+ 25.03.2015      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.03.2015      Memo AN 15.12.19
+
+ Inputs:
+ -------
+ Hs              : Significant wave height.
+ Tp              : Characteristic wave period.
+ Vc              : X (wave direction) and Y (transverse) current
+                   velocities in m/s, at each computational
+                   element.
+ d               : Water depth.
+ rho             : Water density.
+ f               : Frequencies to use when discretizing the wave
+                   amplitude spectrum.
+ theta           : Location about the cylinder, theta = 0 is
+                   on the lee side relative to the waves.
+ z               : Depth coordinates relative to the free surface.
+ t               : Vector of times.
+ znod            : elevations of the nodes relative to the mean 
+                   free surface, negative = submerged.
+ Dnod            : Cylinder diameter at each node.
+
+ Outputs:
+ --------
+ F               : Time history of wave-direction forces on each
+                   node.  Vector of length 2*Ntime*Nnod.  The first
+                   Ntime*Nnod entries are the X forces, and the
+                   second are the Y forces.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="potentialWave.html" class="code" title="function [p,zeta,vx,ax] = potentialWave (Hs,Tp,d,Dia,rho,f,theta,z,t)">potentialWave</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="runWave.html" class="code" title="">runWave</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function F = waveForce (Hs,Tp,Vc,d,rho,f,theta,z,t,znod,Dnod)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This computes the net X-direction nodal forces on a monopile</span>
+0004 <span class="comment">% due to ocean waves.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 25.03.2015      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 25.03.2015      Memo AN 15.12.19</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% Hs              : Significant wave height.</span>
+0017 <span class="comment">% Tp              : Characteristic wave period.</span>
+0018 <span class="comment">% Vc              : X (wave direction) and Y (transverse) current</span>
+0019 <span class="comment">%                   velocities in m/s, at each computational</span>
+0020 <span class="comment">%                   element.</span>
+0021 <span class="comment">% d               : Water depth.</span>
+0022 <span class="comment">% rho             : Water density.</span>
+0023 <span class="comment">% f               : Frequencies to use when discretizing the wave</span>
+0024 <span class="comment">%                   amplitude spectrum.</span>
+0025 <span class="comment">% theta           : Location about the cylinder, theta = 0 is</span>
+0026 <span class="comment">%                   on the lee side relative to the waves.</span>
+0027 <span class="comment">% z               : Depth coordinates relative to the free surface.</span>
+0028 <span class="comment">% t               : Vector of times.</span>
+0029 <span class="comment">% znod            : elevations of the nodes relative to the mean</span>
+0030 <span class="comment">%                   free surface, negative = submerged.</span>
+0031 <span class="comment">% Dnod            : Cylinder diameter at each node.</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Outputs:</span>
+0034 <span class="comment">% --------</span>
+0035 <span class="comment">% F               : Time history of wave-direction forces on each</span>
+0036 <span class="comment">%                   node.  Vector of length 2*Ntime*Nnod.  The first</span>
+0037 <span class="comment">%                   Ntime*Nnod entries are the X forces, and the</span>
+0038 <span class="comment">%                   second are the Y forces.</span>
+0039 
+0040 Nth = size(theta,1);
+0041 Nz = size(z,1);
+0042 Nf = size(f,1);
+0043 Ntime = size(t,1);
+0044 Nnod = size(znod,1);
+0045 
+0046 <span class="comment">% Assumes symmetry.</span>
+0047 dth = zeros(Nth,1);
+0048 dth(1) = 0.5*(theta(2) - theta(1));
+0049 dth(Nth) = 0.5*(theta(Nth) - theta(Nth-1));
+0050 dth(2:Nth-1) = 0.5*(theta(3:Nth) - theta(1:Nth-2));
+0051 
+0052 <span class="comment">% No assumption of symmetry.</span>
+0053 <span class="comment">%dth = zeros(Nth,1);</span>
+0054 <span class="comment">%dth(1) = 0.5*(theta(2) - (theta(Nth) - 2*pi));</span>
+0055 <span class="comment">%dth(Nth) = 0.5*((theta(1) + 2*pi) - theta(Nth-1));</span>
+0056 <span class="comment">%dth(2:Nth-1) = 0.5*(theta(3:Nth) - theta(1:Nth-2));</span>
+0057 
+0058 dz = zeros(Nz,1);
+0059 dz(1) = z(2) - z(1);
+0060 dz(Nz) = z(Nz) - z(Nz-1);
+0061 dz(2:Nz-1) = 0.5*(z(3:Nz) - z(1:Nz-2));
+0062 
+0063 <span class="comment">% The fraction of the element length at the node.</span>
+0064 fz = zeros(Nz,1);
+0065 fz(1) = 0.5;
+0066 fz(Nz) = 0.5;
+0067 fz(2:Nz-1) = 0.5*(z(2:Nz-1) - z(1:Nz-2))./dz(2:Nz-1);
+0068 
+0069 F = sparse(2*Ntime*Nnod,1);
+0070 
+0071 <span class="comment">% Get the time histories of fluctuations in pressure and elevation.</span>
+0072 <span class="comment">% Assume a reference diameter here, the pressure will later act</span>
+0073 <span class="comment">% over the appropriate diameter.  OK for small variations in</span>
+0074 <span class="comment">% diameter.</span>
+0075 Dref = mean(Dnod);
+0076 [p,zeta,vx,ax] = <a href="potentialWave.html" class="code" title="function [p,zeta,vx,ax] = potentialWave (Hs,Tp,d,Dia,rho,f,theta,z,t)">potentialWave</a> (Hs,Tp,d,Dref,rho,f,theta,z,t);
+0077 
+0078 <span class="comment">% For each unstretched element on the (computational) cylinder</span>
+0079 <span class="comment">% surface ...</span>
+0080 <span class="keyword">for</span> iz = 1:Nz
+0081    indzt = Ntime*Nth*(iz-1);
+0082    indx = Ntime*(iz-1);
+0083 
+0084    <span class="keyword">for</span> ith = 1:Nth
+0085       indt = indzt + Ntime*(ith-1);
+0086       izet = Ntime*(ith-1);
+0087       
+0088       <span class="comment">% Stretch the element to an effective z coordinate on the</span>
+0089       <span class="comment">% real cylinder.</span>
+0090       zp = ((z(iz) + d)*(d + zeta(izet+1:izet+Ntime))/d) - d;
+0091       dzp = dz(iz)*(d + zeta(izet+1:izet+Ntime))/d;
+0092       Diap = interp1(znod,Dnod,zp,<span class="string">'extrap'</span>);
+0093 
+0094       <span class="comment">% dF = -p dA' cos(theta).  Force per unit length.</span>
+0095       dF = -p(indt+1:indt+Ntime).*0.5.*Diap*dth(ith)*cos(theta(ith));
+0096 
+0097       <span class="comment">% Distribute to the appropriate nodes.</span>
+0098       <span class="keyword">for</span> ii = 1:Nnod
+0099          ind = Ntime*(ii-1);
+0100 
+0101          C = zeros(Ntime,1);
+0102 
+0103          <span class="keyword">if</span> (ii ~= Nnod)
+0104             a = -1/(znod(ii+1) - znod(ii));
+0105             b = znod(ii+1)/(znod(ii+1) - znod(ii));
+0106 
+0107             LB = min(max(zp-fz(iz)*dzp,znod(ii)),znod(ii+1));
+0108             RB = min(max(zp+(1-fz(iz))*dzp,znod(ii)),znod(ii+1));
+0109 
+0110             C = C + 0.5*a*(RB.^2 - LB.^2) + b*(RB - LB);
+0111  
+0112          <span class="keyword">end</span>
+0113 
+0114          <span class="keyword">if</span> (ii ~= 1)
+0115             a = 1/(znod(ii) - znod(ii-1));
+0116             b = -znod(ii-1)/(znod(ii) - znod(ii-1));
+0117 
+0118             LB = min(max(zp-fz(iz)*dzp,znod(ii-1)),znod(ii));
+0119             RB = min(max(zp+(1-fz(iz))*dzp,znod(ii-1)),znod(ii));
+0120 
+0121             C = C + 0.5*a*(RB.^2 - LB.^2) + b*(RB - LB);
+0122  
+0123          <span class="keyword">end</span>
+0124 
+0125          <span class="comment">% Symmetry: double the force increment.</span>
+0126 <span class="comment">% (Comment out for Morison.)</span>
+0127          F(ind+1:ind+Ntime) = F(ind+1:ind+Ntime) + 2*C.*dF;
+0128 
+0129          <span class="comment">% No symmetry.</span>
+0130          <span class="comment">%F(ind+1:ind+Ntime) = F(ind+1:ind+Ntime) + C.*dF;</span>
+0131 
+0132       <span class="keyword">end</span>
+0133 
+0134    <span class="keyword">end</span>
+0135 
+0136    <span class="comment">% Compute the viscous drag on the stretched z location.</span>
+0137    <span class="comment">% Stretch the profile.  Cd = 1 for design.</span>
+0138    <span class="comment">% dFd is the force per unit length.</span>
+0139    Cd = 1;
+0140 <span class="comment">%Cd = 0.6;  % For comparing against laboratory data.</span>
+0141    Velx = vx(indx+1:indx+Ntime) + Vc(1,iz);
+0142    Vmag = sqrt(Velx.^2 + Vc(2,iz)^2);
+0143    qi = ceil(interp1(theta,[1:Nth],pi/2));
+0144    iztc = Ntime*(qi-1);
+0145    zp = ((z(iz) + d)*(d + zeta(iztc+1:iztc+Ntime))/d) - d;
+0146    dzp = dz(iz)*(d + zeta(izet+1:izet+Ntime))/d;
+0147    Diap = interp1(znod,Dnod,zp,<span class="string">'extrap'</span>);
+0148    dFdx = Cd*0.5*rho*Diap.*Vmag.*Velx;  <span class="comment">% (Comment out for Morison.)</span>
+0149    dFdy = Cd*0.5*rho*Diap.*Vmag.*Vc(2);
+0150 
+0151 <span class="comment">% Uncomment for Morison.  Also see lines above to comment out.</span>
+0152 <span class="comment">%dFdx = Cd*0.5*rho*Diap.*Vmag.*Velx + 2*rho*(0.25*pi*(Diap.^2)).*ax(indx+1:indx+Ntime);</span>
+0153 
+0154    <span class="comment">% Distribute to the appropriate nodes.</span>
+0155    ioff = Ntime*Nnod;
+0156    <span class="keyword">for</span> ii = 1:Nnod
+0157       ind = Ntime*(ii-1);
+0158 
+0159       C = zeros(Ntime,1);
+0160 
+0161       <span class="keyword">if</span> (ii ~= Nnod)
+0162          a = -1/(znod(ii+1) - znod(ii));
+0163          b = znod(ii+1)/(znod(ii+1) - znod(ii));
+0164 
+0165          LB = min(max(zp-fz(iz)*dzp,znod(ii)),znod(ii+1));
+0166          RB = min(max(zp+(1-fz(iz))*dzp,znod(ii)),znod(ii+1));
+0167 
+0168          C = C + 0.5*a*(RB.^2 - LB.^2) + b*(RB - LB);
+0169 
+0170       <span class="keyword">end</span>
+0171 
+0172       <span class="keyword">if</span> (ii ~= 1)
+0173          a = 1/(znod(ii) - znod(ii-1));
+0174          b = -znod(ii-1)/(znod(ii) - znod(ii-1));
+0175 
+0176          LB = min(max(zp-fz(iz)*dzp,znod(ii-1)),znod(ii));
+0177          RB = min(max(zp+(1-fz(iz))*dzp,znod(ii-1)),znod(ii));
+0178 
+0179          C = C + 0.5*a*(RB.^2 - LB.^2) + b*(RB - LB);
+0180 
+0181       <span class="keyword">end</span>
+0182 
+0183       F(ind+1:ind+Ntime) = F(ind+1:ind+Ntime) + C.*dFdx;
+0184 
+0185       F(ioff+ind+1:ioff+ind+Ntime) = F(ioff+ind+1:ioff+ind+Ntime) <span class="keyword">...</span>
+0186                                    + C.*dFdy;
+0187 
+0188    <span class="keyword">end</span>
+0189 
+0190 <span class="keyword">end</span>
+0191 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

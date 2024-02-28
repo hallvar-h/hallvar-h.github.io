@@ -1,0 +1,570 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of MBCOLT</title>
+  <meta name="keywords" content="MBCOLT">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-WPP</a> &gt; MBCOLT.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-WPP&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>MBCOLT
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Return the multi-blade coordinate transformed version of the dynamic
+ open-loop turbine equations.  This adds sensors and a generator
+ power control function to the basic buildOpenLoopTurbine.
+
+ Caution, the ighq input is unused, it is derived within based on the
+ generator power control.
+
+   States:              y vector:             u vector:
+ ----------------------- Structure --------------------------
+   eta        N         q         Ndj            F       Ndj   (Env)
+   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (ext. solution)
+                        d2q/dt2   Ndj
+                        xng     3*Nnod
+                        vng     6*Nnod
+                        F         Ndj
+
+ ------------208------- Aerodynamic -------------------------
+   ad         1         (q)       1:24           Vg        3   (Env)
+   a1,a2     2:3        (dq/dt)  25:48
+   Vih z,t   4:5        xng1,2   49:54
+   Vi z,t    6:7        vng1,2   55:60
+                        wg       61:63
+                        wa       64:66
+                        aq        67
+                        Cl,Cd,Cm 68:70
+                        Fl,Fd,M  71:73
+                        Fa       74:79
+                        Fp       80:85
+                        Fr       86:91
+                        Fzts     92:94
+                        Vg       95:97
+                        Ua       98:100
+                        Umag      101
+                        Ur      102:104
+                        Uzts    105:107
+                        Vzts    108:110
+                        Viq     111:112
+                        Viy     113:114
+                        Vixyz   115:117
+                        Wmag      118
+                        xeg     119:121
+                        xhg     122:124
+                        xnr1,2  125:130  
+                        xer     131:133
+                        r         134
+                        Lp        135
+                        z         136
+                        f         137  
+ (Repeat the above x,y,u consecutively for each blade element.)
+                        Azi       (1)  (effective rotor azimuth)
+                        Waero     (1)  (aero rotor speed)
+                        Dp        (3)
+
+ ------------334--------- Actuators --------------------------
+ (Repeat for each blade and yaw system.)
+   ba         1         b,dbdt    1,2  (Turb)     bhat      1   (Cont)
+   dbadt      2         Ta         3
+
+ ------------342-------- Electrical --------------------------
+   igd,q     1,2        wg         1   (Turb)     we        1   (Grid)
+   Vdc        3         Tg         2              th_e      2   (Grid)
+   ipd,q     4,5        isd,q     3,4             vsd,q    3,4  (Grid)
+   imgd,q    6,7                                  ihgd,q   5,6  (Cont)
+   Psig      8,9                                  Vhdc      7   (Cont)
+   wemg      10                                   Qh        8   (Cont)
+   th_m      11
+   vmsd,q   12,13
+   Psie      14
+   impd,q   15,16
+   imsd,q   17,18
+   vmsd,q   19,20
+   Vmdc      21
+   PsiDC     22
+   PsiQ      23
+   PsiP     24,25
+
+ ------------367---------- Sensors ---------------------------
+   Wm         1         W          1
+   bm        2:4        bet       2:4
+   ym         5         yaw        5
+   Pem        6         Pe         6
+   vm        7,8        vnac      7,8
+   Vam        9         Va         9
+   thm       10         tha       10
+
+ ------------377--------- P control --------------------------
+  (Pem)                 ighq       1              Phat      1
+   PsiP       1         Pe         2             (Pe)
+   nd        2,3
+
+ Version:        Changes:
+ --------        -------------
+ 12.02.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 12.02.2020      
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Nmd.html" class="code" title="function [b1,b2,b3] = MBCindices_Nmd (Nmd,imdofs)">MBCindices_Nmd</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/genPcontrol.html" class="code" title="function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)">genPcontrol</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/secondDerivMBC.html" class="code" title="function [d2TpsiB,d2TBpsi] = secondDerivMBC (N,b1,b2,b3,psi)">secondDerivMBC</a>	</li>
+<li><a href="buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =                    </a><span class="keyword">...</span>
+0002                   MBCOLT (linFlag,xop,dxop,uop,s,a,         <span class="keyword">...</span>
+0003                           epar,bpar,ypar,m,c,               <span class="keyword">...</span>
+0004                           grav,P,shape0,mdamp0,             <span class="keyword">...</span>
+0005                           Tas,Try,ch,Lel,foilwt,aoaz,aoast, <span class="keyword">...</span>
+0006                           xas,yas,Psi0,igen,ipit,iyaw)
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Return the multi-blade coordinate transformed version of the dynamic</span>
+0009 <span class="comment">% open-loop turbine equations.  This adds sensors and a generator</span>
+0010 <span class="comment">% power control function to the basic buildOpenLoopTurbine.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Caution, the ighq input is unused, it is derived within based on the</span>
+0013 <span class="comment">% generator power control.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%   States:              y vector:             u vector:</span>
+0016 <span class="comment">% ----------------------- Structure --------------------------</span>
+0017 <span class="comment">%   eta        N         q         Ndj            F       Ndj   (Env)</span>
+0018 <span class="comment">%   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (ext. solution)</span>
+0019 <span class="comment">%                        d2q/dt2   Ndj</span>
+0020 <span class="comment">%                        xng     3*Nnod</span>
+0021 <span class="comment">%                        vng     6*Nnod</span>
+0022 <span class="comment">%                        F         Ndj</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% ------------208------- Aerodynamic -------------------------</span>
+0025 <span class="comment">%   ad         1         (q)       1:24           Vg        3   (Env)</span>
+0026 <span class="comment">%   a1,a2     2:3        (dq/dt)  25:48</span>
+0027 <span class="comment">%   Vih z,t   4:5        xng1,2   49:54</span>
+0028 <span class="comment">%   Vi z,t    6:7        vng1,2   55:60</span>
+0029 <span class="comment">%                        wg       61:63</span>
+0030 <span class="comment">%                        wa       64:66</span>
+0031 <span class="comment">%                        aq        67</span>
+0032 <span class="comment">%                        Cl,Cd,Cm 68:70</span>
+0033 <span class="comment">%                        Fl,Fd,M  71:73</span>
+0034 <span class="comment">%                        Fa       74:79</span>
+0035 <span class="comment">%                        Fp       80:85</span>
+0036 <span class="comment">%                        Fr       86:91</span>
+0037 <span class="comment">%                        Fzts     92:94</span>
+0038 <span class="comment">%                        Vg       95:97</span>
+0039 <span class="comment">%                        Ua       98:100</span>
+0040 <span class="comment">%                        Umag      101</span>
+0041 <span class="comment">%                        Ur      102:104</span>
+0042 <span class="comment">%                        Uzts    105:107</span>
+0043 <span class="comment">%                        Vzts    108:110</span>
+0044 <span class="comment">%                        Viq     111:112</span>
+0045 <span class="comment">%                        Viy     113:114</span>
+0046 <span class="comment">%                        Vixyz   115:117</span>
+0047 <span class="comment">%                        Wmag      118</span>
+0048 <span class="comment">%                        xeg     119:121</span>
+0049 <span class="comment">%                        xhg     122:124</span>
+0050 <span class="comment">%                        xnr1,2  125:130</span>
+0051 <span class="comment">%                        xer     131:133</span>
+0052 <span class="comment">%                        r         134</span>
+0053 <span class="comment">%                        Lp        135</span>
+0054 <span class="comment">%                        z         136</span>
+0055 <span class="comment">%                        f         137</span>
+0056 <span class="comment">% (Repeat the above x,y,u consecutively for each blade element.)</span>
+0057 <span class="comment">%                        Azi       (1)  (effective rotor azimuth)</span>
+0058 <span class="comment">%                        Waero     (1)  (aero rotor speed)</span>
+0059 <span class="comment">%                        Dp        (3)</span>
+0060 <span class="comment">%</span>
+0061 <span class="comment">% ------------334--------- Actuators --------------------------</span>
+0062 <span class="comment">% (Repeat for each blade and yaw system.)</span>
+0063 <span class="comment">%   ba         1         b,dbdt    1,2  (Turb)     bhat      1   (Cont)</span>
+0064 <span class="comment">%   dbadt      2         Ta         3</span>
+0065 <span class="comment">%</span>
+0066 <span class="comment">% ------------342-------- Electrical --------------------------</span>
+0067 <span class="comment">%   igd,q     1,2        wg         1   (Turb)     we        1   (Grid)</span>
+0068 <span class="comment">%   Vdc        3         Tg         2              th_e      2   (Grid)</span>
+0069 <span class="comment">%   ipd,q     4,5        isd,q     3,4             vsd,q    3,4  (Grid)</span>
+0070 <span class="comment">%   imgd,q    6,7                                  ihgd,q   5,6  (Cont)</span>
+0071 <span class="comment">%   Psig      8,9                                  Vhdc      7   (Cont)</span>
+0072 <span class="comment">%   wemg      10                                   Qh        8   (Cont)</span>
+0073 <span class="comment">%   th_m      11</span>
+0074 <span class="comment">%   vmsd,q   12,13</span>
+0075 <span class="comment">%   Psie      14</span>
+0076 <span class="comment">%   impd,q   15,16</span>
+0077 <span class="comment">%   imsd,q   17,18</span>
+0078 <span class="comment">%   vmsd,q   19,20</span>
+0079 <span class="comment">%   Vmdc      21</span>
+0080 <span class="comment">%   PsiDC     22</span>
+0081 <span class="comment">%   PsiQ      23</span>
+0082 <span class="comment">%   PsiP     24,25</span>
+0083 <span class="comment">%</span>
+0084 <span class="comment">% ------------367---------- Sensors ---------------------------</span>
+0085 <span class="comment">%   Wm         1         W          1</span>
+0086 <span class="comment">%   bm        2:4        bet       2:4</span>
+0087 <span class="comment">%   ym         5         yaw        5</span>
+0088 <span class="comment">%   Pem        6         Pe         6</span>
+0089 <span class="comment">%   vm        7,8        vnac      7,8</span>
+0090 <span class="comment">%   Vam        9         Va         9</span>
+0091 <span class="comment">%   thm       10         tha       10</span>
+0092 <span class="comment">%</span>
+0093 <span class="comment">% ------------377--------- P control --------------------------</span>
+0094 <span class="comment">%  (Pem)                 ighq       1              Phat      1</span>
+0095 <span class="comment">%   PsiP       1         Pe         2             (Pe)</span>
+0096 <span class="comment">%   nd        2,3</span>
+0097 <span class="comment">%</span>
+0098 <span class="comment">% Version:        Changes:</span>
+0099 <span class="comment">% --------        -------------</span>
+0100 <span class="comment">% 12.02.2020      Original code.</span>
+0101 <span class="comment">%</span>
+0102 <span class="comment">% Version:        Verification:</span>
+0103 <span class="comment">% --------        -------------</span>
+0104 <span class="comment">% 12.02.2020</span>
+0105 <span class="comment">%</span>
+0106 
+0107 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0108 Ndj  = Ndof + 6;
+0109 Nnod = Ndof/6;
+0110 [imdofs,Neta] = <a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a> (s);
+0111 Neb  = s.blade(1).Nel;
+0112 Nae  = a.Nb*Neb;
+0113 
+0114 Nxs  = 2*Neta;
+0115 Nus  = Ndj + Neta;
+0116 Nys  = 4*Ndj;
+0117 Nxa  = size(Psi0,2);
+0118 Nua  = 3*Nae;
+0119 Nya  = 0;
+0120 Nxb  = 6;
+0121 Nub  = 3;
+0122 Nyb  = 3;
+0123 Nxy  = 2;
+0124 Nuy  = 1;
+0125 Nyy  = 1;
+0126 Nxe  = 25;
+0127 Nue  = 8;
+0128 Nye  = 3;
+0129 Nxm  = 10;
+0130 Num  = 0;
+0131 Nym  = 10;
+0132 Nxc  = 3;
+0133 Nuc  = 1;
+0134 Nyc  = 2;
+0135 Nysl = 4*Ndj + 9*Nnod; <span class="comment">% Additional y indices in bOLT matrices.</span>
+0136 Nyal = 137*Nae + 5;
+0137 Nybl = 9;
+0138 Nyyl = 3;
+0139 Nyel = 4;
+0140 
+0141 jxs  = 0;
+0142 jus  = 0;
+0143 jys  = 0;
+0144 jxa  = jxs + Nxs;
+0145 jua  = jus + Nus;
+0146 jya  = jys + Nys;
+0147 jxb  = jxa + Nxa;
+0148 jub  = jua + Nua;
+0149 jyb  = jya + Nya;
+0150 jxy  = jxb + Nxb;
+0151 juy  = jub + Nub;
+0152 jyy  = jyb + Nyb;
+0153 jxe  = jxy + Nxy;
+0154 jue  = juy + Nuy;
+0155 jye  = jyy + Nyy;
+0156 jxm  = jxe + Nxe;
+0157 jum  = jue + Nue;
+0158 jym  = jye + Nye;
+0159 jxc  = jxm + Nxm;
+0160 juc  = jum + Num;
+0161 jyc  = jym + Nym;
+0162 
+0163 jyal = jys  + Nysl;
+0164 jybl = jyal + Nyal;
+0165 jyyl = jybl + Nybl;
+0166 jyel = jyyl + Nyyl;
+0167 jyml = jyel + Nyel;
+0168 jycl = jyml + Nym;
+0169 
+0170 iynl = [jys+[1:3*Ndj] jys+3*Ndj+9*Nnod+[1:Ndj] jybl+[3 6 9 12] <span class="keyword">...</span>
+0171         jyel+[2 3 4] jyml+[1:Nym] jycl+[1:Nyc]].';
+0172 
+0173 Nx   = size(xop,1);
+0174 Nu   = size(uop,1);
+0175 Ny   = jyc + 2;
+0176 Nyl  = jycl + 2;
+0177 
+0178 iW   = 2*Neta - 4;
+0179 iazi = Neta - 4;
+0180 azi  = xop(iazi);
+0181 
+0182 Nxa3  = Nxa/3;
+0183 Nyal3 = 137*Neb;
+0184 Neb3  = 3*Neb;
+0185 
+0186 [b1eta,b2eta,b3eta] = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Nmd.html" class="code" title="function [b1,b2,b3] = MBCindices_Nmd (Nmd,imdofs)">MBCindices_Nmd</a> (Neta,imdofs);
+0187 [b1q,b2q,b3q]       = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a> (Ndj,idofs);
+0188 bn3 = [3*(inods(6)-1)+[1:3*s.blade(1).Nnod].' <span class="keyword">...</span>
+0189        3*(inods(7)-1)+[1:3*s.blade(1).Nnod].' <span class="keyword">...</span>
+0190        3*(inods(8)-1)+[1:3*s.blade(1).Nnod].'];
+0191 bn6 = [6*(inods(6)-1)+[1:6*s.blade(1).Nnod].' <span class="keyword">...</span>
+0192        6*(inods(7)-1)+[1:6*s.blade(1).Nnod].' <span class="keyword">...</span>
+0193        6*(inods(8)-1)+[1:6*s.blade(1).Nnod].'];
+0194 baero = [[1:Nyal3].' Nyal3+[1:Nyal3].' 2*Nyal3+[1:Nyal3].'];
+0195 
+0196 blx = [jxs+[b1eta b2eta b3eta];                            <span class="keyword">...</span>
+0197        jxs+Neta+[b1eta b2eta b3eta];                       <span class="keyword">...</span>
+0198        jxa+[[1:Nxa3].' Nxa3+[1:Nxa3].' 2*Nxa3+[1:Nxa3].']; <span class="keyword">...</span>
+0199        jxb+[[1;2] [3;4] [5;6]];                            <span class="keyword">...</span>
+0200        jxm+[2 3 4]];
+0201 
+0202 bly = [jys+[b1q b2q b3q];                     <span class="keyword">...</span>
+0203        jys+Ndj+[b1q b2q b3q];                 <span class="keyword">...</span>
+0204        jys+2*Ndj+[b1q b2q b3q];               <span class="keyword">...</span>
+0205        jys+3*Ndj+bn3;                         <span class="keyword">...</span>
+0206        jys+3*Ndj+3*Nnod+bn6;                  <span class="keyword">...</span>
+0207        jys+3*Ndj+9*Nnod+[b1q b2q b3q];        <span class="keyword">...</span>
+0208        jyal+baero;                            <span class="keyword">...</span>
+0209        jybl-[2 1 0];                          <span class="keyword">...</span><span class="comment">  % Dp's.</span>
+0210        jybl+[[1 2 3].' [4 5 6].' [7 8 9].'];  <span class="keyword">...</span>
+0211        jyml+[2 3 4]];
+0212 
+0213 blu = [jus+[b1q b2q b3q];                                <span class="keyword">...</span>
+0214        jus+Ndj+[b1eta b2eta b3eta];                      <span class="keyword">...</span>
+0215        jua+[[1:Neb3].' Neb3+[1:Neb3].' 2*Neb3+[1:Neb3].']; <span class="keyword">...</span>
+0216        jub+[1 2 3]];
+0217 
+0218 [TpBx,TBpx]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nx,blx(:,1),blx(:,2),blx(:,3),azi);
+0219 [TpBu,TBpu]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nu,blu(:,1),blu(:,2),blu(:,3),azi);
+0220 [TpBy,TBpy]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nyl,bly(:,1),bly(:,2),bly(:,3),azi);
+0221 [dTpBx,dTBpx]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nx,blx(:,1),blx(:,2),blx(:,3),azi);
+0222 
+0223 Txpx = TpBx;
+0224 Txpx(:,iazi) = Txpx(:,iazi) + dTpBx*xop;
+0225 
+0226 TT = TpBx.';
+0227 
+0228 xo = TpBx*xop;
+0229 
+0230 iueta = Ndj+[1:Neta].';  <span class="comment">% Indices for d2eta/dt2 in u vector.</span>
+0231 niueta = [[1:Ndj] Ndj+Neta+1:Nu].';
+0232 ixeta = Neta+[1:Neta].';
+0233 uo = zeros(Nu,1);
+0234 uo(niueta) = TpBu(niueta,niueta)*uop(niueta);
+0235 uo(iueta) = Txpx(ixeta,:)*dxop;
+0236 
+0237 <span class="comment">% Do an initial solution of genPcontrol without knowing the iis*vvs</span>
+0238 <span class="comment">% power.  This will allow us to obtain the current command to input</span>
+0239 <span class="comment">% to buildOpenLoopTurbine.  It is OK not to know the input Pe, since</span>
+0240 <span class="comment">% the output is not a direct function of this.</span>
+0241 nnxc = 3;  <span class="comment">% 4 states in genPcontrol... Pem is assigned to the sensor block.</span>
+0242 nnyc = 2;  <span class="comment">% Going to shuffle Pe from u to y...</span>
+0243 nnuc = 1;
+0244 indx = [jxm+6, jxc+[1:nnxc]].';
+0245 gpar = [c.Kp;c.Ki;m.aP;c.anp;c.z1np;c.z2np];
+0246 xc   = xop(indx);
+0247 uc   = [uop(juc+1); 0];
+0248 [jnkdxcdt,ighq,jnkaac,jnkbbc,jnkccc,jnkddc] = <a href="../../STAS-WPP/STAS-Control/genPcontrol.html" class="code" title="function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)">genPcontrol</a> (xc,uc,gpar);
+0249 
+0250 <span class="comment">% buildOpenLoopTurbine does not include the sensors or P control.</span>
+0251 <span class="comment">% Account for P control on the ighq input.</span>
+0252 xin = xo(1:jxm);
+0253 uin = uo(1:jum);
+0254 uin(jue+6) = ighq;
+0255 
+0256 [Lo1,Ro1,yo1,Ao1,Bo1,Co1,Do1] =                                 <span class="keyword">...</span>
+0257       <a href="buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a> (linFlag,xin,uin,s,a,epar,bpar,ypar, <span class="keyword">...</span>
+0258                             grav,P,shape0,mdamp0,               <span class="keyword">...</span>
+0259                             Tas,Try,ch,Lel,foilwt,aoaz,aoast,   <span class="keyword">...</span>
+0260                             xas,yas,Psi0,igen,ipit,iyaw);
+0261 
+0262 <span class="comment">% Prepare the generator power control, so that we are dealing with</span>
+0263 <span class="comment">% an electrical power command, rather than a converter current</span>
+0264 <span class="comment">% command.  Use the LP filter parameter from the sensor block,</span>
+0265 <span class="comment">% rather from the old control block.</span>
+0266 iis  = yo1(jye+[2 3]);
+0267 vvs  = uop(jue+[3 4]);
+0268 Pes  = iis(1)*vvs(1) + iis(2)*vvs(2);
+0269 xc   = xop(indx);
+0270 uc   = [uop(juc+1); Pes];
+0271 [dxcdt,ycout,aac,bbc,ccc,ddc] = <a href="../../STAS-WPP/STAS-Control/genPcontrol.html" class="code" title="function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)">genPcontrol</a> (xc,uc,gpar);
+0272 
+0273 <span class="comment">% Prepare the sensors (measurements, denoted &quot;m&quot;).</span>
+0274 mvec = [m.aW; m.ab; m.ab; m.ab; m.ay; m.aP; m.ad; m.ad; m.aV; m.at];
+0275 nnxm = size(mvec,1);
+0276 nnym = size(mvec,1);
+0277 nnum = 0;
+0278 
+0279 <span class="comment">% Note, the y vector is based on the &quot;reduced&quot; indexing.</span>
+0280 Lo = sparse(Nx,Nx);
+0281 Ro = zeros(Nx,1);
+0282 yo = zeros(Ny,1);
+0283 Lo(1:jxm,1:jxm) = Lo1;
+0284 Ro(1:jxm) = Ro1;
+0285 yo(1:jym) = yo1;
+0286 
+0287 <span class="comment">% Link in the sensors.  Let the nacelle accleration (velocity)</span>
+0288 <span class="comment">% be measured at the tower master node, in global coordinates.</span>
+0289 <span class="comment">% The y-vector measured power should come via the generator P</span>
+0290 <span class="comment">% control, not the sensor Pe, which should be zero.</span>
+0291 qB  = yo1(idofs(2)+[1:6]);
+0292 qBd = yo1(Ndj+idofs(2)+[1:6]);
+0293 PB  = P(idofs(2)+[1:6]);
+0294 qn  = yo1(idofm(3)+[1:6]);
+0295 qnd = yo1(Ndj+idofm(3)+[1:6]);
+0296 Pn  = P(idofm(3)+[1:6]);
+0297 [vnac,ddyv] = <a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,qnd,qBd);
+0298 Vwnd = sqrt(uop(jua+1)^2+uop(jua+2)^2);
+0299 thw = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(uop(jua+2),uop(jua+1));
+0300 Lo(jxm+[1:nnxm],jxm+[1:nnxm]) = speye(nnxm);
+0301 rvec = [xo(iW); xo(jxs+Neta-[2 1 0]); xo(jxs+Neta-5);  <span class="keyword">...</span>
+0302         Pes; vnac(1:2); Vwnd; thw];
+0303 Ro(jxm+[1:nnxm]) = -mvec.*xo(jxm+[1:nnxm]) + mvec.*rvec;
+0304 yo(jym+[1:nnym]) = rvec;
+0305 
+0306 <span class="comment">% Link in the generator P control, overwriting the existing sensor</span>
+0307 <span class="comment">% LP filter.</span>
+0308 Lo(jxc+[1:nnxc],jxc+[1:nnxc]) = speye(nnxc);
+0309 Ro(indx) = dxcdt;
+0310 yo(jyc+1) = ycout;
+0311 yo(jyc+2) = Pes;
+0312 yo(jym+6) = 0;
+0313 
+0314 Lop = real(TT)*Lo*Txpx;
+0315 Rop = real(TT)*Ro;
+0316 yop = TBpy(iynl,iynl)*yo;
+0317 
+0318 <span class="keyword">if</span> (linFlag == 1)
+0319 
+0320    <span class="comment">% Note, these intermediate matrices are based on the &quot;full&quot; y</span>
+0321    <span class="comment">% vector indexing.</span>
+0322    AA  = sparse(Nx,Nx);
+0323    BBu = sparse(Nx,Nu);
+0324    BBy = sparse(Nx,Nyl);
+0325    CC  = sparse(Nyl,Nx);
+0326    DDu = sparse(Nyl,Nu);
+0327    DDy = sparse(Nyl,Nyl);
+0328    Lop(1:jxm ,1:jxm) = Lo1;
+0329     AA(1:jxm ,1:jxm) = Ao1;
+0330    BBu(1:jxm ,1:jum) = Bo1;
+0331     CC(1:jyml,1:jxm) = Co1;
+0332    DDu(1:jyml,1:jum) = Do1;
+0333 
+0334    <span class="comment">% Sensors.  Do not include measured power, this will come from</span>
+0335    <span class="comment">% the generator P control.</span>
+0336    inds = [[1:5] [7:10]].';
+0337    aam = -diag(mvec);
+0338    bbym = diag(mvec);
+0339    AA(jxm+inds,jxm+inds) = aam(inds,inds);  <span class="comment">% Sensor dynamics.</span>
+0340    BBy(jxm+inds,jyml+inds) = bbym(inds,inds); <span class="comment">% Effect of sensor y on sensor x.</span>
+0341    CC(jyml+1,iW) = 1;                        <span class="comment">% Link driveshaft W to sensor W.</span>
+0342    CC(jyml+[2 3 4],jxs+Neta-[2 1 0]) = speye(3); <span class="comment">% Link pitch beta to sensor beta.</span>
+0343    CC(jyml+5,jxs+Neta-5) = 1;                <span class="comment">% Link yaw angle to sensor yaw.</span>
+0344 <span class="comment">%   DDy(jyml+6,jyel+[3 4]) = [vvs(1), vvs(2)];  % Link is to sensor Pe.</span>
+0345 <span class="comment">%   DDu(jyml+6,jue+[3 4]) = [iis(1), iis(2)]; % Link vs to sensor Pe.</span>
+0346    DDy(jyml+[7 8],idofs(2)+[1:6]) = ddyv(1:2,1:6); <span class="comment">% Link qB to sensor vnac.</span>
+0347    DDy(jyml+[7 8],idofm(3)+[1:6]) = ddyv(1:2,7:12); <span class="comment">% Link qn to sensor vnac.</span>
+0348    DDy(jyml+[7 8],Ndj+idofs(2)+[1:6]) = ddyv(1:2,13:18); <span class="comment">% Link qBd to sensor vnac.</span>
+0349    DDy(jyml+[7 8],Ndj+idofm(3)+[1:6]) = ddyv(1:2,19:24); <span class="comment">% Link qnd to sensor vnac.</span>
+0350    DDu(jyml+9,jua+[1 3*Neb+1 6*Neb+1]) = uop(jua+1)/(3*Vwnd); <span class="comment">% Link Vg0x at inner blade nodes to sensor Va.</span>
+0351    DDu(jyml+9,jua+[2 3*Neb+2 6*Neb+2]) = uop(jua+2)/(3*Vwnd); <span class="comment">% Link Vg0y at inner blade nodes to sensor Va.</span>
+0352    DDu(jyml+10,jua+[1 3*Neb+1 6*Neb+1]) =-uop(jua+2)/(3*Vwnd^2); <span class="comment">% Link Vg0x at inner blade nodes to sensor thw.</span>
+0353    DDu(jyml+10,jua+[2 3*Neb+2 6*Neb+2]) = uop(jua+1)/(3*Vwnd^2); <span class="comment">% Link Vg0y at inner blade nodes to sensor thw.</span>
+0354 
+0355    <span class="comment">% Link in the generator P control.</span>
+0356    indx = [jxm+6, jxc+[1:3]].';
+0357    AA(indx,indx) = aac;                      <span class="comment">% Gen P control dynamics.</span>
+0358    BBu(indx,juc+1) = bbc(:,1);               <span class="comment">% Link Phat to P control states.</span>
+0359    CC(jycl+1,indx) = ccc;                    <span class="comment">% Link states to P control ighq.</span>
+0360    DDu(jycl+1,juc+1) = ddc(:,1);             <span class="comment">% Link Phat to P control ighq.</span>
+0361 
+0362    BBy(indx,jycl+2) = bbc(:,2);              <span class="comment">% Link Pe to control states.</span>
+0363    DDy(jycl+1,jycl+2) = ddc(:,2);            <span class="comment">% Link Pe to P control ighq.</span>
+0364    BBy(:,jycl+1) = BBu(:,jue+6);             <span class="comment">% P control ighq behaves as elec ighq.</span>
+0365    DDy(:,jycl+1) = DDu(:,jue+6);
+0366    DDy(jycl+2,jyel+[3 4]) = [vvs(1), vvs(2)]; <span class="comment">% Link is to P control Pe.</span>
+0367    DDu(jycl+2,jue+[3 4]) = [iis(1), iis(2)]; <span class="comment">% Link vs to P control Pe.</span>
+0368 
+0369    <span class="comment">% Unhook the ighq input, to be consistent with the nonlinear part,</span>
+0370    <span class="comment">% where this has been overridden by the P control.</span>
+0371    BBu(:,jue+6) = sparse(Nx,1);
+0372    DDu(:,jue+6) = sparse(Nyl,1);
+0373 
+0374    [Ao,Bo,Co,Do] = <a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a> (AA,BBu,BBy,CC,DDu,DDy,ones(Nyl,1));
+0375    Nxop = size(Ao,1);
+0376    Nuop = size(Bo,2);
+0377    Nyop = size(Co,1);
+0378 
+0379    <span class="comment">% Linearized MBC transforms.</span>
+0380    [dTpBu,dTBpu]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nu,blu(:,1),blu(:,2),blu(:,3),azi);
+0381    [dTpBy,dTBpy]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nyl,bly(:,1),bly(:,2),bly(:,3),azi);
+0382    [d2TpBx,d2TBpx] = <a href="../../STAS-WPP/STAS-Utilities/secondDerivMBC.html" class="code" title="function [d2TpsiB,d2TBpsi] = secondDerivMBC (N,b1,b2,b3,psi)">secondDerivMBC</a> (Nx,blx(:,1),blx(:,2),blx(:,3),azi);
+0383 
+0384    W = xop(iW);
+0385    dTxpx = W*dTpBx;
+0386    dTxpx(:,iazi) = dTxpx(:,iazi) + dTpBx*dxop + W*d2TpBx*xop;
+0387 
+0388    Aop = real(TT)*(Ao*Txpx - Lo*dTxpx + Bo(:,iueta)*dTxpx(ixeta,:));
+0389    Aop(:,iazi) = Aop(:,iazi) <span class="keyword">...</span>
+0390                + real(TT)*Bo(:,niueta)*dTpBu(niueta,niueta)*uop(niueta);
+0391    Bop = real(TT)*Bo*TpBu;
+0392    Bop(:,iueta) = real(TT)*Bo(:,iueta)*Txpx(ixeta,ixeta);  <span class="comment">% Overwrite OK.</span>
+0393 
+0394    Cop = TBpy(iynl,:)*(Co*Txpx + Do(:,iueta)*dTxpx(ixeta,:));
+0395    Cop(:,iazi) = Cop(:,iazi) + dTBpy(iynl,iynl)*yo <span class="keyword">...</span>
+0396                 + TBpy(iynl,:)*Do(:,niueta)*dTpBu(niueta,niueta)*uop(niueta);
+0397 
+0398    Dop = TBpy(iynl,:)*Do*TpBu;
+0399    Dop(:,iueta) = TBpy(iynl,:)*Do(:,iueta)*Txpx(ixeta,ixeta);
+0400 
+0401 <span class="keyword">else</span>
+0402 
+0403    Aop = sparse (Nx,Nx);
+0404    Bop = sparse (Nx,Nu);
+0405    Cop = sparse (Ny,Nx);
+0406    Dop = sparse (Ny,Nu);
+0407 
+0408 <span class="keyword">end</span>
+0409 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

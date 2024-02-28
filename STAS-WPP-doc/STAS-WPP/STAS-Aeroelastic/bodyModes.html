@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of bodyModes</title>
+  <meta name="keywords" content="bodyModes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; bodyModes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>bodyModes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 04.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 04.12.2017      Visual check of all modes.  Experience from similar
+                 legacy code.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="modes.html" class="code" title="function [shape,freq] = modes (Nmod,M,K)">modes</a>	</li>
+<li><a href="printVec.html" class="code" title="function Vc = printVec(V)">printVec</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 04.12.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 04.12.2017      Visual check of all modes.  Experience from similar</span>
+0010 <span class="comment">%                 legacy code.</span>
+0011 <span class="comment">%</span>
+0012 
+0013 <span class="comment">%'bodyModes'</span>
+0014 
+0015 Ndof = size(M,1);
+0016 
+0017 [idofs,idofm,inods,inodm,Nd0] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0018 
+0019 TotDOFs = 6;
+0020 TotMods = 12;  <span class="comment">% 6 foundation ref DOFs, 6 joint DOFs.</span>
+0021 <span class="keyword">for</span> ibod = 1:7
+0022    <span class="keyword">if</span> (ibod == 1)
+0023       Nnod = s.foundation.Nnod;
+0024       Nmod = s.foundation.Nmod;
+0025    <span class="keyword">elseif</span> (ibod == 2)
+0026       Nnod = s.tower.Nnod;
+0027       Nmod = s.tower.Nmod;
+0028    <span class="keyword">elseif</span> (ibod == 3)
+0029       Nnod = s.nacelle.Nnod;
+0030       Nmod = s.nacelle.Nmod;
+0031    <span class="keyword">elseif</span> (ibod == 4)
+0032       Nnod = s.driveshaft.Nnod;
+0033       Nmod = s.driveshaft.Nmod;
+0034    <span class="keyword">elseif</span> (ibod == 5)
+0035       Nnod = s.blade(1).Nnod;
+0036       Nmod = s.blade(1).Nmod;
+0037    <span class="keyword">elseif</span> (ibod == 6)
+0038       Nnod = s.blade(2).Nnod;
+0039       Nmod = s.blade(2).Nmod;
+0040    <span class="keyword">elseif</span> (ibod == 7)
+0041       Nnod = s.blade(3).Nnod;
+0042       Nmod = s.blade(3).Nmod;
+0043    <span class="keyword">end</span>
+0044    TotMods = TotMods + Nmod;
+0045    TotDOFs = TotDOFs + 6*Nnod*Nmod;
+0046 <span class="keyword">end</span>
+0047 
+0048 shape = spalloc(Ndof,TotMods,TotDOFs);
+0049 freq  = zeros (TotMods,1);
+0050 mdamp = zeros (TotMods,1);
+0051 
+0052 shape(1:6,1:6) = eye(6);  <span class="comment">% Foundation ref nodes.  Zero frequency.</span>
+0053 imod = 6;
+0054 ind = [1:Ndof].';
+0055 <span class="keyword">for</span> ibod = 1:7
+0056 
+0057    <span class="keyword">if</span> (ibod == 1)
+0058       Nmod = s.foundation.Nmod;
+0059       DOF1 = ind(ret==idofs(1)+7);
+0060       DOF2 = ind(ret==idofs(2));
+0061    <span class="keyword">elseif</span> (ibod == 2)
+0062       Nmod = s.tower.Nmod;
+0063       DOF1 = ind(ret==idofs(2)+7);
+0064       DOF2 = ind(ret==idofs(3));
+0065    <span class="keyword">elseif</span> (ibod == 3)
+0066       Nmod = s.nacelle.Nmod;
+0067       DOF1 = ind(ret==idofs(3)+7);
+0068       DOF2 = ind(ret==idofs(4));
+0069    <span class="keyword">elseif</span> (ibod == 4)
+0070       Nmod = s.driveshaft.Nmod;
+0071       DOF1 = ind(ret==idofs(4)+7);
+0072       DOF2 = ind(ret==idofs(6));
+0073    <span class="keyword">elseif</span> (ibod == 5)
+0074       Nmod = s.blade(1).Nmod;
+0075       DOF1 = ind(ret==idofs(6)+7);
+0076       DOF2 = ind(ret==idofs(7));
+0077    <span class="keyword">elseif</span> (ibod == 6)
+0078       Nmod = s.blade(2).Nmod;
+0079       DOF1 = ind(ret==idofs(7)+7);
+0080       DOF2 = ind(ret==idofs(8));
+0081    <span class="keyword">elseif</span> (ibod == 7)
+0082       Nmod = s.blade(3).Nmod;
+0083       DOF1 = ind(ret==idofs(8)+7);
+0084       DOF2 = ind(ret==idofs(8)+(idofs(7)-idofs(6)));
+0085    <span class="keyword">end</span>
+0086 
+0087    <span class="comment">% Force symmetry in the mass and stiffness matrices used to calculate</span>
+0088    <span class="comment">% the body modes.  Small antisymmetric gyroscopic terms have been</span>
+0089    <span class="comment">% observed to produce complex mode shapes for some selected modes,</span>
+0090    <span class="comment">% which then destroys the real state space calculation.  Note that</span>
+0091    <span class="comment">% I am not using these modes in any sense that requires that they</span>
+0092    <span class="comment">% precisely diagonalize M and K.  It's OK if they are approximate.</span>
+0093    <span class="comment">%</span>
+0094    <span class="comment">% Also, it is vital that the order of the modes is the same for the</span>
+0095    <span class="comment">% three blades.  Enforce this by requiring the blade 1 mode shapes</span>
+0096    <span class="comment">% to be used for each blade.</span>
+0097    dofs = [DOF1:DOF2].';
+0098    <span class="keyword">if</span> (ibod &lt;= 5)
+0099       <span class="comment">% Compute body modes.  ibod = 6 or 7, use modes from ibod = 5.</span>
+0100       Msym = 0.5*(M(dofs,dofs) + M(dofs,dofs).');
+0101       Ksym = 0.5*(K(dofs,dofs) + K(dofs,dofs).');
+0102       [shp,frq] = <a href="modes.html" class="code" title="function [shape,freq] = modes (Nmod,M,K)">modes</a> (Nmod,Msym,Ksym);
+0103    <span class="keyword">end</span>
+0104    shape(dofs,imod+[1:Nmod]) = shp;
+0105    freq(imod+[1:Nmod]) = frq;
+0106 
+0107    <span class="keyword">if</span> (s.zdamp &gt; 0)
+0108       Mmod = (shp.')*Msym*shp;
+0109       Kmod = (shp.')*Ksym*shp;
+0110       mdamp(imod+[1:Nmod]) = 2*s.zdamp <span class="keyword">...</span>
+0111                            * sqrt(<a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>(diag(Mmod).*diag(Kmod)));
+0112    <span class="keyword">end</span>
+0113 
+0114 <span class="comment">%{</span>
+0115 <span class="comment">%if (ibod == 1)</span>
+0116 ibod
+0117    diag(M(dofs,dofs))
+0118    diag(K(dofs,dofs))
+0119    <span class="comment">%shp</span>
+0120    frq
+0121 nd = size(dofs,1);
+0122 fidm = fopen(<span class="string">'M.txt'</span>,<span class="string">'w'</span>);
+0123 fidk = fopen(<span class="string">'K.txt'</span>,<span class="string">'w'</span>);
+0124 <span class="keyword">for</span> ir = 1:nd
+0125    fprintf(fidm,<span class="string">'%+5.6e'</span>,M(dofs(ir),dofs(1)));
+0126    fprintf(fidk,<span class="string">'%+5.6e'</span>,K(dofs(ir),dofs(1)));
+0127    <span class="keyword">for</span> ic = 2:nd
+0128       fprintf(fidm,<span class="string">' %+5.6e'</span>,M(dofs(ir),dofs(ic)));
+0129       fprintf(fidk,<span class="string">' %+5.6e'</span>,K(dofs(ir),dofs(ic)));
+0130    <span class="keyword">end</span>
+0131    fprintf(fidm,<span class="string">'\n'</span>);
+0132    fprintf(fidk,<span class="string">'\n'</span>);
+0133 <span class="keyword">end</span>
+0134 fclose(<span class="string">'all'</span>);
+0135 <span class="comment">%end</span>
+0136 <span class="comment">%}</span>
+0137 
+0138 <span class="comment">%{</span>
+0139 <span class="string">'==============================='</span>
+0140 ibod
+0141 <span class="keyword">for</span> jj = 1:Nmod
+0142    shf = zeros(size(ret)+size(slv),1);
+0143    shf(ret) = shape(:,imod+jj);
+0144    freq(imod+jj)
+0145    <a href="printVec.html" class="code" title="function Vc = printVec(V)">printVec</a>(shf)
+0146    <span class="string">' '</span>
+0147 <span class="keyword">end</span>
+0148 <span class="comment">%}</span>
+0149 
+0150    imod = imod + Nmod;
+0151 
+0152 <span class="keyword">end</span>
+0153 
+0154 shape(DOF2+[1:6],imod+[1:6]) = eye(6);  <span class="comment">% Joint DOFs.  Zero frequency.</span>
+0155 
+0156 
+0157 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

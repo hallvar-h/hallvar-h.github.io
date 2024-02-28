@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getMu</title>
+  <meta name="keywords" content="getMu">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; getMu.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>getMu
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function mu = getMu (qn1,qn2,Pn1,Pn2,TsB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ mu includes delta_x, the elastic stretch of the element, as well
+ as zeta, the elastic portion of the nodal rotation, associated
+ with a given element.  The stretch is
+
+ (r_k+1^s)x - (r_k^s)_x - L;  L = |p_k+1^s0 - p_k^s0|.
+
+ The elastic rotation is
+
+                --                     --
+              1 | (T_e^s)32 - (T_e^s)23 |
+ zeta_n\s^s = - | (T_e^s)13 - (T_e^s)31 |
+              2 | (T_e^s)21 - (T_e^s)12 |
+                --                     --
+
+ T_e^s = T_B^s*T_s0^B*T_n0^s0*T_n^n0*T_s0^n0
+
+ Version:        Changes:
+ --------        -------------
+ 11.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 11.10.2017      Checked some simple test cases.  This was also used
+                 in the 45-degree bend case.
+
+ Inputs:
+ -------
+ qn1,qn2         : 6*Nel vectors for node 1 and 2 DOFs.
+ Pn1,Pn2         : 6*Nel vectors describing undeformed nodal position
+                   and orientation of nodes.
+ TsB             : 3-by-iel set of transforms from section to body
+                   coordinates.
+
+ Outputs:
+ --------
+ mu              : [delta 0 0 zeta]^T.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a>	</li>
+<li><a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a>	</li>
+<li><a href="stresses.html" class="code" title="function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE)">stresses</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% mu includes delta_x, the elastic stretch of the element, as well</span>
+0004 <span class="comment">% as zeta, the elastic portion of the nodal rotation, associated</span>
+0005 <span class="comment">% with a given element.  The stretch is</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% (r_k+1^s)x - (r_k^s)_x - L;  L = |p_k+1^s0 - p_k^s0|.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% The elastic rotation is</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%                --                     --</span>
+0012 <span class="comment">%              1 | (T_e^s)32 - (T_e^s)23 |</span>
+0013 <span class="comment">% zeta_n\s^s = - | (T_e^s)13 - (T_e^s)31 |</span>
+0014 <span class="comment">%              2 | (T_e^s)21 - (T_e^s)12 |</span>
+0015 <span class="comment">%                --                     --</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% T_e^s = T_B^s*T_s0^B*T_n0^s0*T_n^n0*T_s0^n0</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Changes:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 11.10.2017      Original code.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Verification:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 11.10.2017      Checked some simple test cases.  This was also used</span>
+0026 <span class="comment">%                 in the 45-degree bend case.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Inputs:</span>
+0029 <span class="comment">% -------</span>
+0030 <span class="comment">% qn1,qn2         : 6*Nel vectors for node 1 and 2 DOFs.</span>
+0031 <span class="comment">% Pn1,Pn2         : 6*Nel vectors describing undeformed nodal position</span>
+0032 <span class="comment">%                   and orientation of nodes.</span>
+0033 <span class="comment">% TsB             : 3-by-iel set of transforms from section to body</span>
+0034 <span class="comment">%                   coordinates.</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">% Outputs:</span>
+0037 <span class="comment">% --------</span>
+0038 <span class="comment">% mu              : [delta 0 0 zeta]^T.</span>
+0039 <span class="comment">%</span>
+0040 
+0041 <span class="comment">%'getMu'</span>
+0042 
+0043 Nel = size(qn1,1)/6;
+0044 
+0045 mu = zeros (12,Nel);
+0046 
+0047 <span class="keyword">for</span> iel = 1:Nel
+0048 
+0049    ir3 = 3*(iel-1);
+0050    ir6 = 6*(iel-1);
+0051 
+0052    xn1 = zeros(6,1);
+0053    xn2 = zeros(6,1);
+0054    xn1(1:3) = Pn1(ir6+[1:3]) + qn1(ir6+[1:3]);
+0055    xn1(4:6) = qn1(ir6+[4:6]);
+0056    xn2(1:3) = Pn2(ir6+[1:3]) + qn2(ir6+[1:3]);
+0057    xn2(4:6) = qn2(ir6+[4:6]);
+0058 
+0059    <span class="comment">% The undeformed element section transform is given by the</span>
+0060    <span class="comment">% second node.</span>
+0061    Ts0jB         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn2(ir6+[4:6]));
+0062    Ts0j1B        = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn1(ir6+[4:6]));
+0063    Tn0ks0j       = (Ts0jB.')*Ts0j1B;
+0064    Tnn0          = zeros(3,6);
+0065    Tnn0(:,1:3)   = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qn1(ir6+[4:6]));
+0066    Tnn0(:,4:6)   = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qn2(ir6+[4:6]));
+0067 
+0068    Teks0j        = Tn0ks0j*Tnn0(:,1:3)*(Tn0ks0j.');
+0069    Tek1s0j       = Tnn0(:,4:6);
+0070 
+0071    Ts0s          = (TsB(:,ir3+[1:3]).')*Ts0jB;
+0072 
+0073    Tns           = Ts0s*Teks0j;
+0074    mu(4:6,iel)   = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a> (Tns);
+0075 
+0076    Tns           = Ts0s*Tek1s0j;
+0077    mu(10:12,iel) = <a href="../../STAS-WPP/STAS-Utilities/spinToVec.html" class="code" title="function vec = spinToVec (sp)">spinToVec</a> (Tns);
+0078 
+0079 
+0080 <span class="comment">%[Pn1 qn1 xn1 Pn2 qn2 xn2]</span>
+0081 
+0082 <span class="comment">%TsB(:,ir3+[1:3])</span>
+0083 <span class="comment">%Ts0jB</span>
+0084 <span class="comment">%(TsB(:,ir3+[1:3]).')</span>
+0085 <span class="comment">%Ts0jB</span>
+0086 <span class="comment">%Tn0ks0j</span>
+0087 <span class="comment">%Tnn0(:,1:3)</span>
+0088 <span class="comment">%(Tn0ks0j.')</span>
+0089 <span class="comment">%'--------------'</span>
+0090 <span class="comment">%TsB(:,ir3+[1:3])</span>
+0091 <span class="comment">%Ts0jB</span>
+0092 <span class="comment">%Tnn0(:,4:6)</span>
+0093 
+0094 
+0095    L = Pn2(ir6+[1:3]) - Pn1(ir6+[1:3]);
+0096    dx = xn2(1:3) - xn1(1:3);
+0097 
+0098    mu(1,iel)     = -[0.5 0 0]*((TsB(:,ir3+[1:3]).')*dx <span class="keyword">...</span>
+0099                  -             Ts0jB.'*L);
+0100    mu(7,iel)     = -mu(1,iel);
+0101 
+0102 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

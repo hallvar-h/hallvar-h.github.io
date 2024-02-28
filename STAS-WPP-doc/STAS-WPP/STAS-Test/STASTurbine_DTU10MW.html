@@ -1,0 +1,911 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of STASTurbine_DTU10MW</title>
+  <meta name="keywords" content="STASTurbine_DTU10MW">
+  <meta name="description" content="-------------------------------------">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; STASTurbine_DTU10MW.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>STASTurbine_DTU10MW
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>-------------------------------------</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [s,a] = STASTurbine_DTU10MW () </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> -------------------------------------
+ 10 MW Offshore Reference Wind Turbine
+ -------------------------------------
+
+ This function defines input properties for the DTU 10 MW Reference
+ Wind Turbine.  The nacelle and drivetrain properties are adapted
+ from the NOWITECH 10 MW reference wind turbine.
+
+ Version:        Changes:
+ --------        -------------
+ 31.08.2017      Original code.  A complete rewrite of the original
+                 STASTurbine.m in order to include data structures.
+
+ Version:        Verification:
+ --------        -------------
+ 31.08.2017      
+
+ Properties:
+ -----------
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/createAero.html" class="code" title="function a = createAero (Nfoils,Neb)">createAero</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/createStructure.html" class="code" title="function s = createStructure (Nef,Net,Nev,Ner,Nen,Ned,Neh,Neb,Nwel)">createStructure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getFoilWeights.html" class="code" title="function fwt = getFoilWeights (tcfoils,tca)">getFoilWeights</a>	Compute foil weights from t/c.  This works with complex step.</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/distributer.html" class="code" title="function r = distributer (N,Ri,Ro,troot,ttip)">distributer</a>	troot = -0.35*pi;</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [s,a] = STASTurbine_DTU10MW ()</a>
+0002 
+0003 <span class="comment">% -------------------------------------</span>
+0004 <span class="comment">% 10 MW Offshore Reference Wind Turbine</span>
+0005 <span class="comment">% -------------------------------------</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% This function defines input properties for the DTU 10 MW Reference</span>
+0008 <span class="comment">% Wind Turbine.  The nacelle and drivetrain properties are adapted</span>
+0009 <span class="comment">% from the NOWITECH 10 MW reference wind turbine.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 31.08.2017      Original code.  A complete rewrite of the original</span>
+0014 <span class="comment">%                 STASTurbine.m in order to include data structures.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 31.08.2017</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Properties:</span>
+0021 <span class="comment">% -----------</span>
+0022 <span class="comment">%</span>
+0023 
+0024 <span class="comment">%==========================================================</span>
+0025 <span class="comment">% Normalization.</span>
+0026 <span class="comment">%==========================================================</span>
+0027 length = 1;
+0028 time   = 1;
+0029 power  = 1e6;
+0030 voltage = sqrt(power);
+0031 <span class="comment">%---------------------------------------</span>
+0032 velocity = length/time;
+0033 mass   = power*(time^3)/(length^2);
+0034 force  = mass*length/(time^2);
+0035 stress = force/(length^2);
+0036 ndens  = mass/(length^3);
+0037 nvisc  = mass/(length*time);
+0038 stiffness = force/length;
+0039 damping = force*time/length;
+0040 current = power/voltage;
+0041 resistance = voltage/current;
+0042 <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> = voltage*time/current;
+0043 capacitance = current*time/voltage;
+0044 flux   = voltage*time;
+0045 
+0046 LTMnorms = [length;time;mass;current];
+0047 save(<span class="string">'-ascii'</span>,<span class="string">'LTMnorms.txt'</span>,<span class="string">'LTMnorms'</span>);
+0048 
+0049 <span class="comment">%==========================================================</span>
+0050 <span class="comment">% General.</span>
+0051 <span class="comment">%==========================================================</span>
+0052 Nef    = 20;
+0053 Nmud   = 5;  <span class="comment">% (Nmud is part of Nef, specifies number below seabed.)</span>
+0054 Nwater = 10; <span class="comment">% (Nwater  &quot;      &quot;   , number between seabed and waterline.)</span>
+0055 Net    = 10;
+0056 Nev    = 2;
+0057 Ner    = 2;
+0058 Nen    = 4;
+0059 Ned    = 4;
+0060 Neh    = 2;
+0061 Neb    = 16;
+0062 
+0063 <span class="comment">% Number of modes to retain.  Retain as few as possible in order</span>
+0064 <span class="comment">% that the numerical conditioning of the structural matrices</span>
+0065 <span class="comment">% will be as good as possible.  (This can also be accomplished</span>
+0066 <span class="comment">% by later partitioning of the system matrices, if, for instance,</span>
+0067 <span class="comment">% a study is focused on a group of high-frequency modes.)</span>
+0068 <span class="comment">%              |  Caution, if you use more than this number, the</span>
+0069 <span class="comment">%              V  code has not been validated.</span>
+0070 Nfnd = 20; <span class="comment">%   20;  % Foundation.</span>
+0071 Ntow = 20; <span class="comment">%   20;  % Tower.</span>
+0072 Nnac = 2;  <span class="comment">%   8;   % Nacelle.</span>
+0073 Ndrv = 2;  <span class="comment">%   18;  % Driveshaft.</span>
+0074 Nbld = 16; <span class="comment">%   20;  % Blades.</span>
+0075 
+0076 Nwel = 15; <span class="comment">% Number of elements subject to wave loads.</span>
+0077 
+0078 <span class="comment">% Set to positive integers if icp contains the control points</span>
+0079 <span class="comment">% for a spline representation of the aerodynamic states. Set</span>
+0080 <span class="comment">% to negative integers if icp contains the blade body modes</span>
+0081 <span class="comment">% for a modal-slave representation of the aerodynamic states.</span>
+0082 <span class="comment">% In the latter case, the selection of modes has to be verified</span>
+0083 <span class="comment">% as the turbine design is altered.</span>
+0084 icp = round(1 + (Neb-1)*[0.00 0.25 0.50 0.70 0.85 1.00]'); <span class="comment">% Splines.</span>
+0085 <span class="comment">%icp = -[1 3 5 7 8 9]'; % Modes. Verify as design is altered.</span>
+0086 <span class="comment">%icp = -1;</span>
+0087 <span class="comment">%icp = 0;</span>
+0088 
+0089 <span class="comment">% Initialization.</span>
+0090 s = <a href="../../STAS-WPP/STAS-Aeroelastic/createStructure.html" class="code" title="function s = createStructure (Nef,Net,Nev,Ner,Nen,Ned,Neh,Neb,Nwel)">createStructure</a> (Nef,Net,Nev,Ner,Nen,Ned,Neh,Neb,Nwel);
+0091 
+0092 s.zdamp = 0.008;      <span class="comment">% Modal structural damping ratio.</span>
+0093                       <span class="comment">% or ...</span>
+0094 s.adamp = 0;          <span class="comment">% Mass-proportional damping factor.</span>
+0095 s.bdamp = 0;          <span class="comment">% Stiffness-proportional damping factor.  0.0002;</span>
+0096 
+0097 <span class="comment">% Correct zero-lift aoa values for inboard DTU 10 MW profiles.</span>
+0098 load(<span class="string">'-binary'</span>,<span class="string">'aoazs_DTU10MW.bin'</span>);
+0099 Nfoils = size(aoazs,1);
+0100 aoazs(1) = 0;
+0101 aoazs(2) = 4.73*pi/180;
+0102 aoazs(3) = -2.50*pi/180;
+0103 save(<span class="string">'-binary'</span>,<span class="string">'aoazs_DTU10MW.bin'</span>,<span class="string">'aoazs'</span>);
+0104 a = <a href="../../STAS-WPP/STAS-Aeroelastic/createAero.html" class="code" title="function a = createAero (Nfoils,Neb)">createAero</a> (Nfoils,Neb);
+0105 
+0106 s.foundation.Nmod   = Nfnd;
+0107 s.tower.Nmod        = Ntow;
+0108 s.nacelle.Nmod      = Nnac;
+0109 s.driveshaft.Nmod   = Ndrv;
+0110 <span class="keyword">for</span> ib = 1:s.Nb
+0111    s.blade(ib).Nmod = Nbld;
+0112 <span class="keyword">end</span>
+0113 
+0114 <span class="comment">%==========================================================</span>
+0115 <span class="comment">% Blades.</span>
+0116 <span class="comment">%==========================================================</span>
+0117 load(<span class="string">'DTU10MWAeroProfile.txt'</span>);
+0118 load(<span class="string">'DTU10MWBladeStructure.txt'</span>);
+0119 Nain = size(DTU10MWAeroProfile,1);      <span class="comment">% Number of rows in the input files.</span>
+0120 Nsin = size(DTU10MWBladeStructure,1);
+0121 
+0122 Lb   = 86.466   /length; <span class="comment">% Blade length from pitch bearing flange to tip.</span>
+0123 
+0124 <span class="comment">% Get the radial coordinates at which the aero and structural data</span>
+0125 <span class="comment">% is given.</span>
+0126 rbain = Lb*DTU10MWAeroProfile(:,1)/length;
+0127 rbsin = Lb*DTU10MWBladeStructure(:,1)/length;
+0128 
+0129 <span class="comment">% Distribute nodes along the blades.  Refined near the root and tip,</span>
+0130 <span class="comment">% coarser in the middle.</span>
+0131 rbnod   = <a href="../../STAS-WPP/STAS-Utilities/distributer.html" class="code" title="function r = distributer (N,Ri,Ro,troot,ttip)">distributer</a> (Neb+1,rbain(1),rbain(Nain),-0.35*pi,0.45*pi);
+0132 rbel    = 0.5*(rbnod(2:Neb+1) + rbnod(1:Neb));
+0133 
+0134 <span class="comment">% Compute spline matrices for later interpolation.  If we have some</span>
+0135 <span class="comment">% quantity gi at input table points, then spline coefficients are</span>
+0136 <span class="comment">% computed by kgi = AB*gi, and interpolated values by g = S*kgi.</span>
+0137 [Aaero,Baero]     = <a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a> (rbain);
+0138 ABaero            = Aaero\Baero;
+0139 [Saero,dSaero]    = <a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a> (rbain,rbel);
+0140 [Snaero,dSnaero]  = <a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a> (rbain,rbnod);
+0141 [Astruct,Bstruct] = <a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a> (rbsin);
+0142 ABstruct          = Astruct\Bstruct;
+0143 [Sstruct,dSstruct]= <a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a> (rbsin,rbel);
+0144 
+0145 <span class="comment">% Structural properties.  The input tables from DTU are given in the</span>
+0146 <span class="comment">% hub coordinate system, that is, zero root cone.</span>
+0147 <span class="comment">%</span>
+0148 <span class="comment">% In the structural calculations the structural twist defines the</span>
+0149 <span class="comment">% section coordinate system, while in the aerodynamic calculations</span>
+0150 <span class="comment">% the aerodynamic twist defines the airfoil coordinate system.</span>
+0151 <span class="comment">%</span>
+0152 <span class="comment">% This input is simplified, for equivalent beam properties.  STAS</span>
+0153 <span class="comment">% accepts the full 6-by-6 inertia and stiffness section property</span>
+0154 <span class="comment">% matrices as input, via rhos and EEs, if these properties are</span>
+0155 <span class="comment">% available.  At present I've ignored the elastic center and shear</span>
+0156 <span class="comment">% center, but have included the center-of-mass offset in the chordwise</span>
+0157 <span class="comment">% direction.</span>
+0158 <span class="comment">%</span>
+0159 <span class="comment">% Spline coefficients of structural properties, and interpolated</span>
+0160 <span class="comment">% values at the desired element locations.</span>
+0161 ksei    = ABstruct*DTU10MWBladeStructure;
+0162 sei     = Sstruct*ksei;
+0163 
+0164 EA      =  sei(:,4)/force;
+0165 EIyy    =  sei(:,5)/(force*length^2);
+0166 EIzz    =  sei(:,6)/(force*length^2);
+0167 GJ      =  sei(:,7)/(force*length^2);
+0168 egy     = -sei(:,8)/length;       <span class="comment">% Centroid in structural section CS.</span>
+0169 egz     =  sei(:,9)/length;       <span class="comment">% My y^s=-x_in, z^s=y_in.</span>
+0170 xis     = -sei(:,10)*pi/180;      <span class="comment">% My structural twist uses the opposite CS.</span>
+0171 rhosA   =  (sei(:,13) + sei(:,19))/(mass/length); <span class="comment">% Mass per unit length.</span>
+0172 rhosJ   =  sei(:,14)/(mass*length); <span class="comment">% Torsional inertia per unit length.</span>
+0173 cgy     = -sei(:,17)/length;      <span class="comment">% Center of mass in structural section CS.</span>
+0174 cgz     =  sei(:,18)/length;
+0175 
+0176 <span class="comment">% Aerodynamic properties.</span>
+0177 kai     = ABaero*DTU10MWAeroProfile;
+0178 ai      = Saero*kai;             <span class="comment">% Values at elements.</span>
+0179 ani     = Snaero*kai;            <span class="comment">% Values at nodes.</span>
+0180 
+0181 chord   = ai(:,2)/(1000*length);
+0182 xia     = ai(:,3)*pi/180;        <span class="comment">% Aero twist, rad.  Positive is LE into wind.</span>
+0183 xpc     = ai(:,4);               <span class="comment">% Origin of section CS aft of the LE,</span>
+0184                                  <span class="comment">% fraction of chord.</span>
+0185 tca     = ai(:,5)/100;           <span class="comment">% t/c.</span>
+0186 
+0187 <span class="comment">% Element coordinates, pitch CS.</span>
+0188 xbaero  = [rbel ai(:,7)/(1000*length) ai(:,6)/(1000*length)].';
+0189 
+0190 acent   = ai(:,8)/100;           <span class="comment">% Aero center aft of LE, fraction of chord.</span>
+0191 
+0192 <span class="comment">% Nodal coordinates, pitch CS.</span>
+0193 xbnaero = [rbnod ani(:,7)/(1000*length) ani(:,6)/(1000*length)].'; 
+0194 Lel     = norm(xbnaero(:,2:Neb+1) - xbnaero(:,1:Neb),2,<span class="string">'cols'</span>).';
+0195 
+0196 <span class="comment">% Compute foil weights from t/c.</span>
+0197 load(<span class="string">'-ascii'</span>,<span class="string">'tcfoils_DTU10MW.txt'</span>);
+0198 foilwt = <a href="../../STAS-WPP/STAS-Aeroelastic/getFoilWeights.html" class="code" title="function fwt = getFoilWeights (tcfoils,tca)">getFoilWeights</a> (tcfoils_DTU10MW,tca);
+0199 
+0200 <span class="comment">% Put values into the data structures.</span>
+0201 <span class="keyword">for</span> ib = 1:s.Nb
+0202 
+0203    s.blade(ib).Lb      = Lb;
+0204    s.blade(ib).Lel(:)  = Lel;
+0205    s.blade(ib).xis(:)  = xis;
+0206    s.blade(ib).zeta    = s.zdamp;
+0207 
+0208    <span class="comment">% Store the element twist values in the outboard node.  This is because</span>
+0209    <span class="comment">% Node 1 will take on a different meaning as the reference node.</span>
+0210    idof = [10:6:6*(Neb+1)-2].';
+0211    s.blade(ib).Pn_B(idof)    = -xia + xis;             <span class="comment">% CHECK SIGN ON XIS.</span>
+0212    s.blade(ib).Pn_B(4)       = -xia(1) + xis(1);
+0213 
+0214 <span class="comment">%   % Put the cone angle in the reference node part of Pn_B. This</span>
+0215 <span class="comment">%   % way, I don't need to pass around the cone angle as a separate</span>
+0216 <span class="comment">%   % parameter.</span>
+0217 <span class="comment">%   s.blade(ib).Pn_B(5) = -phi;</span>
+0218 
+0219    s.blade(ib).Pn_B(1:3) = zeros(3,1);  <span class="comment">% Make sure this is exactly zero.</span>
+0220    <span class="keyword">for</span> inod = 2:Neb+1
+0221       idof = 6*(inod-1);
+0222       s.blade(ib).Pn_B(idof+1:idof+3) = xbnaero(:,inod);
+0223    <span class="keyword">end</span>
+0224 
+0225    s.blade(ib).conn = [ones(1,s.blade(ib).Nel); <span class="keyword">...</span>
+0226                       [1:s.blade(ib).Nel];      <span class="keyword">...</span>
+0227                       [2:s.blade(ib).Nel+1]];
+0228 
+0229    <span class="keyword">for</span> iel = 1:Neb
+0230 
+0231       ic6   = 6*(iel-1);
+0232       ic12  = 12*(iel-1);
+0233       ic144 = 144*(iel-1);
+0234       s.blade(ib).rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0235              diag([rhosA(iel);rhosA(iel);rhosA(iel);rhosJ(iel);0;0]);
+0236 
+0237       <span class="comment">% Account for the center-of-mass offset.</span>
+0238       val = rhosA(iel)*cgy(iel);
+0239       s.blade(ib).rhos(1,ic6+6) = -val;
+0240       s.blade(ib).rhos(3,ic6+4) =  val;
+0241       s.blade(ib).rhos(4,ic6+3) =  val;
+0242       s.blade(ib).rhos(6,ic6+1) = -val;
+0243       s.blade(ib).rhos(4,ic6+4) =  s.blade(ib).rhos(4,ic6+4) <span class="keyword">...</span>
+0244                                 +  rhosA(iel)*(cgy(iel)^2);
+0245 
+0246       val = rhosA(iel)*cgz(iel);
+0247       s.blade(ib).rhos(1,ic6+5) =  val;
+0248       s.blade(ib).rhos(2,ic6+4) = -val;
+0249       s.blade(ib).rhos(4,ic6+2) = -val;
+0250       s.blade(ib).rhos(5,ic6+1) =  val;
+0251       s.blade(ib).rhos(4,ic6+4) =  s.blade(ib).rhos(4,ic6+4) <span class="keyword">...</span>
+0252                                 +  rhosA(iel)*(cgz(iel)^2);
+0253 
+0254       s.blade(ib).EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0255              diag([EA(iel);0;0;GJ(iel);EIyy(iel);EIzz(iel)]);
+0256 
+0257       <span class="comment">% Account for the centroid offset.</span>
+0258       s.blade(ib).EEs(1,ic6+5)  =  EA(iel)*egz(iel);
+0259       s.blade(ib).EEs(1,ic6+6)  = -EA(iel)*egy(iel);
+0260       s.blade(ib).EEs(5,ic6+1)  =  EA(iel)*egz(iel);
+0261       s.blade(ib).EEs(6,ic6+1)  = -EA(iel)*egy(iel);
+0262 
+0263       s.blade(ib).ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0264              <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a> (s.blade(ib).EEs(:,ic6+[1:6]),s.blade(ib).Lel(iel));
+0265       s.blade(ib).me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0266              <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a> (s.blade(ib).rhos(:,ic6+[1:6]),s.blade(ib).Lel(iel));
+0267 
+0268    <span class="keyword">end</span>
+0269 <span class="keyword">end</span>
+0270 
+0271 a.chord(:)    = [chord;chord;chord];
+0272 a.xia(:)      = [xia;xia;xia];
+0273 a.xpc(:)      = [xpc;xpc;xpc];
+0274 a.acent(:)    = [acent;acent;acent];
+0275 a.foilwt(:,:) = [foilwt foilwt foilwt];
+0276 a.Lel(:)      = [Lel;Lel;Lel];
+0277 a.icp         = icp;
+0278 
+0279 load(<span class="string">'-binary'</span>,<span class="string">'aoas_DTU10MW.bin'</span>);
+0280 load(<span class="string">'-binary'</span>,<span class="string">'kfoils_DTU10MW.bin'</span>);
+0281 a.aoas        = aoas;
+0282 a.kfoils      = kfoils;
+0283 
+0284 a.Pa_B(4:6:6*a.Nb*Neb-2,1) = -a.xia;
+0285 
+0286 <span class="keyword">for</span> ib = 1:a.Nb
+0287    <span class="keyword">for</span> iel = 1:Neb
+0288       idof = 6*Neb*(ib-1) + 6*(iel-1);
+0289       ic   = 3*Neb*(ib-1) + 3*(iel-1);
+0290 
+0291       a.Pa_B(idof+1:idof+3,1) = xbaero(:,iel);
+0292 
+0293       cx = cos(xis(iel));  <span class="comment">% xis is relative to xia.</span>
+0294       sx = sin(xis(iel));
+0295       a.Ta_s(:,ic+[1:3]) = [0 0 -1;-cx sx 0;sx cx 0]; <span class="comment">% [1 0 0;0 -cx sx;0 sx cx];</span>
+0296 
+0297    <span class="keyword">end</span>
+0298 <span class="keyword">end</span>
+0299 
+0300 <span class="comment">%==========================================================</span>
+0301 <span class="comment">% Hub, Driveshaft, and Generator.</span>
+0302 <span class="comment">%==========================================================</span>
+0303 <span class="comment">% The drivetrain is based on the NOWITECH Reference Turbine,</span>
+0304 <span class="comment">% whose drivetrain definition is more complete than that of</span>
+0305 <span class="comment">% the DTU turbine.</span>
+0306 <span class="comment">%</span>
+0307 <span class="comment">% The hub mass is that of the DTU Reference Turbine.</span>
+0308 
+0309 phi  = 2.5     *pi/180; <span class="comment">% The root cone angle, for the blade coordinate</span>
+0310                         <span class="comment">% system relative to the hub coordinate system.</span>
+0311 Ld    = 8.0    /length; <span class="comment">% Distance from rear bearing to hub center,</span>
+0312                         <span class="comment">% = 5.4 m driveshaft to flange + about 2.6 m</span>
+0313                         <span class="comment">% to hub center.</span>
+0314 Lbrg  = 3.714  /length; <span class="comment">% Bearing-to-bearing length.</span>
+0315 
+0316 Lh    = 2.8    /length; <span class="comment">% Hub radius.</span>
+0317 mh    = 105520 /mass;   <span class="comment">% Hub mass.</span>
+0318 kfact = 5;              <span class="comment">% Stiffness factor: kfact*k(blade root) = k(hub).</span>
+0319 
+0320 rrot  = 5.970  /length; <span class="comment">% Effective r of generator rotor for Jgen calculation.</span>
+0321 mgen  = 240000 /mass;   <span class="comment">% Memo AN 15.12.35, SINTEF Energi, 2015.</span>
+0322 mgrot = 0.5*mgen;       <span class="comment">% Generator rotor mass.</span>
+0323 Jgenr = 0.625*mgrot*(rrot^2); <span class="comment">% Rough approximation: Half in housing/</span>
+0324 
+0325 
+0326 <span class="comment">% The driveshaft.</span>
+0327 <span class="comment">% The final element is located inside the hub, and its stiffness</span>
+0328 <span class="comment">% and mass properties should reflect this.  Mass: hub mass is</span>
+0329 <span class="comment">% accounted for by the three radial elements, so let the last</span>
+0330 <span class="comment">% driveshaft element be light.  Stiffness: should be stiff.</span>
+0331 <span class="comment">% x/Ld D xis(deg) rhoA rhoJ EA EIyy EIzz GJ</span>
+0332 drvprops = [ <span class="keyword">...</span>
+0333 0.000000E+00  1.700000E+00  0.000000E+00  5.952729E+03  3.506529E+03  1.425301E+11  4.197958E+10  4.197958E+10  3.308978E+10; <span class="keyword">...</span>
+0334 5.177557E-02  1.700000E+00  0.000000E+00  5.952729E+03  3.506529E+03  1.425301E+11  4.197958E+10  4.197958E+10  3.308978E+10; <span class="keyword">...</span>
+0335 2.447354E-01  1.700000E+00  0.000000E+00  5.952729E+03  3.506529E+03  1.425301E+11  4.197958E+10  4.197958E+10  3.308978E+10; <span class="keyword">...</span>
+0336 2.857820E-01  1.760000E+00  0.000000E+00  6.653673E+03  4.160209E+03  1.593133E+11  4.980532E+10  4.980532E+10  3.925831E+10; <span class="keyword">...</span>
+0337 3.268285E-01  1.820000E+00  0.000000E+00  7.384730E+03  4.892845E+03  1.768175E+11  5.857631E+10  5.857631E+10  4.617192E+10; <span class="keyword">...</span>
+0338 3.678750E-01  1.880000E+00  0.000000E+00  8.145898E+03  5.710275E+03  1.950426E+11  6.836244E+10  6.836244E+10  5.388569E+10; <span class="keyword">...</span>
+0339 4.089215E-01  1.940000E+00  0.000000E+00  8.937179E+03  6.618540E+03  2.139888E+11  7.923604E+10  7.923604E+10  6.245664E+10; <span class="keyword">...</span>
+0340 4.499680E-01  2.000000E+00  0.000000E+00  9.758572E+03  7.623885E+03  2.336560E+11  9.127186E+10  9.127186E+10  7.194370E+10; <span class="keyword">...</span>
+0341 5.302202E-01  2.000000E+00  0.000000E+00  9.758572E+03  7.623885E+03  2.336560E+11  9.127186E+10  9.127186E+10  7.194370E+10; <span class="keyword">...</span>
+0342 5.562038E-01  2.000000E+00  0.000000E+00  9.758572E+03  7.623885E+03  2.336560E+11  9.127186E+10  9.127186E+10  7.194370E+10; <span class="keyword">...</span>
+0343 5.749964E-01  2.000000E+00  0.000000E+00  1.427540E+04  9.707270E+03  3.418053E+11  1.162138E+11  1.162138E+11  9.160382E+10; <span class="keyword">...</span>
+0344 6.174716E-01  2.000000E+00  0.000000E+00  1.427540E+04  9.707270E+03  3.418053E+11  1.162138E+11  1.162138E+11  9.160382E+10; <span class="keyword">...</span>
+0345 6.395241E-01  2.000000E+00  0.000000E+00  1.427540E+03  9.707270E+02  3.418053E+12  1.162138E+12  1.162138E+12  9.160382E+11; <span class="keyword">...</span>
+0346 6.750000E-01  2.000000E+00  0.000000E+00  1.427540E+03  9.707270E+02  3.418053E+12  1.162138E+12  1.162138E+12  9.160382E+11; <span class="keyword">...</span>
+0347 1.000000E+00  2.000000E+00  0.000000E+00  1.427540E+03  9.707270E+02  3.418053E+12  1.162138E+12  1.162138E+12  9.160382E+11];
+0348 
+0349 <span class="comment">% Avoid numerically perfect symmetry.</span>
+0350 drvprops(:,7) = (1 + 1e-6)*drvprops(:,7);
+0351 
+0352 <span class="comment">% Use linear interpolation.  Splines don't work well here, because</span>
+0353 <span class="comment">% the profile changes abruptly.</span>
+0354 znorm      =  drvprops(:,1);
+0355 zin        = -znorm*Ld;
+0356 zn         = -[([0:Ned].')*Lbrg/Ned;Lbrg+([1:Neh].')*(Ld-Lbrg)/Neh];
+0357 ze         =  0.5*(zn(1:Ned+Neh) + zn(2:Ned+Neh+1));
+0358 Lel        =  zn(1:Ned+Neh) - zn(2:Ned+Neh+1);
+0359 
+0360 sei = interp1 (zin,drvprops,ze);
+0361 
+0362 Dh         = sei(:,2)/length;
+0363 xis        = sei(:,3);
+0364 rhosA      = sei(:,4)/(mass/length);
+0365 rhosJ      = sei(:,5)/(mass*length);
+0366 EA         = sei(:,6)/force;
+0367 EIyy       = sei(:,7)/(force*length^2);
+0368 EIzz       = sei(:,8)/(force*length^2);
+0369 GJ         = sei(:,9)/(force*length^2);
+0370 
+0371 <span class="comment">% Get the basic driveshaft mass (not including the hub) for later.</span>
+0372 mdrv = sum(rhosA.*Lel);
+0373 
+0374 <span class="comment">% Additional generator mass and inertia.  The generator attaches</span>
+0375 <span class="comment">% to the driveshaft at the node outboard of the front bearing,</span>
+0376 <span class="comment">% just behind the hub.  However, for studies, let this be selected</span>
+0377 <span class="comment">% by genFlag, from STASElectric.m.</span>
+0378 igen = Ned+Neh-1;
+0379 rhosA(igen) = rhosA(igen) + mgrot/Lel(igen);
+0380 rhosJ(igen) = rhosJ(igen) + Jgenr/Lel(igen);
+0381 
+0382 <span class="comment">% Fill in driveshaft body entries.</span>
+0383 s.driveshaft.Ld             = Ld;
+0384 s.driveshaft.Lbrg           = Lbrg;
+0385 s.driveshaft.Lh             = Lh;
+0386 s.driveshaft.phi            = phi;
+0387 s.driveshaft.khfac          = kfact;
+0388 s.driveshaft.mh             = mh;
+0389 s.driveshaft.rrot           = rrot;
+0390 s.driveshaft.mgrot          = mgrot;
+0391 s.driveshaft.Jgrot          = Jgenr;
+0392 
+0393 s.driveshaft.Lel(1:Ned+Neh) = Lel;
+0394 s.driveshaft.D(1:Ned+Neh)   = Dh;
+0395 s.driveshaft.xis(1:Ned+Neh) = xis;
+0396 s.driveshaft.zeta           = s.zdamp;
+0397 
+0398 <span class="keyword">for</span> iel = 1:Ned+Neh
+0399 
+0400    ic6   = 6*(iel-1);
+0401    ic12  = 12*(iel-1);
+0402    ic144 = 144*(iel-1);
+0403 
+0404    s.driveshaft.rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0405           diag([rhosA(iel);rhosA(iel);rhosA(iel);rhosJ(iel);0;0]);
+0406    s.driveshaft.EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0407           diag([EA(iel);0;0;GJ(iel);EIyy(iel);EIzz(iel)]);
+0408 
+0409    s.driveshaft.ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0410           <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>(s.driveshaft.EEs(:,ic6+[1:6]),s.driveshaft.Lel(iel));
+0411    s.driveshaft.me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0412           <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>(s.driveshaft.rhos(:,ic6+[1:6]),s.driveshaft.Lel(iel));
+0413 
+0414 <span class="keyword">end</span>
+0415 
+0416 <span class="keyword">for</span> inod = 1:Ned+Neh+1
+0417    idof = 6*(inod-1);
+0418    s.driveshaft.Pn_B(idof+3) = zn(inod);
+0419 <span class="keyword">end</span>
+0420 
+0421 <span class="comment">% Here are the three hub elements.</span>
+0422 Lel     = [Lh;Lh;Lh];
+0423 xis     = [0;0;0];
+0424 rhosA   = (mh/3)./Lel;
+0425 rhosJ   = s.blade(1).rhos(4,4)*ones(3,1); <span class="comment">% The blade root value.  Not critical.</span>
+0426 EA      = kfact*s.blade(1).EEs(1,1)*ones(3,1);
+0427 EIyy    = kfact*s.blade(1).EEs(5,5)*ones(3,1);
+0428 EIzz    = kfact*s.blade(1).EEs(6,6)*ones(3,1);
+0429 GJ      = kfact*s.blade(1).EEs(4,4)*ones(3,1);
+0430 
+0431 s.driveshaft.Lel(Ned+Neh+[1:3]) = Lel;
+0432 s.driveshaft.D(Ned+Neh+[1:3])   = a.chord(1);
+0433 s.driveshaft.xis(Ned+Neh+[1:3]) = xis;
+0434 
+0435 s.driveshaft.conn = [ones(1,s.driveshaft.Nel);                              <span class="keyword">...</span>
+0436              [1:s.driveshaft.Nnod-4]                                        <span class="keyword">...</span>
+0437              [s.driveshaft.Nnod-3 s.driveshaft.Nnod-3 s.driveshaft.Nnod-3]; <span class="keyword">...</span>
+0438              [2:s.driveshaft.Nnod-3]                                        <span class="keyword">...</span>
+0439              [s.driveshaft.Nnod-2 s.driveshaft.Nnod-1 s.driveshaft.Nnod]];
+0440 
+0441 <span class="keyword">for</span> jel = 1:3
+0442 
+0443    iel   = Ned + Neh + jel;
+0444    ic6   = 6*(iel-1);
+0445    ic12  = 12*(iel-1);
+0446    ic144 = 144*(iel-1);
+0447 
+0448    s.driveshaft.rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0449           diag([rhosA(jel);rhosA(jel);rhosA(jel);rhosJ(jel);0;0]);
+0450    s.driveshaft.EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0451           diag([EA(jel);0;0;GJ(jel);EIyy(jel);EIzz(jel)]);
+0452 
+0453    s.driveshaft.ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0454           <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>(s.driveshaft.EEs(:,ic6+[1:6]),s.driveshaft.Lel(iel));
+0455    s.driveshaft.me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0456           <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>(s.driveshaft.rhos(:,ic6+[1:6]),s.driveshaft.Lel(iel));
+0457 
+0458 <span class="keyword">end</span>
+0459 
+0460 idof = 6*(Ned+Neh+1);
+0461 s.driveshaft.Pn_B(idof+1)  =  Lh;
+0462 s.driveshaft.Pn_B(idof+3)  = -Ld;
+0463 s.driveshaft.Pn_B(idof+7)  =  Lh*cos(2*pi/3);
+0464 s.driveshaft.Pn_B(idof+8)  =  Lh*sin(2*pi/3);
+0465 s.driveshaft.Pn_B(idof+9)  = -Ld;
+0466 s.driveshaft.Pn_B(idof+13) =  Lh*cos(4*pi/3);
+0467 s.driveshaft.Pn_B(idof+14) =  Lh*sin(4*pi/3);
+0468 s.driveshaft.Pn_B(idof+15) = -Ld; 
+0469 
+0470 <span class="comment">%==========================================================</span>
+0471 <span class="comment">% Nacelle.</span>
+0472 <span class="comment">%==========================================================</span>
+0473 <span class="comment">% The masses of the nacelle elements are calibrated so that</span>
+0474 <span class="comment">% the total nacelle + driveshaft mass is the same as the</span>
+0475 <span class="comment">% DTU turbine, 446,026 kg.  This gives a &quot;budget&quot; from which</span>
+0476 <span class="comment">% the known masses of the driveshaft and nacelle nose are</span>
+0477 <span class="comment">% subtracted.  The remainder is assigned to the Nev and Ner</span>
+0478 <span class="comment">% elements, and represents both the turret structure and</span>
+0479 <span class="comment">% systems.</span>
+0480 mnac  = 446026 /mass;   <span class="comment">% Total mass of nacelle, generator, driveshaft</span>
+0481                         <span class="comment">% (not including the hub).</span>
+0482 Lv    = 2.75   /length; <span class="comment">% Vertical distance from yaw bearing to shaft axis.</span>
+0483 Lr    = 2      /length; <span class="comment">% Distance along shaft from yaw center to rear bearing.</span>
+0484 Ln    = Lbrg + Lr;      <span class="comment">% Distance along shaft from yaw center to front bearing.</span>
+0485 
+0486 delta = 5      *pi/180; <span class="comment">% Shaft tilt angle, rad.</span>
+0487 rsta  = 5.897  /length; <span class="comment">% Effective r of generator stator for Jgen calculation.</span>
+0488 mgsta = 0.5*mgen;       <span class="comment">% Generator stator mass.</span>
+0489 Jgens = 0.625*mgsta*(rsta^2); <span class="comment">% support at r/2, half in outer part at r.</span>
+0490 
+0491 <span class="comment">% The nacelle turret and nose are parameterized beginning at the</span>
+0492 <span class="comment">% yaw bearing, with elements arranged vertically up to the</span>
+0493 <span class="comment">% intersection with the driveshaft axis, then horizontally (with</span>
+0494 <span class="comment">% tilt delta) to the nose.  Nev elements are vertical, Ner to</span>
+0495 <span class="comment">% the rear bearing (nose flange), and Nen to the front bearing.</span>
+0496 <span class="comment">% x/Lbrg D xis(deg) rhoA rhoJ EA EIyy EIzz GJ</span>
+0497 nacprops = [ <span class="keyword">...</span>
+0498 0.0000E+00  5.00  0.0000E+00  0.0000E+00  4.0000E+04  4.0000E+11  4.0000E+11  4.0000E+11  8.0000E+11; <span class="keyword">...</span>
+0499 5.0000E-01  5.00  0.0000E+00  0.0000E+00  4.0000E+04  4.0000E+11  4.0000E+11  4.0000E+11  8.0000E+11; <span class="keyword">...</span>
+0500 5.6120E-01  3.13  0.0000E+00  1.3375E+04  2.8748E+04  3.2024E+11  3.4417E+11  3.4417E+11  6.8833E+11; <span class="keyword">...</span>
+0501 6.7090E-01  3.13  0.0000E+00  1.3375E+04  2.8748E+04  3.2024E+11  3.4417E+11  3.4417E+11  6.8833E+11; <span class="keyword">...</span>
+0502 7.8060E-01  3.13  0.0000E+00  6.7585E+03  1.5529E+04  1.6182E+11  1.8591E+11  1.8591E+11  3.7183E+11; <span class="keyword">...</span>
+0503 8.9030E-01  3.13  0.0000E+00  1.9078E+04  3.8568E+04  4.5680E+11  4.6173E+11  4.6173E+11  9.2345E+11; <span class="keyword">...</span>
+0504 1.0000E+00  3.13  0.0000E+00  1.0286E+04  2.2820E+04  2.4627E+11  2.7320E+11  2.7320E+11  5.4640E+11];
+0505 
+0506 NevNen     =  Nev + Ner + Nen;
+0507 znorm      =  nacprops(:,1);
+0508 zin        =  znorm*(Lv + Ln);
+0509 zn         =  [([0:Nev].')*Lv/Nev;      <span class="keyword">...</span>
+0510                Lv + ([1:Ner].')*Lr/Ner; <span class="keyword">...</span>
+0511                Lv + Lr + ([1:Nen].')*(Ln - Lr)/Nen];
+0512 ze         =  0.5*(zn(1:NevNen) + zn(2:NevNen+1));
+0513 Lel        =  -zn(1:NevNen) + zn(2:NevNen+1);
+0514 
+0515 sei = interp1 (zin,nacprops,ze);
+0516 
+0517 Dh         = sei(:,2)/length;
+0518 xis        = sei(:,3);
+0519 rhosA      = sei(:,4)/(mass/length);
+0520 rhosJ      = sei(:,5)/(mass*length);
+0521 EA         = sei(:,6)/force;
+0522 EIyy       = sei(:,7)/(force*length^2);
+0523 EIzz       = sei(:,8)/(force*length^2);
+0524 GJ         = sei(:,9)/(force*length^2);
+0525 
+0526 <span class="comment">% Add the generator stator mass to the outermost nose element.</span>
+0527 igen = Nev + Ner + Nen;
+0528 rhosA(igen) = rhosA(igen) + mgsta/Lel(igen);
+0529 rhosJ(igen) = rhosJ(igen) + Jgens/Lel(igen);
+0530 
+0531 <span class="comment">% Assign remaining mass to the nacelle structure.</span>
+0532 mrem  = mnac - mgrot - mdrv <span class="keyword">...</span>
+0533       - sum(rhosA(Nev+Ner+1:NevNen).*Lel(Nev+Ner+1:NevNen));
+0534 rhosA(1:Nev+Ner) = mrem/sum(Lel(1:Nev+Ner)); 
+0535 
+0536 s.nacelle.Lv     = Lv;
+0537 s.nacelle.Lr     = Lr;
+0538 s.nacelle.Ln     = Ln;
+0539 s.nacelle.delta  = delta;
+0540 s.nacelle.D(:)   = Dh;
+0541 s.nacelle.rstat  = rsta;
+0542 s.nacelle.mgstat = mgsta;
+0543 s.nacelle.Jgstat = Jgens;
+0544 
+0545 s.nacelle.Lel(:) = Lel;
+0546 s.nacelle.xis(:) = xis;
+0547 s.nacelle.zeta   = s.zdamp;
+0548 
+0549 s.nacelle.conn = [ones(1,s.nacelle.Nel); <span class="keyword">...</span>
+0550                   [1:s.nacelle.Nel];     <span class="keyword">...</span>
+0551                   [2:s.nacelle.Nel+1]];
+0552 
+0553 <span class="keyword">for</span> iel = 1:Nev+Ner+Nen
+0554 
+0555    ic6  = 6*(iel-1);
+0556    ic12 = 12*(iel-1);
+0557    ic144 = 144*(iel-1);
+0558 
+0559    s.nacelle.rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0560           diag([rhosA(iel);rhosA(iel);rhosA(iel);rhosJ(iel);0;0]);
+0561    s.nacelle.EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0562           diag([EA(iel);0;0;GJ(iel);EIyy(iel);EIzz(iel)]);
+0563 
+0564    s.nacelle.ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0565           <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>(s.nacelle.EEs(:,ic6+[1:6]),s.nacelle.Lel(iel));
+0566    s.nacelle.me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0567           <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>(s.nacelle.rhos(:,ic6+[1:6]),s.nacelle.Lel(iel));
+0568 
+0569 <span class="keyword">end</span>
+0570 
+0571 <span class="keyword">for</span> inod = 1:Nev+1
+0572    idof = 6*(inod-1);
+0573    s.nacelle.Pn_B(idof+3) = zn(inod);
+0574 <span class="keyword">end</span>
+0575 <span class="keyword">for</span> inod = Nev+1:Nev+Ner+Nen+1
+0576    idof = 6*(inod-1);
+0577    s.nacelle.Pn_B(idof+1) = -(zn(inod) - zn(Nev+1))*cos(delta);
+0578    s.nacelle.Pn_B(idof+3) =  zn(Nev+1) + (zn(inod) - zn(Nev+1))*sin(delta);
+0579 <span class="keyword">end</span>
+0580 
+0581 <span class="comment">%==========================================================</span>
+0582 <span class="comment">% Tower.</span>
+0583 <span class="comment">%==========================================================</span>
+0584 <span class="comment">% The tower, starting at 10 m elevation.</span>
+0585 Lt   = 105.63  /length; <span class="comment">% Originally 115.63.  Compressed length by 10 m</span>
+0586                         <span class="comment">% to accommodate the above-waterline portion of</span>
+0587                         <span class="comment">% the piled foundation.</span>
+0588 Cdt0 = 0.80;            <span class="comment">% Over the nominal 0.65, margin to account for icing</span>
+0589                         <span class="comment">% and weathering of the surface.  Ref DNV-OS-J101.</span>
+0590 
+0591 <span class="comment">% x/Lt Dt xis(deg) rhoA rhoJ EA EIyy EIzz GJ</span>
+0592 towprops = [ <span class="keyword">...</span>
+0593 0.0000E+00  8.3000E+00  0.0000E+00  1.4207E+04  2.4060E+05  3.8007E+11  3.2182E+12  3.2182E+12  2.4826E+12; <span class="keyword">...</span>
+0594 9.9455E-02  8.0215E+00  0.0000E+00  1.4207E+04  2.4060E+05  3.8007E+11  3.2182E+12  3.2182E+12  2.4826E+12; <span class="keyword">...</span>
+0595 1.9891E-01  7.7430E+00  0.0000E+00  1.2791E+04  2.0236E+05  3.4217E+11  2.7067E+12  2.7067E+12  2.0880E+12; <span class="keyword">...</span>
+0596 2.9837E-01  7.4646E+00  0.0000E+00  1.1439E+04  1.6867E+05  3.0602E+11  2.2561E+12  2.2561E+12  1.7404E+12; <span class="keyword">...</span>
+0597 3.9782E-01  7.1861E+00  0.0000E+00  1.0153E+04  1.3916E+05  2.7160E+11  1.8614E+12  1.8614E+12  1.4360E+12; <span class="keyword">...</span>
+0598 4.9728E-01  6.9076E+00  0.0000E+00  8.9315E+03  1.1349E+05  2.3893E+11  1.5181E+12  1.5181E+12  1.1711E+12; <span class="keyword">...</span>
+0599 5.9673E-01  6.6292E+00  0.0000E+00  7.7754E+03  9.1321E+04  2.0800E+11  1.2215E+12  1.2215E+12  9.4229E+11; <span class="keyword">...</span>
+0600 6.9619E-01  6.3507E+00  0.0000E+00  6.6844E+03  7.2329E+04  1.7882E+11  9.6746E+11  9.6746E+11  7.4633E+11; <span class="keyword">...</span>
+0601 7.9564E-01  6.0722E+00  0.0000E+00  5.6586E+03  5.6214E+04  1.5138E+11  7.5190E+11  7.5190E+11  5.8004E+11; <span class="keyword">...</span>
+0602 8.9510E-01  5.7937E+00  0.0000E+00  4.6980E+03  4.2684E+04  1.2568E+11  5.7093E+11  5.7093E+11  4.4043E+11; <span class="keyword">...</span>
+0603 1.0000E+00  5.5000E+00  0.0000E+00  3.8025E+03  3.1465E+04  1.0172E+11  4.2087E+11  4.2087E+11  3.2467E+11];
+0604 
+0605 <span class="comment">% Avoid numerically perfect symmetry.</span>
+0606 towprops(:,7) = (1 + 1e-6)*towprops(:,7);
+0607 
+0608 <span class="comment">% Use linear interpolation.  Splines don't work well here, because</span>
+0609 <span class="comment">% the profile changes abruptly.</span>
+0610 znorm      =  towprops(:,1);
+0611 zin        =  znorm*Lt;
+0612 zn         =  ([0:Net].')*Lt/Net;
+0613 ze         =  0.5*(zn(1:Net) + zn(2:Net+1));
+0614 Lel        = -zn(1:Net) + zn(2:Net+1);
+0615 
+0616 sei = interp1 (zn,towprops,ze);
+0617 
+0618 Dh         = sei(:,2)/length;
+0619 xis        = sei(:,3);
+0620 rhosA      = sei(:,4)/(mass/length);
+0621 rhosJ      = sei(:,5)/(mass*length);
+0622 EA         = sei(:,6)/force;
+0623 EIyy       = sei(:,7)/(force*length^2);
+0624 EIzz       = sei(:,8)/(force*length^2);
+0625 GJ         = sei(:,9)/(force*length^2);
+0626 
+0627 <span class="comment">% Fill in tower body entries.</span>
+0628 s.tower.Lt             = Lt;
+0629 s.tower.Cd(:)          = Cdt0;
+0630 
+0631 s.tower.Lel(:)         = Lel;
+0632 s.tower.D(:)           = Dh;
+0633 s.tower.xis(:)         = xis;
+0634 s.tower.zeta           = s.zdamp;
+0635 
+0636 s.tower.conn = [ones(1,s.tower.Nel); <span class="keyword">...</span>
+0637                 [1:s.tower.Nel];     <span class="keyword">...</span>
+0638                 [2:s.tower.Nel+1]];
+0639 
+0640 <span class="keyword">for</span> iel = 1:Net
+0641 
+0642    ic6  = 6*(iel-1);
+0643    ic12 = 12*(iel-1);
+0644    ic144 = 144*(iel-1);
+0645 
+0646    s.tower.rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0647           diag([rhosA(iel);rhosA(iel);rhosA(iel);rhosJ(iel);0;0]);
+0648    s.tower.EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0649           diag([EA(iel);0;0;GJ(iel);EIyy(iel);EIzz(iel)]);
+0650 
+0651    s.tower.ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0652           <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>(s.tower.EEs(:,ic6+[1:6]),s.tower.Lel(iel));
+0653    s.tower.me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0654           <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>(s.tower.rhos(:,ic6+[1:6]),s.tower.Lel(iel));
+0655 
+0656 <span class="keyword">end</span>
+0657 
+0658 <span class="keyword">for</span> inod = 1:Net+1
+0659    idof = 6*(inod-1);
+0660    s.tower.Pn_B(idof+3) = zn(inod);
+0661 <span class="keyword">end</span>
+0662 
+0663 <span class="comment">%==========================================================</span>
+0664 <span class="comment">% Foundation.</span>
+0665 <span class="comment">%==========================================================</span>
+0666 <span class="comment">% The foundation consists of a monopile driven 42 m into the</span>
+0667 <span class="comment">% seabed, and extending to an elevation of 20 m above the</span>
+0668 <span class="comment">% seabed (and 10 m below sealevel); and a 20 m high transition</span>
+0669 <span class="comment">% piece, from -10 m to +10 m relative to sealevel.</span>
+0670 Lf = 82      /length;
+0671 Lt = 105.63  /length;  <span class="comment">% Originally 115.63.  Compressed length by 10 m</span>
+0672                        <span class="comment">% to accommodate the above-waterline portion of</span>
+0673                        <span class="comment">% the piled foundation.</span>
+0674 
+0675 rhow = 1024  /(mass/length^3);
+0676 Cdf0 = 1.0;            <span class="comment">% To account for marine growth.</span>
+0677 wel = [6:20]';         <span class="comment">% Must match length of Nwel at top of input file.</span>
+0678 
+0679 <span class="comment">% Based on a design obtained from L. Eliassen, using soil P-Y</span>
+0680 <span class="comment">% relationships representative of the Dogger Bank.  Do = 9 m.</span>
+0681 <span class="comment">% Includes refinement near the waterline, for wave loads.  The</span>
+0682 <span class="comment">% change in properties corresponds to the change from the</span>
+0683 <span class="comment">% monopile to transition piece.</span>
+0684 <span class="comment">% x/Lf Df xis(deg) rhoA rhoJ EA EIyy EIzz GJ</span>
+0685 fnprops = [ <span class="keyword">...</span>
+0686 0.0000E+00  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0687 1.0244E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0688 2.0488E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0689 3.0732E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0690 4.0976E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0691 5.1220E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0692 5.6098E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0693 6.0976E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0694 6.5854E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0695 7.0732E-01  9.0000E+00  0.0000E+00  2.1949E+04  4.3469E+05  5.8716E+11  5.8144E+12  5.8144E+12  4.4854E+12; <span class="keyword">...</span>
+0696 7.5610E-01  9.0000E+00  0.0000E+00  3.4881E+04  6.8168E+05  9.3313E+11  9.1180E+12  9.1180E+12  7.0339E+12; <span class="keyword">...</span>
+0697 7.8049E-01  9.0000E+00  0.0000E+00  3.4743E+04  6.7361E+05  9.2943E+11  9.0101E+12  9.0101E+12  6.9507E+12; <span class="keyword">...</span>
+0698 8.0488E-01  9.0000E+00  0.0000E+00  3.4467E+04  6.5768E+05  9.2204E+11  8.7970E+12  8.7970E+12  6.7862E+12; <span class="keyword">...</span>
+0699 8.2927E-01  9.0000E+00  0.0000E+00  3.4191E+04  6.4200E+05  9.1466E+11  8.5872E+12  8.5872E+12  6.6244E+12; <span class="keyword">...</span>
+0700 8.5366E-01  9.0000E+00  0.0000E+00  3.3914E+04  6.2657E+05  9.0727E+11  8.3808E+12  8.3808E+12  6.4652E+12; <span class="keyword">...</span>
+0701 8.7805E-01  9.0000E+00  0.0000E+00  3.3638E+04  6.1139E+05  8.9988E+11  8.1778E+12  8.1778E+12  6.3086E+12; <span class="keyword">...</span>
+0702 9.0244E-01  9.0000E+00  0.0000E+00  3.3362E+04  5.9645E+05  8.9249E+11  7.9780E+12  7.9780E+12  6.1545E+12; <span class="keyword">...</span>
+0703 9.2683E-01  9.0000E+00  0.0000E+00  3.3086E+04  5.8176E+05  8.8510E+11  7.7816E+12  7.7816E+12  6.0029E+12; <span class="keyword">...</span>
+0704 9.5122E-01  9.0000E+00  0.0000E+00  3.2810E+04  5.6732E+05  8.7771E+11  7.5883E+12  7.5883E+12  5.8539E+12; <span class="keyword">...</span>
+0705 9.7561E-01  9.0000E+00  0.0000E+00  3.2533E+04  5.5311E+05  8.7032E+11  7.3983E+12  7.3983E+12  5.7073E+12; <span class="keyword">...</span>
+0706 1.0000E+00  9.0000E+00  0.0000E+00  3.2257E+04  5.3915E+05  8.6293E+11  7.2116E+12  7.2116E+12  5.5632E+12];
+0707 
+0708 <span class="comment">% Avoid numerically perfect symmetry.</span>
+0709 fnprops(:,7) = (1 + 1e-6)*fnprops(:,7);
+0710 
+0711 <span class="comment">% Use an exact number of elements here, in order to get the correct</span>
+0712 <span class="comment">% resolution near the waterline etc.</span>
+0713 znorm      =  fnprops(:,1);
+0714 zn        =  -Lf + znorm*Lf;
+0715 ze         =  0.5*(zn(1:Nef) + zn(2:Nef+1));
+0716 Lel        =  -zn(1:Nef) + zn(2:Nef+1);
+0717 
+0718 sei = interp1 (zn,fnprops,ze);
+0719 
+0720 Dh         = sei(:,2)/length;
+0721 xis        = sei(:,3);
+0722 rhosA      = sei(:,4)/(mass/length);
+0723 rhosJ      = sei(:,5)/(mass*length);
+0724 EA         = sei(:,6)/force;
+0725 EIyy       = sei(:,7)/(force*length^2);
+0726 EIzz       = sei(:,8)/(force*length^2);
+0727 GJ         = sei(:,9)/(force*length^2);
+0728 
+0729 <span class="comment">% Increase the effective rho*A density to account for soil</span>
+0730 <span class="comment">% within the pile.  Density of 2000 kg/m^3.</span>
+0731 rhosA(1:Nmud) = rhosA(1:Nmud) + 0.25*pi*(Dh(1:Nmud).^2) <span class="keyword">...</span>
+0732               * 2e3/(mass/length^3);
+0733 
+0734 <span class="comment">% Soil spring properties.</span>
+0735 <span class="comment">% dkxy is based on values obtained from L. Eliassen,</span>
+0736 <span class="comment">% representative of the Dogger Bank.  dkz is estimated</span>
+0737 <span class="comment">% based on previous calculations (E. Van Buren's code)</span>
+0738 <span class="comment">% on dense sand and clay.  It is scaled from the given</span>
+0739 <span class="comment">% values of dkxy.</span>
+0740 <span class="comment">% depth = -42  -33.6  -25.2   -16.8  -8.4   0</span>
+0741 scale = 1.0;
+0742 dkxy = scale*[1.15e8; 9.04e7; 6.94e7; 5.12e7; 3.25e7; 1.89e7]/(force/(length^2));
+0743 
+0744 dkz = dkxy*(1.62/2.06);
+0745 
+0746 kxg = zeros(Nef+1,1);
+0747 kyg = zeros(Nef+1,1);
+0748 kzg = zeros(Nef+1,1);
+0749 cxg = zeros(Nef+1,1);
+0750 cyg = zeros(Nef+1,1);
+0751 czg = zeros(Nef+1,1);
+0752 kthzg = zeros(Nef+1,1);
+0753 cthzg = zeros(Nef+1,1);
+0754 
+0755 <span class="comment">% Apply stiffness to the bottom nodes, corresponding to</span>
+0756 <span class="comment">% the bottom Nmud (submerged in the seabed) elements.</span>
+0757 kxg(1) = 0.5*dkxy(1)*Lel(1);
+0758 kxg(2:Nmud) = 0.5*dkxy(2:Nmud) <span class="keyword">...</span>
+0759            .* (Lel(1:Nmud-1) + Lel(2:Nmud));
+0760 kxg(Nmud+1) = 0.5*dkxy(Nmud+1)*Lel(Nmud);
+0761 kyg = kxg;
+0762 kzg(1:Nmud+1) = kxg(1:Nmud+1).*dkz./dkxy;
+0763 
+0764 <span class="comment">% Damgaard 2013, should be a bit under 0.01 damping ratio for</span>
+0765 <span class="comment">% the first mode.  If f = 0.25 Hz, omega = 1.57 rad/s, then</span>
+0766 <span class="comment">% c = 2 zeta k/omega.  Say zeta = 0.008, then c = 0.01 k.</span>
+0767 <span class="comment">% This isn't rigorously correct, and it should be verified</span>
+0768 <span class="comment">% what the actual modal damping is.</span>
+0769 dfac = 0.01;
+0770 cxg = dfac*kxg;
+0771 cyg = dfac*kyg;
+0772 czg = dfac*kzg;
+0773 
+0774 <span class="comment">% A torsional stiffness and damping are needed as well.</span>
+0775 <span class="comment">% These can be derived as R^2 times the tension stiffness.</span>
+0776 kthzg = [(Dh.^2).*kzg(1:Nef)/4; (Dh(Nef)^2)*kzg(Nef+1)/4];
+0777 cthzg = [(Dh.^2).*czg(1:Nef)/4; (Dh(Nef)^2)*czg(Nef+1)/4];
+0778 
+0779 <span class="comment">% The easiest option for added mass of a monopile is simply to</span>
+0780 <span class="comment">% modify the input rho*A (mass per unit length) in the lateral</span>
+0781 <span class="comment">% directions.  Define CmA for all submerged and wave-effected</span>
+0782 <span class="comment">% elements, for use in calculating wave excitation forces, and</span>
+0783 <span class="comment">% then increase the rho*A of the submerged elements.</span>
+0784 CmA = [0.50*pi*(Dh(Nmud+[1:Nwater]).^2); <span class="keyword">...</span><span class="comment"> % Ca = 1, + flooded tower below waterline.</span>
+0785        0.25*pi*(Dh(Nmud+Nwater+[1:(Nwel-Nwater)]).^2)]; 
+0786 <span class="comment">%CmA = 0.25*pi*(Dh(Nmud+1:Nmud+Nwel).^2); % Ca = 1.</span>
+0787 rCmA = zeros(Nef,1);
+0788 rCmA(Nmud+[1:Nwater]) = rhow*CmA(1:Nwater);
+0789 
+0790 <span class="comment">% Fill in foundation body entries.</span>
+0791 s.foundation.Lf             = Lf;
+0792 s.foundation.wel            = wel;
+0793 s.foundation.Nmud           = Nmud;
+0794 s.foundation.Nwater         = Nwater;
+0795 s.foundation.rhow           = rhow;
+0796 s.foundation.CmA(:)         = CmA;
+0797 s.foundation.Cd(:)          = Cdf0;
+0798 s.foundation.k(:,:)         = [kxg kyg kzg kthzg cxg cyg czg cthzg].';
+0799 
+0800 s.foundation.Lel(:)         = Lel;
+0801 s.foundation.D(:)           = Dh;
+0802 s.foundation.xis(:)         = xis;
+0803 s.foundation.zeta           = s.zdamp;
+0804 
+0805 s.foundation.conn = [ones(1,s.foundation.Nel); <span class="keyword">...</span>
+0806                      [1:s.foundation.Nel];     <span class="keyword">...</span>
+0807                      [2:s.foundation.Nel+1]];
+0808 
+0809 <span class="keyword">for</span> iel = 1:Nef
+0810 
+0811    ic6   = 6*(iel-1);
+0812    ic12  = 12*(iel-1);
+0813    ic144 = 144*(iel-1);
+0814 
+0815    s.foundation.rhos(:,ic6+[1:6]) = <span class="keyword">...</span>
+0816           diag([rhosA(iel);rhosA(iel)+rCmA(iel);rhosA(iel)+rCmA(iel);rhosJ(iel);0;0]);
+0817    s.foundation.EEs(:,ic6+[1:6]) = <span class="keyword">...</span>
+0818           diag([EA(iel);0;0;GJ(iel);EIyy(iel);EIzz(iel)]);
+0819 
+0820    s.foundation.ke_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0821           <a href="../../STAS-WPP/STAS-Aeroelastic/buildkes.html" class="code" title="function ke = buildkes (EEs,L)">buildkes</a>(s.foundation.EEs(:,ic6+[1:6]),s.foundation.Lel(iel));
+0822    s.foundation.me_s(:,ic12+[1:12]) = <span class="keyword">...</span>
+0823           <a href="../../STAS-WPP/STAS-Aeroelastic/buildmes.html" class="code" title="function mes = buildmes (rhos,L)">buildmes</a>(s.foundation.rhos(:,ic6+[1:6]),s.foundation.Lel(iel));
+0824 
+0825 <span class="keyword">end</span>
+0826 
+0827 <span class="keyword">for</span> inod = 1:Nef+1
+0828    idof = 6*(inod-1);
+0829    s.foundation.Pn_B(idof+3) = zn(inod) - zn(1);
+0830 <span class="keyword">end</span>
+0831 
+0832 
+0833 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,634 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of asymWind</title>
+  <meta name="keywords" content="asymWind">
+  <meta name="description" content="Run a Newton's method solution of the closed-loop turbine, and check the">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; asymWind.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>asymWind
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Run a Newton's method solution of the closed-loop turbine, and check the</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Run a Newton's method solution of the closed-loop turbine, and check the
+ control tuning.  This attempts a single-level solution, that is, calling
+ one function that returns dx/dt and A for the entire turbine.  It is also
+ possible to pursue a hierarchical solution where each module is solved
+ independently with inner Newton loops, and then the overall system with
+ an outer Newton loop acting on the residuals in the interface variables.
+
+ asymWind is set up to accommodate yaw angles and asymmetric wind fields,
+ in addition to the nominal case of uniform aligned wind.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMinit.html" class="code" title="function x0 = BEMinit (psiFlag,Viguess,Tar,Trg,Vg,wg,zr,ch,Lel,aoast,rho,A,Dia,azi,omega)">BEMinit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMsetup.html" class="code" title="function [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = BEMsetup (s,a)">BEMsetup</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices.html" class="code" title="function [blxdof,bludof,blydof] =MBCindices (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs)">MBCindices</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/buildTxpx.html" class="code" title="function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi)">buildTxpx</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a>	Utilize Matlab/Octave spline interpolation capability.  "tab" is then</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/BTEfun.html" class="code" title="function [dxdt,A] = BTEfun (x,yin,params);">BTEfun</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Run a Newton's method solution of the closed-loop turbine, and check the</span>
+0002 <span class="comment">% control tuning.  This attempts a single-level solution, that is, calling</span>
+0003 <span class="comment">% one function that returns dx/dt and A for the entire turbine.  It is also</span>
+0004 <span class="comment">% possible to pursue a hierarchical solution where each module is solved</span>
+0005 <span class="comment">% independently with inner Newton loops, and then the overall system with</span>
+0006 <span class="comment">% an outer Newton loop acting on the residuals in the interface variables.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% asymWind is set up to accommodate yaw angles and asymmetric wind fields,</span>
+0009 <span class="comment">% in addition to the nominal case of uniform aligned wind.</span>
+0010 
+0011 clear;
+0012 
+0013 <span class="comment">%============================================</span>
+0014 <span class="comment">% Abbreviated inputs for uniform wind.</span>
+0015 ffllgg = 1;
+0016 <span class="keyword">if</span> (ffllgg == 1)
+0017    initFlagin = 1;
+0018    lcin = <span class="string">'_P060_V100'</span>;
+0019    outnmin = <span class="string">'_P060_'</span>;
+0020    Vinp = 10.;
+0021    RSCin = 1;    <span class="comment">% 1: Pitch, 2: Variable-speed.</span>
+0022    Pcin = 6.e6;
+0023    drin = 1;     <span class="comment">% 1: full, 3: rigid struct, 5: elastic struct, 6: aero only.</span>
+0024 <span class="keyword">elseif</span> (ffllgg == 2)
+0025    initFlagin = 1;
+0026    lcin = <span class="string">'_V055'</span>;
+0027    outnmin = <span class="string">'_'</span>;
+0028    Vinp = 5.5;
+0029    RSCin = 2;    <span class="comment">% 1: Pitch, 2: Variable-speed.</span>
+0030    Pcin = 1.e7;
+0031    drin = 1;     <span class="comment">% 1: full, 3: rigid struct, 5: elastic struct, 6: aero only.</span>
+0032 <span class="keyword">elseif</span> (ffllgg == 3)
+0033    initFlagin = 1;
+0034    lcin = <span class="string">'_P070_V100'</span>;
+0035    outnmin = <span class="string">'_P070_'</span>;
+0036    Vinp = 10.0;
+0037    RSCin = 1;    <span class="comment">% 1: Pitch, 2: Variable-speed.</span>
+0038    Pcin = 7.e6;
+0039    drin = 1;     <span class="comment">% 1: full, 3: rigid struct, 5: elastic struct, 6: aero only.</span>
+0040 <span class="keyword">end</span>
+0041 <span class="comment">%============================================</span>
+0042 
+0043 printf(<span class="string">'Reading inputs\n'</span>);
+0044 fflush(stdout);
+0045 
+0046 nm = <span class="string">'DTU10MW'</span>;
+0047 initFlag = initFlagin;  <span class="comment">% 0: Initial guess.  1: Load from file (using lcnm ID).</span>
+0048 lcnm = lcin;
+0049 outnm = outnmin;
+0050 
+0051 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0052 eval([<span class="string">'epar  = STASElectric_'</span> nm <span class="string">' ();'</span>]);
+0053 eval([<span class="string">'ppar  = STASPitch_'</span>    nm <span class="string">' ();'</span>]);
+0054 eval([<span class="string">'ypar  = STASYaw_'</span>      nm <span class="string">' ();'</span>]);
+0055 eval([<span class="string">'c     = STASControl_'</span>  nm <span class="string">' ();'</span>]);
+0056 
+0057 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0058  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0059  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0060  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0061 
+0062 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0063 [imdofs,Nmd] = <a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a> (s);
+0064 
+0065 Nb  = a.Nb;
+0066 Neb = a.Neb;
+0067 Nae = Nb*Neb;
+0068 
+0069 <span class="comment">% For linear analysis, the azimuth angle is arbitrary, as its</span>
+0070 <span class="comment">% influence will be eliminated by the MBC transform.</span>
+0071 azi0 = 0*pi/180;
+0072 cp0 = cos(azi0);
+0073 sp0 = sin(azi0);
+0074 
+0075 <span class="comment">% ===================================================================</span>
+0076 <span class="comment">% Input parameters defining the load case.</span>
+0077 <span class="comment">%</span>
+0078 <span class="comment">% Note that the tower mode shapes will be slightly more accurate if</span>
+0079 <span class="comment">% an initial yaw angle is input via yawr; then the mode shapes will</span>
+0080 <span class="comment">% be computed using this yaw position, rather than zero.</span>
+0081 <span class="comment">%</span>
+0082 a.dens = 1.225                     / ndens;      <span class="comment">% Air density.</span>
+0083 a.visc = 1.789e-5                  / nvisc;      <span class="comment">% Air viscosity.</span>
+0084 Vmax   = Vinp                       / velocity;
+0085 Vmin   = Vinp                       / velocity;
+0086 Vmag   = 0.5*(Vmax + Vmin);
+0087 yawr   = 0*pi/180;                               <span class="comment">% P: zero-q nodal disp.</span>
+0088 betar  = 0*pi/180;                               <span class="comment">% P: zero-q nodal disp.</span>
+0089 yawg   = 0*pi/180;                               <span class="comment">% q0 relative to bref.</span>
+0090 betag  = 5*pi/180;                               <span class="comment">% q0 relative to bref.</span>
+0091 grav   = [0;0;-9.807]              / (length/(time^2));
+0092 
+0093 c.RSCFlag = RSCin;  <span class="comment">% Force the flag to correspond to the wind speed.</span>
+0094                 <span class="comment">% 1: pitch control.  2: variable-speed.</span>
+0095 
+0096 vs     = [33000;0]                 / voltage;    <span class="comment">% Grid electrical voltage.</span>
+0097 we     = 50*(2*pi)                 * time;       <span class="comment">% Grid electrical frequency.</span>
+0098 th_e   = 0;                                      <span class="comment">% Ref. elec. angle.</span>
+0099 Vhdc   = c.Vhdc;                                 <span class="comment">% DC link voltage command.</span>
+0100 Qh     = 0                         / power;      <span class="comment">% Reactive power command.</span>
+0101 
+0102 Area   = pi*(c.Ro^2);
+0103 Pguess = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>(0.45*0.5*a.dens*Area*(Vmag^3),c.Pr);
+0104 Pc     = Pcin/power; <span class="comment">% c.Pr;                                   % No power command.</span>
+0105 <span class="comment">%Pc     =  7.e6                     / power;      % Power command, use</span>
+0106 <span class="comment">%Pguess = Pc;                                     % these lines.</span>
+0107 [Wguess,dW] = <a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Vmag,c.WVTab);
+0108 
+0109 wg     = 0.5*c.np*Wguess;                        <span class="comment">% Generator elec. speed.</span>
+0110 ihg    = [1/current;-Pguess/(3000/voltage)];     <span class="comment">% Gen. current commands.</span>
+0111 
+0112 betars = [betar;betar;betar];
+0113 betags = [betag;betag;betag];
+0114 
+0115 <span class="comment">% ===================================================================</span>
+0116 <span class="comment">% Solve for the initial electrical system states.</span>
+0117 printf(<span class="string">'Solving for initial electrical states\n'</span>);
+0118 fflush(stdout);
+0119 
+0120 arat = epar(14);
+0121 ip   = [Pguess/(vs(1)*arat);1/current];
+0122 yein = [wg;we;th_e;vs;ihg;Vhdc;Qh];
+0123 xein = [ihg;Vhdc;vs*arat;ihg;ihg;we;th_e;vs;0; <span class="keyword">...</span>
+0124         ip;ip*arat;vs;Vhdc;Vhdc;Qh;ip];
+0125 
+0126 cnv = eps^0.6;
+0127 Ns = 50;
+0128 bta = ones(Ns,1);
+0129 litmax = 20;
+0130 [xe0,jnk] = <a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a> (@(x) <a href="../../STAS-WPP/STAS-Main/BTEfun.html" class="code" title="function [dxdt,A] = BTEfun (x,yin,params);">BTEfun</a>(x,yein,epar),0,xein,cnv,Ns,bta,litmax);
+0131 
+0132 <span class="comment">% ===================================================================</span>
+0133 <span class="comment">% Initialize the structral calculation or load initial values and</span>
+0134 <span class="comment">% mode shapes.</span>
+0135 printf(<span class="string">'Initializing structural states and mode shapes\n'</span>);
+0136 fflush(stdout);
+0137 
+0138 [xs0,etas0,q0,dq0dt,d2q0dt2,P,shape0,freq0,mdamp0,ret,slv, <span class="keyword">...</span>
+0139  Ndj,Nnod,Neta] = <a href="../../STAS-WPP/STAS-Aeroelastic/structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a> (s,yawr,azi0,betars,Wguess);
+0140 Nret = size(ret,1);
+0141 Nslv = size(slv,1);
+0142 Nylin = 4*Ndj + 9*Nnod + 137*Nae + 5;
+0143 Nu = Ndj + 3*Nae;
+0144 
+0145 <span class="comment">% Put the guessed pitch angle into the eta vector.</span>
+0146 etas0(Neta-[2 1 0]) = betags;
+0147 
+0148 <span class="comment">% ===================================================================</span>
+0149 <span class="comment">% BEM setup, parameters that stay fixed throughout the calculations,</span>
+0150 <span class="comment">% and initial estimates of the aerodynamic states.</span>
+0151 printf(<span class="string">'Initializing aerodynamic states\n'</span>);
+0152 fflush(stdout);
+0153 
+0154 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0155 [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = <a href="../../STAS-WPP/STAS-Aeroelastic/BEMsetup.html" class="code" title="function [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = BEMsetup (s,a)">BEMsetup</a> (s,a);
+0156 
+0157 Td_n = [cp0 -sp0 0;sp0 cp0 0;0 0 1];
+0158 Try = Tn_y;
+0159 Tyy0 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (q0(idofs(3)+[4:6]));
+0160 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(idofs(3)+[4:6]));
+0161 Trg = Ty0g*Tyy0*Try;
+0162 
+0163 [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wga] = <span class="keyword">...</span>
+0164                       <a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a> (s,a,q0,dq0dt,P,Tas);
+0165 
+0166 [zr,Area,Dp,rp,Lp,xeg,xhg,xyg] = <span class="keyword">...</span>
+0167          <a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a> (s,a,q0,P,Try,Trg);
+0168 Dps = zeros(Nae,1);
+0169 Dps(1:Neb)         = Dp(1);
+0170 Dps(Neb+[1:Neb])   = Dp(2);
+0171 Dps(2*Neb+[1:Neb]) = Dp(3);
+0172 
+0173 <span class="comment">% ===================================================================</span>
+0174 <span class="comment">% Fill out the global velocity vector based on the inputs.</span>
+0175 <span class="comment">% Here the wind has an asymmetry.  These inputs are in body</span>
+0176 <span class="comment">% coordinates and are later transformed to MBC.</span>
+0177 Vg = zeros(3*Nae,1);
+0178 thel = atan2(zr(2:2:2*Nae),zr(1:2:2*Nae-1));
+0179 cthel = cos(thel);
+0180 sthel = sin(thel);
+0181 
+0182 <span class="comment">% Horizontal gradient (partial wake state, for instance).</span>
+0183 Vg(1:3:3*Nae-2) = 0.5*(Vmax + Vmin) + 0.5*(Vmax - Vmin)*rp.*cthel/rp(Neb);
+0184 
+0185 <span class="comment">% Vertical gradient (wind shear).</span>
+0186 <span class="comment">%Vg(1:3:3*Nae-2) = 0.5*(Vmax + Vmin) + 0.5*(Vmax - Vmin)*rp.*sthel/rp(Neb);</span>
+0187 
+0188 Vg(2:3:3*Nae-1) = 0;
+0189 Vg(3:3:3*Nae)   = 0;
+0190 <span class="comment">%[thel cthel sthel Vg(1:3:3*Nae-2)]</span>
+0191 <span class="comment">% ===================================================================</span>
+0192 
+0193 <span class="comment">% Initial guess for induced velocity.</span>
+0194 Viguess = zeros(2*Nae,1);
+0195 Viguess(1:2:2*Nae-1) = -0.35*Vg(1:3:3*Nae-2);
+0196 
+0197 xa0 = <a href="../../STAS-WPP/STAS-Aeroelastic/BEMinit.html" class="code" title="function x0 = BEMinit (psiFlag,Viguess,Tar,Trg,Vg,wg,zr,ch,Lel,aoast,rho,A,Dia,azi,omega)">BEMinit</a> (1,                                <span class="keyword">...</span>
+0198                Viguess,Tar,Trg,Vg,wga,zr,ch,Lel, <span class="keyword">...</span>
+0199                aoast,a.dens,Area,Dps,azi0,Wguess);
+0200 
+0201 <span class="comment">% Best estimate of the initial modal aero states.</span>
+0202 bsh = <a href="../../STAS-WPP/STAS-Aeroelastic/bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a> (s,ret,shape0);
+0203 Psi = <a href="../../STAS-WPP/STAS-Aeroelastic/aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a> (a,rp,bsh);
+0204 etaa0 = pinv(Psi)*xa0;
+0205 Naero = size(Psi,2);
+0206 
+0207 <span class="comment">% ===================================================================</span>
+0208 <span class="comment">% Actuators.</span>
+0209 printf(<span class="string">'Initializing actuator states\n'</span>);
+0210 fflush(stdout);
+0211 
+0212 yp0 = zeros(9,1);
+0213 yp0([1 3 5]) = betags;
+0214 yp0([2 4 6]) = betags;
+0215 xp0 = zeros(6,1);
+0216 xp0([1 3 5]) = betags;
+0217 yy0 = zeros(3,1);
+0218 xy0 = zeros(2,1);
+0219 
+0220 <span class="comment">% ===================================================================</span>
+0221 <span class="comment">% Initialize the control states.</span>
+0222 printf(<span class="string">'Initializing control states\n'</span>);
+0223 fflush(stdout);
+0224 
+0225 bavg = sum(betags)/3;
+0226 
+0227 xc0 = [Wguess;Vmag;Wguess;bavg;bavg;Pguess;Pguess;Wguess;Wguess;bavg;bavg;bavg; <span class="keyword">...</span>
+0228        0;0;Pguess;ihg(2);0;0;0;0;0;0;0;0;0;0;0;0;0;0;0];
+0229 
+0230 <span class="comment">% ===================================================================</span>
+0231 <span class="comment">% Initial conditions.</span>
+0232 printf(<span class="string">'Assembling initial conditions.\n'</span>);
+0233 fflush(stdout);
+0234 
+0235 igen = [idofs(3)+[1:6] idofm(5)+[1:6] idofs(4)+[1:6] idofs(5)+[1:6]].';
+0236 ipit = [Ndof+[4:6]].';
+0237 iyaw = Ndof + 1;
+0238 
+0239 u0 = [zeros(Ndj,1);zeros(Neta,1);Vg;we;th_e;vs;Pc;Qh];
+0240 
+0241 <span class="comment">% Initial states.</span>
+0242 x0 = [etas0;etaa0;xp0;xy0;xe0;xc0];    <span class="comment">% Guess</span>
+0243 dx0 = zeros(size(x0,1),1);
+0244 dx0(1:Neta) = x0(Neta+[1:Neta]);
+0245 
+0246 Nx = size(x0,1);
+0247 Nu = size(u0,1);
+0248 
+0249 <span class="comment">% ===================================================================</span>
+0250 <span class="comment">% MBC transforms.</span>
+0251 printf(<span class="string">'Building MBC transforms.\n'</span>);
+0252 fflush(stdout);
+0253 
+0254 Nxa = size(Psi,2);
+0255 Nxp = 6;
+0256 [blxdof,bludof,blydof] =  <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices.html" class="code" title="function [blxdof,bludof,blydof] =MBCindices (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs)">MBCindices</a> (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs);
+0257 [TpsixB,TBxpsi]   = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>      (Nx,blxdof(:,1),blxdof(:,2),blxdof(:,3),azi0);
+0258 [TpsiuB,TBupsi]   = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>      (Nu,bludof(:,1),bludof(:,2),bludof(:,3),azi0);
+0259 bldof = {blxdof,bludof,blydof};
+0260 
+0261 <span class="comment">% ===================================================================</span>
+0262 <span class="comment">% Initialize the MBC variables.</span>
+0263 
+0264 iueta = Ndj + [1:Neta].';
+0265 niueta = [[1:Ndj] [Ndj+Neta+1:Nu]].';
+0266 upsi = TBupsi(niueta,:)*u0;
+0267 
+0268 <span class="keyword">if</span> (initFlag == 0)
+0269 
+0270 printf(<span class="string">'Initial conditions are guessed.\n'</span>);
+0271 fflush(stdout);
+0272 
+0273    xpsi = TBxpsi*x0;
+0274 
+0275    <span class="comment">% The initial value of dxpsi should match xpsi, via the appropriate</span>
+0276    <span class="comment">% transform, in the velocity DOFs.  To do this, convert to body</span>
+0277    <span class="comment">% coordinates, assign dx, and transform back to dxpsi.</span>
+0278    iazi = Neta-4;
+0279    [x,Txpx,jnk2] = <a href="../../STAS-WPP/STAS-Aeroelastic/buildTxpx.html" class="code" title="function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi)">buildTxpx</a> (xpsi,zeros(Nx,1),blxdof(:,1),blxdof(:,2),blxdof(:,3),iazi);
+0280    dx = zeros(Nx,1);
+0281    dx(1:Neta) = x(Neta+[1:Neta]);
+0282    dxpsi = Txpx\dx;
+0283 
+0284    <span class="comment">% If desired, implement gravity as a constant external force.  This</span>
+0285    <span class="comment">% may aid convergence of the structural DOFs.  Comment out if gravity</span>
+0286    <span class="comment">% is to be considered as an integral part of the element matrices,</span>
+0287    <span class="comment">% see structure.m.</span>
+0288    g0 = [0;0;0];
+0289    [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =                   <span class="keyword">...</span>
+0290             <a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a> (0,xpsi,dxpsi,upsi,s,a,                  <span class="keyword">...</span>
+0291                     epar,ppar,ypar,c,g0,P,shape0,mdamp0,    <span class="keyword">...</span>
+0292                     Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0293                     xas,yas,Psi,igen,ipit,iyaw);
+0294 
+0295    Rgrav = Lpsi(:,Neta+[1:3])*grav;  <span class="comment">% Mass matrix columns times accel.</span>
+0296    grav = [0;0;0];
+0297 
+0298 <span class="keyword">else</span>
+0299 
+0300 printf(<span class="string">'Initial conditions are read from a file.\n'</span>);
+0301 fflush(stdout);
+0302 
+0303    eval([&quot;load <span class="string">'xpsi&quot; lcnm &quot;.txt'</span>;&quot;]);
+0304    eval([&quot;load <span class="string">'dxpsi&quot; lcnm &quot;.txt'</span>;&quot;]);
+0305    eval([&quot;load <span class="string">'Rgrav&quot; lcnm &quot;.txt'</span>;&quot;]);
+0306    eval([<span class="string">'xpsi  = xpsi'</span> lcnm <span class="string">';'</span>]);
+0307    eval([<span class="string">'dxpsi = dxpsi'</span> lcnm <span class="string">';'</span>]);
+0308    eval([<span class="string">'Rgrav = Rgrav'</span> lcnm <span class="string">';'</span>]);
+0309 
+0310 <span class="keyword">end</span>
+0311 
+0312 
+0313 drflg = drin;
+0314 
+0315 <span class="keyword">if</span> (drflg == 1)
+0316    <span class="comment">% Locked azimuth (free W).  Tower damping control functions, no VIG, IPB.</span>
+0317    dret = [[1:Neta-6] Neta-[5 3 2 1 0] Neta+[1:Neta-6] 2*Neta-[5 4 3 2 1 0] <span class="keyword">...</span>
+0318            2*Neta+[1:Naero] 2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] <span class="keyword">...</span>
+0319            2*Neta+Naero+8+25+[[1:12] [15:24]]].';
+0320 
+0321 <span class="keyword">elseif</span> (drflg == 2)
+0322    <span class="comment">% Locked azimuth (free W).  No tower damping, VIG, IPB.</span>
+0323    dret = [[1:Neta-6] Neta-[5 3 2 1 0] Neta+[1:Neta-6] 2*Neta-[5 4 3 2 1 0] <span class="keyword">...</span>
+0324            2*Neta+[1:Naero] 2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] <span class="keyword">...</span>
+0325            2*Neta+Naero+8+25+[[1:12] [15:18]]].';
+0326 
+0327 <span class="keyword">elseif</span> (drflg == 3)
+0328    <span class="comment">% Rigid structure.  It is good to start a new analysis with a rigid</span>
+0329    <span class="comment">% solution, which allows the rotor speed, control, and electric parameters</span>
+0330    <span class="comment">% to get close to their final values.</span>
+0331    dret = [Neta-[5 3 2 1 0] 2*Neta-[5 4 3 2 1 0] <span class="keyword">...</span>
+0332            2*Neta+[1:Naero] 2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] <span class="keyword">...</span>
+0333            2*Neta+Naero+8+25+[1 2 3 4 5 6 7 8 9 10 11 12 15 16 17 18]].';
+0334 
+0335 <span class="keyword">elseif</span> (drflg == 4)
+0336    <span class="comment">% No aero.</span>
+0337    dret = [[1:Neta-6] Neta-[5 3 2 1 0] Neta+[1:Neta-6] 2*Neta-[5 4 3 2 1 0] <span class="keyword">...</span>
+0338            2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] <span class="keyword">...</span>
+0339            2*Neta+Naero+8+25+[[1:12] [15:24]]].';
+0340 
+0341 <span class="keyword">elseif</span> (drflg == 5)
+0342    <span class="comment">% Only elastic structural.</span>
+0343    dret = [[1:Neta-6] Neta+[1:Neta-6]].';
+0344 
+0345 <span class="keyword">elseif</span> (drflg == 6)
+0346    <span class="comment">% Only aero.  If the optimization is &quot;sticking&quot; at a nonzero metric,</span>
+0347    <span class="comment">% try running a pure-aero solution followed by an elastic structural</span>
+0348    <span class="comment">% solution, then close out with the full solution.</span>
+0349    dret = [2*Neta+[1:Naero]].';
+0350 
+0351 <span class="keyword">elseif</span> (drflg == 7)
+0352 
+0353 <span class="comment">%   dret = [Neta-[5 3 2 1 0] 2*Neta-[5 4 3 2 1 0] ...</span>
+0354 <span class="comment">%           [209:288] [293:334] 2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] ...</span>
+0355 <span class="comment">%           2*Neta+Naero+8+25+[1 2 3 4 5 6 7 8 9 10 11 12 15 16 17 18]].';</span>
+0356 <span class="comment">%   dret = [[1:Neta-6] Neta-[5 3 2 1 0] Neta+[1:Neta-6] 2*Neta-[5 4 3 2 1 0] ...</span>
+0357 <span class="comment">%           [209:288] [293:334] 2*Neta+Naero+[1:8] 2*Neta+Naero+8+[1:25] ...</span>
+0358 <span class="comment">%           2*Neta+Naero+8+25+[[1:12] [15:24]]].';</span>
+0359 <span class="comment">%   dret = [[209:288] [293:334]].';</span>
+0360 <span class="comment">%   dret = [291 292].';</span>
+0361 
+0362 
+0363 <span class="keyword">end</span>
+0364 
+0365 Ndr = size(dret,1);
+0366 
+0367 <span class="comment">% ===================================================================</span>
+0368 <span class="comment">% Get the initial N-R residual.</span>
+0369 printf(<span class="string">'Newton-Raphson solution.\n'</span>);
+0370 printf(<span class="string">'   Computing the initial residual.\n'</span>);
+0371 fflush(stdout);
+0372 
+0373 [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =                   <span class="keyword">...</span>
+0374          <a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a> (0,xpsi,dxpsi,upsi,s,a,                  <span class="keyword">...</span>
+0375                  epar,ppar,ypar,c,grav,P,shape0,mdamp0,  <span class="keyword">...</span>
+0376                  Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0377                  xas,yas,Psi,igen,ipit,iyaw);
+0378 
+0379 Res = Lpsi(dret,dret)\(Rpsi(dret) + Rgrav(dret));
+0380 Rval = sqrt((Res.')*Res);
+0381 
+0382 dxpsi(dret) = Res;
+0383 
+0384 <span class="comment">%[dret Res.*Res]</span>
+0385 <span class="comment">%return</span>
+0386 <span class="comment">% 1:104    modal positions</span>
+0387 <span class="comment">% 105:208  modal velocities</span>
+0388 <span class="comment">% 209:250  collective aero</span>
+0389 <span class="comment">% 251:292  cos aero</span>
+0390 <span class="comment">% 293:334  sin aero</span>
+0391 <span class="comment">% 335:340  pitch</span>
+0392 <span class="comment">% 341:342  yaw</span>
+0393 <span class="comment">% 343:367  electrical</span>
+0394 <span class="comment">% 368:398  control</span>
+0395 
+0396 printf(<span class="string">'   Initial residual %+5.3e\n'</span>,Rval);
+0397 fflush(stdout);
+0398 
+0399 <span class="comment">% ===================================================================</span>
+0400 <span class="comment">% Newton-Raphson method solution.</span>
+0401 cnv = eps^0.3; <span class="comment">% eps^0.6;</span>
+0402 Ns = 100;
+0403 <span class="comment">%bta = ones(Ns,1);</span>
+0404 <span class="comment">%bta = [0.01*ones(2,1);0.02*ones(2,1);0.05*ones(2,1);0.1*ones(2,1); ...</span>
+0405 <span class="comment">%       0.2*ones(2,1);0.5*ones(2,1);ones(Ns,1)];</span>
+0406 <span class="comment">%bta = [0.001*ones(2,1);0.002*ones(2,1);0.004*ones(2,1);0.008*ones(2,1); ...</span>
+0407 <span class="comment">%       0.016*ones(2,1);0.032*ones(2,1);0.064*ones(2,1);0.128*ones(2,1); ...</span>
+0408 <span class="comment">%       0.256*ones(2,1);0.5*ones(Ns,1)];</span>
+0409 <span class="comment">%bta = [0.01*ones(5,1);0.02*ones(5,1);0.04*ones(5,1);0.1*ones(5,1); ...</span>
+0410 <span class="comment">%       0.2*ones(5,1);0.5*ones(5,1);ones(Ns,1)];</span>
+0411 bta = [0.01;0.02;0.05;0.1;0.2;0.5;ones(Ns,1)];
+0412 <span class="comment">%bta = [0.01;0.02;0.05;0.1;0.2;0.5*ones(Ns,1)];</span>
+0413 <span class="comment">%bta = [0.0001;0.0002;0.0005;0.001;0.002;0.005;0.01;0.02;0.05;0.1;0.2;0.5;ones(Ns,1)];</span>
+0414 <span class="comment">%bta = 0.05*ones(Ns,1);</span>
+0415 litmax = 10;
+0416 conv = 0;
+0417 iter = 0;
+0418 Niter = 0;
+0419 lam = 1;
+0420 <span class="keyword">while</span> (((real(Rval) &gt; cnv) &amp;&amp; (iter &lt; Ns)) || (iter == 0))
+0421 
+0422    iter = iter + 1;
+0423 
+0424    printf(<span class="string">'   Iteration %5d, computing the tangent dynamics.\n'</span>,iter);
+0425    fflush(stdout);
+0426 
+0427    <span class="comment">% Compute the tangent function at the latest point.</span>
+0428    [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =                   <span class="keyword">...</span>
+0429             <a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a> (1,xpsi,dxpsi,upsi,s,a,                  <span class="keyword">...</span>
+0430                     epar,ppar,ypar,c,grav,P,shape0,mdamp0,  <span class="keyword">...</span>
+0431                     Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0432                     xas,yas,Psi,igen,ipit,iyaw);
+0433    dRdx = Lpsi(dret,dret)\Apsi(dret,dret);
+0434 <span class="comment">%[slap,shp,ifrq] = eigVal (Lpsi(dret,dret)\Apsi(dret,dret));</span>
+0435 <span class="comment">%return</span>
+0436    printf(<span class="string">'   Matrix condition %+6.3e\n'</span>,cond(dRdx));
+0437    fflush(stdout);
+0438 
+0439    dxr = -dRdx\Res;
+0440    lflg = 0;
+0441    liter = 0;
+0442    <span class="keyword">if</span> (lam &lt;= 0.5)
+0443       lam = 2*lam;
+0444    <span class="keyword">else</span>
+0445       lam = 1;
+0446    <span class="keyword">end</span>
+0447    <span class="keyword">while</span> ((lflg == 0) &amp;&amp; (liter &lt; litmax))
+0448       liter = liter + 1;
+0449 
+0450       x1 = xpsi;
+0451       x1(dret) = xpsi(dret) + bta(iter)*lam*dxr;
+0452 
+0453       <span class="comment">% (Recall that dxpsi does not directly influence the nonlinear</span>
+0454       <span class="comment">%  outputs, so I can use the existing value without updating.)</span>
+0455       [L1psi,R1psi,y1psi,jApsi,jBpsi,jCpsi,jDpsi] =            <span class="keyword">...</span>
+0456                <a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a> (0,x1,dxpsi,upsi,s,a,                    <span class="keyword">...</span>
+0457                        epar,ppar,ypar,c,grav,P,shape0,mdamp0,  <span class="keyword">...</span>
+0458                        Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0459                        xas,yas,Psi,igen,ipit,iyaw);
+0460       Res1 = L1psi(dret,dret)\(R1psi(dret) + Rgrav(dret));
+0461       R1 = sqrt((Res1.')*Res1);
+0462 
+0463       Rvec = Res1.*Res1;
+0464       [Rmax,iRm] = max(sqrt(Rvec));
+0465 
+0466       ifndF = 8;
+0467       iflp = imdofs(6) + 1;
+0468       iedg = iflp + 1;
+0469 
+0470       xaero = Psi*TpsixB(2*Neta+[1:Nxa],:)*x1;
+0471       printf(<span class="string">'   %5d %5d  %+5.3e  %+5.3e\n'</span>,iter,liter,Rval,R1);
+0472       printf(<span class="string">'   Max residual %+5.3e, DOF %8d\n'</span>,Rmax,dret(iRm));
+0473       printf(<span class="string">'   W: %10.4f, b: %10.4f, Y: %10.4f\n'</span>, <span class="keyword">...</span>
+0474              x1(2*Neta-4),x1(Neta-2),x1(Neta-5));
+0475       printf(<span class="string">'   qF %10.4f, qFd %10.4f, qf %10.4f, qfd %10.4f, qe %10.4f, qed %10.4f\n'</span>, <span class="keyword">...</span>
+0476              x1(ifndF),x1(Neta+ifndF),x1(iflp),x1(Neta+iflp),x1(iedg),x1(Neta+iedg));
+0477 naoff = 10;
+0478 inda = 7*(naoff-1);
+0479       printf(<span class="string">'   ad %8.4f, a1 %8.4f, a2 %8.4f, Vihz %8.4f, Viht %8.4f, Viz %8.4f, Vit %8.4f\n'</span>, <span class="keyword">...</span>
+0480              xaero(inda+1),xaero(inda+2),xaero(inda+3),xaero(inda+4), <span class="keyword">...</span>
+0481              xaero(inda+5),xaero(inda+6),xaero(inda+7));
+0482 <span class="comment">%      printf('   ad0 %10.4f, Viz0 %10.4f, adc %10.4f, Vizc %10.4f, ads %10.4f, Vizs %10.4f\n', ...</span>
+0483 <span class="comment">%             x1(2*Neta+7*naoff+1),x1(2*Neta+7*naoff+6), ...</span>
+0484 <span class="comment">%             x1(2*Neta+(Naero/3)+7*naoff+1),x1(2*Neta+(Naero/3)+7*naoff+6), ...</span>
+0485 <span class="comment">%             x1(2*Neta+2*(Naero/3)+7*naoff+1),x1(2*Neta+2*(Naero/3)+7*naoff+6));</span>
+0486       printf(<span class="string">'   PehRSC %10.4f, Pem %10.4f, igq %10.4f, Vdc %+10.4f\n'</span>, <span class="keyword">...</span>
+0487              x1(2*Neta+Naero+8+25+7),x1(2*Neta+Naero+8+25+15), <span class="keyword">...</span>
+0488              x1(2*Neta+Naero+8+2),x1(2*Neta+Naero+8+3));
+0489       fflush(stdout);
+0490 
+0491       <span class="keyword">if</span> (real(R1) &lt; Rval)
+0492          <span class="comment">% OK!  Prepare for the next iteration.</span>
+0493          lflg = 1;
+0494          Res = Res1;
+0495          Rval = R1;
+0496          xpsi = x1;
+0497          dxpsi(dret) = Res1;
+0498       <span class="keyword">else</span>
+0499          <span class="comment">% Backtrack.</span>
+0500          lam = 0.5*lam;
+0501          <span class="keyword">if</span> (liter == litmax)
+0502             [iter R1 Rval]
+0503             printf(<span class="string">'Warning, proceeding without lambda convergence.\n'</span>);
+0504             lflg = 1;
+0505             Res = Res1;
+0506             Rval = R1;
+0507             xpsi = x1;
+0508             dxpsi(dret) = Res1;
+0509 <span class="keyword">return</span>
+0510          <span class="keyword">end</span>
+0511       <span class="keyword">end</span>
+0512 
+0513    <span class="keyword">end</span>  <span class="comment">% Newton inner.</span>
+0514 
+0515    <span class="keyword">if</span> (iter == Ns) &amp;&amp; (real(Rval) &gt; cnv)
+0516       Rval
+0517       printf(<span class="string">'Warning, max iterations, proceeding without Rval convergence.\n'</span>);
+0518 <span class="keyword">return</span>
+0519    <span class="keyword">end</span>
+0520 
+0521 <span class="keyword">end</span>
+0522 
+0523 <span class="comment">% Compute the final values.</span>
+0524 dxpsi(dret) = Lpsi(dret,dret)\Rpsi(dret);
+0525 [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =                   <span class="keyword">...</span>
+0526          <a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a> (1,xpsi,dxpsi,upsi,s,a,                  <span class="keyword">...</span>
+0527                  epar,ppar,ypar,c,grav,P,shape0,mdamp0,  <span class="keyword">...</span>
+0528                  Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0529                  xas,yas,Psi,igen,ipit,iyaw);
+0530 
+0531 txt = outnm;
+0532 
+0533 <span class="keyword">if</span> (Vmag &gt;= 10)
+0534    Vstr = [<span class="string">'V'</span> int2str(round(10*Vmag))];
+0535 <span class="keyword">else</span>
+0536    Vstr = [<span class="string">'V0'</span> int2str(round(10*Vmag))];
+0537 <span class="keyword">end</span>
+0538 
+0539 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'xpsi&quot; txt Vstr &quot;.txt'</span>,<span class="string">'xpsi'</span>);&quot;]);
+0540 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'upsi&quot; txt Vstr &quot;.txt'</span>,<span class="string">'upsi'</span>);&quot;]);
+0541 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'dxpsi&quot; txt Vstr &quot;.txt'</span>,<span class="string">'dxpsi'</span>);&quot;]);
+0542 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'ypsi&quot; txt Vstr &quot;.txt'</span>,<span class="string">'ypsi'</span>);&quot;]);
+0543 eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'Rgrav&quot; txt Vstr &quot;.txt'</span>,<span class="string">'Rgrav'</span>);&quot;]);
+0544 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lpsi&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Lpsi'</span>);&quot;]);
+0545 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Apsi&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Apsi'</span>);&quot;]);
+0546 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bpsi&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Bpsi'</span>);&quot;]);
+0547 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cpsi&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Cpsi'</span>);&quot;]);
+0548 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dpsi&quot; txt Vstr &quot;.bin'</span>,<span class="string">'Dpsi'</span>);&quot;]);
+0549 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'dret&quot; txt Vstr &quot;.bin'</span>,<span class="string">'dret'</span>);&quot;]);
+0550 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'shape&quot; txt Vstr &quot;.bin'</span>,<span class="string">'shape0'</span>);&quot;]);
+0551 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'mdamp&quot; txt Vstr &quot;.bin'</span>,<span class="string">'mdamp0'</span>);&quot;]);
+0552 eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'bldof&quot; txt Vstr &quot;.bin'</span>,<span class="string">'bldof'</span>);&quot;]);
+0553 
+0554 <span class="comment">%geteigs;</span>
+0555 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

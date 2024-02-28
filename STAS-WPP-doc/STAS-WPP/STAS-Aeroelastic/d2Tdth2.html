@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d2Tdth2</title>
+  <meta name="keywords" content="d2Tdth2">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d2Tdth2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d2Tdth2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d2T = d2Tdth2 (th,T,dT) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the second derivatives of a transform matrix in terms of the
+ exponential map rotations.
+
+                            --                            --                            -- --
+    d2T             thj     |                             |                       dT     |  |
+ --------- = -2 ----------- | dij*TH + thi*spin(ej) + spin| spin(ej)(I-T)ei - TH ---- ei |  |
+ dthi*dthj      (th^T*th)^2 |                             |                      dthj    |  |
+                            --                            --                            -- --
+
+ A special formula based on a series expansion for sin,cos is used
+ for small angle inputs, which works with complex step.  The baseline
+ formula suffers from underflow with complex step.
+
+ Version:        Changes:
+ --------        -------------
+ 16.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 16.10.2017      Verified by complex step and finite difference.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="bodyTransforms.html" class="code" title="function [T,dT,d2T] = bodyTransforms (idofs,qB)">bodyTransforms</a>	</li>
+<li><a href="d2Fdth2.html" class="code" title="function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)">d2Fdth2</a>	</li>
+<li><a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+<li><a href="d2mudq2.html" class="code" title="function d2mu = d2mudq2 (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB)">d2mudq2</a>	</li>
+<li><a href="dQgdq.html" class="code" title="function dQ = dQgdq (qn,qB,Pn,PB)">dQgdq</a>	</li>
+<li><a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a>	</li>
+<li><a href="dQwdq.html" class="code" title="function dQ = dQwdq (qn,qB,Pn,PB)">dQwdq</a>	</li>
+<li><a href="derivConstraints.html" class="code" title="function dL = derivConstraints (qB,PB,Tbh,idofs,idofm)">derivConstraints</a>	</li>
+<li><a href="rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a>	</li>
+<li><a href="secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a>	</li>
+<li><a href="soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d2T = d2Tdth2 (th,T,dT)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the second derivatives of a transform matrix in terms of the</span>
+0004 <span class="comment">% exponential map rotations.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%                            --                            --                            -- --</span>
+0007 <span class="comment">%    d2T             thj     |                             |                       dT     |  |</span>
+0008 <span class="comment">% --------- = -2 ----------- | dij*TH + thi*spin(ej) + spin| spin(ej)(I-T)ei - TH ---- ei |  |</span>
+0009 <span class="comment">% dthi*dthj      (th^T*th)^2 |                             |                      dthj    |  |</span>
+0010 <span class="comment">%                            --                            --                            -- --</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% A special formula based on a series expansion for sin,cos is used</span>
+0013 <span class="comment">% for small angle inputs, which works with complex step.  The baseline</span>
+0014 <span class="comment">% formula suffers from underflow with complex step.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Changes:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 16.10.2017      Original code.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Version:        Verification:</span>
+0021 <span class="comment">% --------        -------------</span>
+0022 <span class="comment">% 16.10.2017      Verified by complex step and finite difference.</span>
+0023 <span class="comment">%</span>
+0024 
+0025 d2T = zeros(3,9*3);
+0026 
+0027 normth = sqrt((th.')*th);
+0028 
+0029 TTH = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(th);
+0030 TTHTTH = TTH*TTH;
+0031 
+0032 <span class="keyword">if</span> (abs(normth) &lt; eps^0.25)  <span class="comment">% Complex magnitude is intentionally included</span>
+0033                              <span class="comment">% in this norm.</span>
+0034 
+0035    normth2 = normth^2;
+0036 
+0037    <span class="keyword">for</span> ii = 1:3
+0038 
+0039       ei = zeros(3,1);
+0040       ei(ii) = 1;
+0041       spi = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(ei);
+0042       sTTsi = spi*TTH + TTH*spi;
+0043 
+0044       <span class="keyword">for</span> jj = 1:3
+0045 
+0046          ic3 = 3*(jj-1);
+0047          ic = 9*(ii-1) + ic3;
+0048 
+0049          ej = zeros(3,1);
+0050          ej(jj) = 1;
+0051          spj = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(ej);
+0052 
+0053          dij = (ii==jj);  <span class="comment">% 1 if so, 0 if not.</span>
+0054 
+0055          d2T(:,ic+[1:3]) = -dij*TTH/3 - (th(jj)*spi + th(ii)*spj)/3        <span class="keyword">...</span>
+0056                          - dij*TTHTTH/12                                   <span class="keyword">...</span>
+0057                          - th(jj)*sTTsi/12 - th(ii)*(spj*TTH + TTH*spj)/12 <span class="keyword">...</span>
+0058                          + (0.5 - normth2/24)*(spj*spi + spi*spj); 
+0059 
+0060       <span class="keyword">end</span>
+0061 
+0062    <span class="keyword">end</span>
+0063 
+0064 <span class="keyword">else</span>
+0065 
+0066    <span class="keyword">for</span> ii = 1:3
+0067 
+0068       ei = zeros(3,1);
+0069       ei(ii) = 1;
+0070 
+0071       term1 = th(ii)*TTH;
+0072       term2 = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(TTH*(eye(3) - T)*ei);
+0073       mat = ((term1 + term2)/(normth^2));
+0074 
+0075       <span class="keyword">for</span> jj = 1:3
+0076 
+0077          ic3 = 3*(jj-1);
+0078          ic = 9*(ii-1) + ic3;
+0079 
+0080          ej = zeros(3,1);
+0081          ej(jj) = 1;
+0082          spj = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(ej);
+0083 
+0084          dd = (ii==jj);  <span class="comment">% 1 if so, 0 if not.</span>
+0085    
+0086          vec = spj*(eye(3) - T)*ei - TTH*dT(:,ic3+[1:3])*ei;
+0087 
+0088          d2T(:,ic+[1:3]) = -2*(th(jj)/((th.'*th)^2))*(term1 + term2)*T <span class="keyword">...</span>
+0089                          + (dd*TTH + th(ii)*spj + <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(vec))*T/(normth^2) <span class="keyword">...</span>
+0090                          + mat*dT(:,ic3+[1:3]);
+0091 
+0092       <span class="keyword">end</span>
+0093 
+0094    <span class="keyword">end</span>
+0095 
+0096 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

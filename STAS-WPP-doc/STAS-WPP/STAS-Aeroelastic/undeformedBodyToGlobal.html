@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of undeformedBodyToGlobal</title>
+  <meta name="keywords" content="undeformedBodyToGlobal">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; undeformedBodyToGlobal.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>undeformedBodyToGlobal
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function TB0_g = undeformedBodyToGlobal (yaw,tilt,azimuth,cone,pitch) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Computes the undeformed orientation of each body's reference
+ coordinate system.
+
+ Version:        Changes:
+ --------        -------------
+ 03.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 03.10.2017      Checked some simple cases.
+
+ Inputs:
+ -------
+ yaw ... pitch   : Input angles.  Note that positive blade pitch 
+                   rotates the leading edge into the wind -- a 
+                   rotation about the -X^p axis.
+
+ Outputs:
+ --------
+ TB0_g
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function TB0_g = undeformedBodyToGlobal (yaw,tilt,azimuth,cone,pitch)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Computes the undeformed orientation of each body's reference</span>
+0004 <span class="comment">% coordinate system.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 03.10.2017      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 03.10.2017      Checked some simple cases.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% yaw ... pitch   : Input angles.  Note that positive blade pitch</span>
+0017 <span class="comment">%                   rotates the leading edge into the wind -- a</span>
+0018 <span class="comment">%                   rotation about the -X^p axis.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">% --------</span>
+0022 <span class="comment">% TB0_g</span>
+0023 <span class="comment">%</span>
+0024 
+0025 TB0_g = sparse(3,21);
+0026 Tp_b  =  zeros(3,9);
+0027 
+0028 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (tilt,cone);
+0029 
+0030 sx = sin(yaw);
+0031 cx = cos(yaw);
+0032 Ty_g = [cx -sx   0; <span class="keyword">...</span>
+0033         sx  cx   0; <span class="keyword">...</span>
+0034          0   0   1];
+0035 
+0036 sp = sin(azimuth);
+0037 cp = cos(azimuth);
+0038 Td_n =      [cp -sp   0; <span class="keyword">...</span>
+0039              sp  cp   0; <span class="keyword">...</span>
+0040               0   0   1];
+0041 
+0042 sb = sin(pitch(1));
+0043 cb = cos(pitch(1));
+0044 Tp_b(:,1:3) =     [1   0   0; <span class="keyword">...</span>
+0045                    0  cb  sb; <span class="keyword">...</span>
+0046                    0 -sb  cb];
+0047 
+0048 sb = sin(pitch(2));
+0049 cb = cos(pitch(2));
+0050 Tp_b(:,4:6) =     [1   0   0; <span class="keyword">...</span>
+0051                    0  cb  sb; <span class="keyword">...</span>
+0052                    0 -sb  cb];
+0053 
+0054 sb = sin(pitch(3));
+0055 cb = cos(pitch(3));
+0056 Tp_b(:,7:9) =     [1   0   0; <span class="keyword">...</span>
+0057                    0  cb  sb; <span class="keyword">...</span>
+0058                    0 -sb  cb];
+0059 
+0060 TB0_g(:,1:3)   = eye(3);         <span class="comment">% Foundation.</span>
+0061 TB0_g(:,4:6)   = eye(3);         <span class="comment">% Tower.</span>
+0062 TB0_g(:,7:9)   = Ty_g;           <span class="comment">% Nacelle.</span>
+0063 TB0_g(:,10:12) = Ty_g*Tn_y*Td_n; <span class="comment">% Driveshaft.</span>
+0064 TB0_g(:,13:15) = TB0_g(:,10:12)*Th_d(:,1:3)*Tb_h*Tp_b(:,1:3); <span class="comment">% Blade 1.</span>
+0065 TB0_g(:,16:18) = TB0_g(:,10:12)*Th_d(:,4:6)*Tb_h*Tp_b(:,4:6); <span class="comment">% Blade 2.</span>
+0066 TB0_g(:,19:21) = TB0_g(:,10:12)*Th_d(:,7:9)*Tb_h*Tp_b(:,7:9); <span class="comment">% Blade 3.</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

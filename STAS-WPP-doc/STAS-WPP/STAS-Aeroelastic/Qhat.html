@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Qhat</title>
+  <meta name="keywords" content="Qhat">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; Qhat.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>Qhat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Qh = Qhat (qq,PP,idofs,inods) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Qhat multiplies the nodal force vector to give the applied forces,
+ associated with the generalized coordinates of the unconstrained
+ structure.
+                        --                                                           --
+                        |                                dTB^B0              dTB^B0   |
+ Qhat^T = T_B0^B T_g^B0 | (Ah*T_B0^g*T_B^B0)i + A T_B0^g ------ q + B T_B0^g ------ P |
+                        |                                  dqi                 dqi    |
+                        --                                                           --
+ Version:        Changes:
+ --------        -------------
+ 24.11.2017      Original code.  Complete rewrite of the old version,
+                 employing calls to Qunod.m rather than buildAB.m.
+
+ Version:        Verification:
+ --------        -------------
+ 24.11.2017      
+
+ Inputs:
+ -------
+ qq              : Nodal DOFs.  Ref node: body relative to global.  
+                   Other nodes: node relative to undeformed, body coords.
+ PP              : Undeformed nodal positions relative to body origin.
+ idofs,inods     : Reference DOFs and nodes.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+<li><a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42grid.html" class="code" title="">TCD42grid</a>	Newton-Raphson solution of the TC RWP grid with turbines, and</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Qh = Qhat (qq,PP,idofs,inods)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Qhat multiplies the nodal force vector to give the applied forces,</span>
+0004 <span class="comment">% associated with the generalized coordinates of the unconstrained</span>
+0005 <span class="comment">% structure.</span>
+0006 <span class="comment">%                        --                                                           --</span>
+0007 <span class="comment">%                        |                                dTB^B0              dTB^B0   |</span>
+0008 <span class="comment">% Qhat^T = T_B0^B T_g^B0 | (Ah*T_B0^g*T_B^B0)i + A T_B0^g ------ q + B T_B0^g ------ P |</span>
+0009 <span class="comment">%                        |                                  dqi                 dqi    |</span>
+0010 <span class="comment">%                        --                                                           --</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 24.11.2017      Original code.  Complete rewrite of the old version,</span>
+0014 <span class="comment">%                 employing calls to Qunod.m rather than buildAB.m.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 24.11.2017</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Inputs:</span>
+0021 <span class="comment">% -------</span>
+0022 <span class="comment">% qq              : Nodal DOFs.  Ref node: body relative to global.</span>
+0023 <span class="comment">%                   Other nodes: node relative to undeformed, body coords.</span>
+0024 <span class="comment">% PP              : Undeformed nodal positions relative to body origin.</span>
+0025 <span class="comment">% idofs,inods     : Reference DOFs and nodes.</span>
+0026 <span class="comment">%</span>
+0027 
+0028 Nbod = 7;
+0029 Ndj = size(qq,1);
+0030 
+0031 Qh = spalloc(Ndj,Ndj,12*Ndj);
+0032 
+0033 <span class="keyword">for</span> ibod = 1:Nbod
+0034 
+0035    <span class="keyword">if</span> (ibod == 1)
+0036       Nnod = inods(2) - inods(1);
+0037       idref = idofs(1);
+0038    <span class="keyword">elseif</span> (ibod == 2)
+0039       Nnod = inods(3) - inods(2);
+0040       idref = idofs(2);
+0041    <span class="keyword">elseif</span> (ibod == 3)
+0042       Nnod = inods(4) - inods(3);
+0043       idref = idofs(3);
+0044    <span class="keyword">elseif</span> (ibod == 4)
+0045       Nnod = inods(6) - inods(4);
+0046       idref = idofs(4);
+0047    <span class="keyword">elseif</span> (ibod == 5)
+0048       Nnod = inods(7) - inods(6);
+0049       idref = idofs(6);
+0050    <span class="keyword">elseif</span> (ibod == 6)
+0051       Nnod = inods(8) - inods(7);
+0052       idref = idofs(7);
+0053    <span class="keyword">elseif</span> (ibod == 7)
+0054       Nnod = inods(8) - inods(7);
+0055       idref = idofs(8);
+0056    <span class="keyword">end</span>
+0057 
+0058    <span class="keyword">for</span> inod = 1:Nnod
+0059 
+0060       noddof = idref + 6*(inod-1);
+0061 
+0062       qB = qq(idref+[1:6]);
+0063       PB = PP(idref+[1:6]);
+0064 
+0065       <span class="keyword">if</span> (noddof ~= idref)
+0066          qn = qq(noddof+[1:6]);
+0067          Pn = PP(noddof+[1:6]);
+0068       <span class="keyword">else</span>
+0069          qn = zeros(6,1);
+0070          Pn = zeros(6,1);
+0071          Pn(4:6) = PP(noddof+6+[4:6]);
+0072       <span class="keyword">end</span>
+0073 
+0074       Q = <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn,qB,Pn,PB);
+0075       Qh(idref+[1:6],noddof+[1:6]) = Q(:,1:6).';
+0076       <span class="keyword">if</span> (noddof ~= idref)
+0077          Qh(noddof+[1:6],noddof+[1:6]) = Q(:,7:12).';
+0078       <span class="keyword">end</span>
+0079 
+0080    <span class="keyword">end</span>
+0081 
+0082 
+0083 <span class="keyword">end</span>
+0084 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

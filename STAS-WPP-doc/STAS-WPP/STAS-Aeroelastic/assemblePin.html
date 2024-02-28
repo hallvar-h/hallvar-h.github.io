@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of assemblePin</title>
+  <meta name="keywords" content="assemblePin">
+  <meta name="description" content="Version:        Changes:">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; assemblePin.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>assemblePin
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Version:        Changes:</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Pin = assemblePin (s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Version:        Changes:
+ --------        -------------
+ 01.02.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 01.02.2018      undeformedPosition uses the output Pin.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Wind/buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Pin = assemblePin (s)</a>
+0002 <span class="comment">% Version:        Changes:</span>
+0003 <span class="comment">% --------        -------------</span>
+0004 <span class="comment">% 01.02.2018      Original code.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Verification:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 01.02.2018      undeformedPosition uses the output Pin.</span>
+0009 
+0010 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0011 
+0012 Pin = zeros(Ndof,1);
+0013 
+0014 idof = 0;
+0015 
+0016 Pin(idof+[1:s.foundation.Ndof]) = s.foundation.Pn_B;
+0017 idof = idof + s.foundation.Ndof;
+0018 
+0019 Pin(idof+[1:s.tower.Ndof]) = s.tower.Pn_B;
+0020 idof = idof + s.tower.Ndof;
+0021 
+0022 Pin(idof+[1:s.nacelle.Ndof]) = s.nacelle.Pn_B;
+0023 idof = idof + s.nacelle.Ndof;
+0024 
+0025 Pin(idof+[1:s.driveshaft.Ndof]) = s.driveshaft.Pn_B;
+0026 idof = idof + s.driveshaft.Ndof;
+0027 
+0028 Pin(idof+[1:s.blade(1).Ndof]) = s.blade(1).Pn_B;
+0029 idof = idof + s.blade(1).Ndof;
+0030 
+0031 Pin(idof+[1:s.blade(2).Ndof]) = s.blade(2).Pn_B;
+0032 idof = idof + s.blade(2).Ndof;
+0033 
+0034 Pin(idof+[1:s.blade(3).Ndof]) = s.blade(3).Pn_B;
+0035 idof = idof + s.blade(3).Ndof;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

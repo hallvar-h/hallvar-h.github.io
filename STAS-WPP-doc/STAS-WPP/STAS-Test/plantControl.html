@@ -1,0 +1,453 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of plantControl</title>
+  <meta name="keywords" content="plantControl">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; plantControl.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>plantControl
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Build a wind plant control block associated with a given wind turbine.
+
+ CAUTION: Complex step was tricky due to the numerical properties of the
+ bisecting algorithm, in the solution for the target thrust.  The nominal
+ calculation (for verification of A,B,C,D) works properly with complex
+ step, but I have not checked all limiting cases, nor complex step with
+ respect to parameters p.
+
+   States:              y vector:             u vector:
+   PsiP    1            Phat                  PhPCC    1
+   PsiT    2                                  PmPCC    2
+   uLP   3...24                               muV      3
+   n1    4...25                               Pa       4
+   n2    5...26                               FT       5
+                                              W        6
+                                              D        7
+                                              a1sum    8
+                                              a2sum    9
+
+ Version:        Changes:
+ --------        -------------
+ 19.10.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 19.10.2020      A,B,C,D derivatives verified by complex step.
+
+ Inputs:
+ -------
+ x               : 1: PsiP  (W)       Integral pathway on power control.
+                   2: PsiT  (W)       Integral pathway on load control.
+ u               : 1: PhPCC (W)       Plant PCC power command.
+                   2: PmPCC (W)       Plant PCC measured power.
+                   3: muV   (m/s)     Cluster mean wind speed.
+                   4: Pa    (W)       The turbine's available power.
+                   5: FT    (N)       Observed rotor thrust (or other load).
+                   6: W     (rad/s)   Rotor speed.
+                   7: D     (-)       Damage accumulation rate.
+                   8: a1sum (-)       Sum of load alpha's from other turbines.
+                   9: a2sum (-)       Sum of dP alpha's from other turbines.
+ p               : 1: KPP   (-)       KP on power control.
+                   2: KIP   (1/s)     KI on power control.
+                   3: KT    (m/s)     KT on load control.
+                   4: wlp   (rad/s)   Load branch LP filter corner frequency.
+                   5: PTLB  (W)       UB power deviation for load control. [not used]
+                   6: PTUB  (W)       LB power deviation for load control. [not used]
+                   7: weta  (-)       Width of the transition region in eta.
+                   8: Area  (m^2)     Rotor swept area.
+                   9: dens  (kg/m^3)  Air density.  Treated as a static parameter.
+                  10: alp   (rad/s)   Input LP filter corner frequency.
+                  11: an    (rad/s)   Notch filter frequency.
+                  12: zn1   (-)       Notch filter damping 1.  (zn1 &lt;&lt; zn2)
+                  12: zn2   (-)       Notch filter damping 2.
+ atables.a1,.a2  : alpha(D) functions.
+ cpct            : Cp,Ct (V,W,b) table.
+ linFlag         : Set to 1 to compute A,B,C,D.
+
+ Outputs:
+ --------
+ dxdt            : Rate of change of states.
+ Phat            : Turbine power command.
+ A,B,C,D         : Linearized state matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a>	Utilize Matlab/Octave spline interpolation capability.  "tab" is then</li>
+<li><a href="starBlock.html" class="code" title="function [eta,D] = starBlock (u,uLB,uUB,eps,weta,linFlag)">starBlock</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/bisect.html" class="code" title="function x = bisect (fun,x1,x2,del,maxit)">bisect</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function f = getcp (CPnom,cpct,R,muV,W,bet)</a></li>
+<li><a href="#_sub2" class="code">function dcp = getdcp (cpct,R,muV,W,bet)</a></li>
+</ul>
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Build a wind plant control block associated with a given wind turbine.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% CAUTION: Complex step was tricky due to the numerical properties of the</span>
+0006 <span class="comment">% bisecting algorithm, in the solution for the target thrust.  The nominal</span>
+0007 <span class="comment">% calculation (for verification of A,B,C,D) works properly with complex</span>
+0008 <span class="comment">% step, but I have not checked all limiting cases, nor complex step with</span>
+0009 <span class="comment">% respect to parameters p.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   States:              y vector:             u vector:</span>
+0012 <span class="comment">%   PsiP    1            Phat                  PhPCC    1</span>
+0013 <span class="comment">%   PsiT    2                                  PmPCC    2</span>
+0014 <span class="comment">%   uLP   3...24                               muV      3</span>
+0015 <span class="comment">%   n1    4...25                               Pa       4</span>
+0016 <span class="comment">%   n2    5...26                               FT       5</span>
+0017 <span class="comment">%                                              W        6</span>
+0018 <span class="comment">%                                              D        7</span>
+0019 <span class="comment">%                                              a1sum    8</span>
+0020 <span class="comment">%                                              a2sum    9</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Version:        Changes:</span>
+0023 <span class="comment">% --------        -------------</span>
+0024 <span class="comment">% 19.10.2020      Original code.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Version:        Verification:</span>
+0027 <span class="comment">% --------        -------------</span>
+0028 <span class="comment">% 19.10.2020      A,B,C,D derivatives verified by complex step.</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% Inputs:</span>
+0031 <span class="comment">% -------</span>
+0032 <span class="comment">% x               : 1: PsiP  (W)       Integral pathway on power control.</span>
+0033 <span class="comment">%                   2: PsiT  (W)       Integral pathway on load control.</span>
+0034 <span class="comment">% u               : 1: PhPCC (W)       Plant PCC power command.</span>
+0035 <span class="comment">%                   2: PmPCC (W)       Plant PCC measured power.</span>
+0036 <span class="comment">%                   3: muV   (m/s)     Cluster mean wind speed.</span>
+0037 <span class="comment">%                   4: Pa    (W)       The turbine's available power.</span>
+0038 <span class="comment">%                   5: FT    (N)       Observed rotor thrust (or other load).</span>
+0039 <span class="comment">%                   6: W     (rad/s)   Rotor speed.</span>
+0040 <span class="comment">%                   7: D     (-)       Damage accumulation rate.</span>
+0041 <span class="comment">%                   8: a1sum (-)       Sum of load alpha's from other turbines.</span>
+0042 <span class="comment">%                   9: a2sum (-)       Sum of dP alpha's from other turbines.</span>
+0043 <span class="comment">% p               : 1: KPP   (-)       KP on power control.</span>
+0044 <span class="comment">%                   2: KIP   (1/s)     KI on power control.</span>
+0045 <span class="comment">%                   3: KT    (m/s)     KT on load control.</span>
+0046 <span class="comment">%                   4: wlp   (rad/s)   Load branch LP filter corner frequency.</span>
+0047 <span class="comment">%                   5: PTLB  (W)       UB power deviation for load control. [not used]</span>
+0048 <span class="comment">%                   6: PTUB  (W)       LB power deviation for load control. [not used]</span>
+0049 <span class="comment">%                   7: weta  (-)       Width of the transition region in eta.</span>
+0050 <span class="comment">%                   8: Area  (m^2)     Rotor swept area.</span>
+0051 <span class="comment">%                   9: dens  (kg/m^3)  Air density.  Treated as a static parameter.</span>
+0052 <span class="comment">%                  10: alp   (rad/s)   Input LP filter corner frequency.</span>
+0053 <span class="comment">%                  11: an    (rad/s)   Notch filter frequency.</span>
+0054 <span class="comment">%                  12: zn1   (-)       Notch filter damping 1.  (zn1 &lt;&lt; zn2)</span>
+0055 <span class="comment">%                  12: zn2   (-)       Notch filter damping 2.</span>
+0056 <span class="comment">% atables.a1,.a2  : alpha(D) functions.</span>
+0057 <span class="comment">% cpct            : Cp,Ct (V,W,b) table.</span>
+0058 <span class="comment">% linFlag         : Set to 1 to compute A,B,C,D.</span>
+0059 <span class="comment">%</span>
+0060 <span class="comment">% Outputs:</span>
+0061 <span class="comment">% --------</span>
+0062 <span class="comment">% dxdt            : Rate of change of states.</span>
+0063 <span class="comment">% Phat            : Turbine power command.</span>
+0064 <span class="comment">% A,B,C,D         : Linearized state matrices.</span>
+0065 
+0066 Nx = size(x,1);
+0067 Nu = size(u,1);
+0068 Ny = 1;
+0069 
+0070 dxdt = zeros(Nx,1);
+0071 Phat = 0;
+0072 
+0073 A = zeros(Nx,Nx);
+0074 B = zeros(Nx,Nu);
+0075 C = zeros(Ny,Nx);
+0076 D = zeros(Ny,Nu);
+0077 
+0078 jlp = 3 + [0:3:24];
+0079 jn1 = 4 + [0:3:24];
+0080 jn2 = 5 + [0:3:24];
+0081 
+0082 PsiP   = x(1);
+0083 PsiT   = x(2);
+0084 ulp    = x(jlp);
+0085 n1     = x(jn1);
+0086 n2     = x(jn2);
+0087 KPP    = p(1);
+0088 KIP    = p(2);
+0089 KT     = p(3);
+0090 wlp    = p(4);
+0091 PTLB   = p(5);
+0092 PTUB   = p(6);
+0093 weta   = p(7);
+0094 Area   = p(8);
+0095 dens   = p(9);
+0096 alp    = p(10);
+0097 an     = p(11);
+0098 zn1    = p(12);
+0099 zn2    = p(13);
+0100 
+0101 a1table = atables.a1;
+0102 a2table = atables.a2;
+0103 
+0104 <span class="comment">% Filter all inputs.</span>
+0105 an2  = an^2;
+0106 tz2a = 2*zn2*an;
+0107 tzza = 2*(zn1-zn2)*an;
+0108 dxdt(jlp) = -alp*ulp + alp*u;
+0109 dxdt(jn1) = n2;
+0110 dxdt(jn2) = -an2*n1 - tz2a*n2 + ulp;
+0111 ufilt = tzza*n2 + ulp;
+0112 
+0113 PhPCC  = ufilt(1);
+0114 PmPCC  = ufilt(2);
+0115 muV    = ufilt(3);
+0116 Pa     = ufilt(4);
+0117 FT     = ufilt(5);
+0118 W      = ufilt(6);
+0119 Dam    = ufilt(7);
+0120 a1sum  = ufilt(8);
+0121 a2sum  = ufilt(9);
+0122 
+0123 [alf1,da1dD] = <a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Dam,a1table);
+0124 lam1 = alf1/(alf1 + a1sum);
+0125 
+0126 [alf2,da2dD] = <a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Dam,a2table);
+0127 lam2 = alf2/(alf2 + a2sum);
+0128 
+0129 <span class="comment">% Solve for the pitch angle that provides the desired power.</span>
+0130 Pnom = lam1*PhPCC;  <span class="comment">% The turbine's &quot;ideal&quot; share of the plant power.</span>
+0131 CPnom = Pnom/(0.5*dens*Area*(muV^3));
+0132 RR = sqrt(Area/pi);
+0133 bmax = pi/6;
+0134 
+0135 
+0136 
+0137 
+0138 <span class="keyword">if</span> (linFlag == 1)   <span class="comment">% Temporary.</span>
+0139 
+0140 
+0141 
+0142 
+0143 
+0144 <span class="keyword">if</span> (isreal ([CPnom, RR, muV, W]))  <span class="comment">% No complex step.</span>
+0145    <span class="comment">% First solve for the maximum Cp.</span>
+0146    [bmin,val,flg,outp] = fzero (@(b) <a href="#_sub2" class="code" title="subfunction dcp = getdcp (cpct,R,muV,W,bet)">getdcp</a> (cpct,RR,muV,W,b), <span class="keyword">...</span>
+0147                                 [-pi/36, bmax]);
+0148    [cpmax,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,RR,muV,W,bmin);
+0149    <span class="keyword">if</span> (CPnom &gt; cpmax) || (bmin &gt;= bmax)
+0150       <span class="comment">% The desired point is cpmax or the min-pitch bound.</span>
+0151       bet = bmin;
+0152       bminflg = true;
+0153    <span class="keyword">else</span>  <span class="comment">% Solve for the pitch angle based on CPnom.</span>
+0154       [bet,val,flg,outp] = fzero (@(b) <a href="#_sub1" class="code" title="subfunction f = getcp (CPnom,cpct,R,muV,W,bet)">getcp</a> (CPnom,cpct,RR,muV,W,b), <span class="keyword">...</span>
+0155                                   [bmin, bmax]);
+0156       bminflg = false;
+0157    <span class="keyword">end</span>
+0158 <span class="keyword">else</span>
+0159    <span class="comment">% Custom routine suitable for complex step, but slower, thanks to</span>
+0160    <span class="comment">% Octave's interpreted-language overhead.</span>
+0161    bmin = <a href="../../STAS-WPP/STAS-Utilities/bisect.html" class="code" title="function x = bisect (fun,x1,x2,del,maxit)">bisect</a> (@(b) <a href="#_sub2" class="code" title="subfunction dcp = getdcp (cpct,R,muV,W,bet)">getdcp</a> (cpct,RR,muV,W,b),-pi/36,bmax,sqrt(eps),100);
+0162    [cpmax,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,RR,muV,W,bmin);
+0163    <span class="keyword">if</span> (real(CPnom) &gt; real(cpmax)) || (real(bmin) &gt;= real(bmax))
+0164       bet = bmin;
+0165       bminflg = true;
+0166    <span class="keyword">else</span>
+0167       bet = <a href="../../STAS-WPP/STAS-Utilities/bisect.html" class="code" title="function x = bisect (fun,x1,x2,del,maxit)">bisect</a> (@(b) <a href="#_sub1" class="code" title="subfunction f = getcp (CPnom,cpct,R,muV,W,bet)">getcp</a> (CPnom,cpct,RR,muV,W,b),bmin,bmax,sqrt(eps),100);
+0168       bminflg = false;
+0169    <span class="keyword">end</span>
+0170 <span class="keyword">end</span>
+0171 
+0172 [cp,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,RR,muV,W,real(bet));  <span class="comment">% Get final values and derivatives.</span>
+0173 <span class="keyword">if</span> (bminflg)
+0174    <span class="comment">% If the pitch angle is at the minimum boundary, then the gradient</span>
+0175    <span class="comment">% with respect to CP is zero.</span>
+0176    dbetdCp = 0;
+0177 <span class="keyword">else</span>
+0178    dbetdCp = 1/dcp(3);
+0179 <span class="keyword">end</span>
+0180 bet = real(bet) + i*(dbetdCp*(dcp(1)*imag(muV) + dcp(2)*imag(W)) <span class="keyword">...</span>
+0181     +                (-dbetdCp)*imag(CPnom));  <span class="comment">% Reconstruct the complex bet.</span>
+0182 [cp,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,RR,muV,W,bet);   <span class="comment">% Complex step terms for later use.</span>
+0183 
+0184 
+0185 
+0186 
+0187 
+0188 <span class="keyword">else</span>   <span class="comment">% Temporary.</span>
+0189 
+0190 
+0191 
+0192 
+0193 
+0194 <span class="comment">% TEMPORARY approximation to accelerate the calculation.</span>
+0195 <span class="keyword">global</span> betaglobal;
+0196 [cp,ct,dcp,dct] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,RR,muV,W,betaglobal);
+0197 <span class="comment">%deltacp = cp - CPnom;</span>
+0198 <span class="comment">%dbet = deltacp/dcp(3);  % dbeta = db/dcp dcp</span>
+0199 <span class="comment">%ct = ct + dct(3)*dbet;</span>
+0200 
+0201 
+0202 
+0203 
+0204 <span class="keyword">end</span>   <span class="comment">% Temporary.</span>
+0205 
+0206 
+0207 
+0208 
+0209 
+0210 
+0211 pAV2 = 0.5*dens*Area*(muV^2);
+0212 FhT = ct*pAV2;
+0213 
+0214 epsP = lam2*(PhPCC - PmPCC);
+0215 epsT = FhT - FT;
+0216 
+0217 dPP = KPP*epsP + PsiP;
+0218 dPT = PsiT;
+0219 
+0220 Phat = lam1*PhPCC + dPP + dPT;
+0221 
+0222 <span class="comment">% starBlock has to be computed AFTER the output command.  It's OK,</span>
+0223 <span class="comment">% because the saturation doesn't take effect until the next timestep;</span>
+0224 <span class="comment">% it influences only dxdt, not y.</span>
+0225 [etaP,detaP] = <a href="starBlock.html" class="code" title="function [eta,D] = starBlock (u,uLB,uUB,eps,weta,linFlag)">starBlock</a> (Phat,0,Pa,epsP,weta,linFlag);
+0226 
+0227 dxdt(1) = etaP*KIP*epsP;
+0228 dxdt(2) = -wlp*PsiT + wlp*KT*epsT;
+0229 
+0230 <span class="keyword">if</span> (linFlag == 1)
+0231 
+0232    dbetdmuV = dbetdCp*dcp(1);
+0233    dbetdW   = dbetdCp*dcp(2);
+0234    dbetdCPnom = -dbetdCp;
+0235 
+0236    aa1      =  alf1 + a1sum;
+0237    dlam1dsa = -alf1/(aa1^2);
+0238    dlam1da  =  (1/aa1) - alf1/(aa1^2);
+0239    dlam1dD  =  dlam1da*da1dD;
+0240    aa2      =  alf2 + a2sum;
+0241    dlam2dsa = -alf2/(aa2^2);
+0242    dlam2da  =  (1/aa2) - alf2/(aa2^2);
+0243    dlam2dD  =  dlam2da*da2dD;
+0244 
+0245    dPnomdPhPCC = lam1;
+0246    dPnomdsa    = PhPCC*dlam1dsa;
+0247    dPnomdD     = PhPCC*dlam1dD;
+0248 
+0249    dFhTdW     = pAV2*(dct(2) + dct(3)*dbetdW);
+0250    dFhTdmuV   = ct*dens*Area*muV                                   <span class="keyword">...</span>
+0251               + pAV2*(dct(1)                                       <span class="keyword">...</span>
+0252               +       dct(3)*(dbetdCPnom*(Pnom/pAV2)*(-3*muV^(-2)) <span class="keyword">...</span>
+0253               +               dbetdmuV));
+0254 
+0255    dFhTdPnom  = pAV2*dct(3)*dbetdCPnom/(pAV2*muV);
+0256    dFhTdPhPCC = dFhTdPnom*dPnomdPhPCC;
+0257    dFhTdsa    = dFhTdPnom*dPnomdsa;
+0258    dFhTdD     = dFhTdPnom*dPnomdD;
+0259 
+0260    depsTdFT    = -1;
+0261    depsTdFhT   =  1;
+0262    depsTdW     =  depsTdFhT*dFhTdW;
+0263    depsTdmuV   =  depsTdFhT*dFhTdmuV;
+0264    depsTdD     =  depsTdFhT*dFhTdD;
+0265    depsTdsa    =  depsTdFhT*dFhTdsa;
+0266    depsTdPhPCC =  depsTdFhT*dFhTdPhPCC;
+0267 
+0268    depsPdlam   =  PhPCC - PmPCC;
+0269    depsPdD     =  depsPdlam*dlam2dD;
+0270    depsPdsa    =  depsPdlam*dlam2dsa;
+0271    depsPdPhPCC =  lam2;
+0272    depsPdPmPCC = -lam2;
+0273 
+0274    dPhdepsP  =  KPP;
+0275    dPhdlam1  =  PhPCC;
+0276    dPhdD     =  dPhdlam1*dlam1dD +  dPhdepsP*depsPdD;
+0277    dPhdsa1   =  dPhdlam1*dlam1dsa;
+0278    dPhdsa2   =  dPhdepsP*depsPdsa;
+0279    dPhdPhPCC =  lam1 + dPhdepsP*depsPdPhPCC;
+0280    dPhdPmPCC =  dPhdepsP*depsPdPmPCC;
+0281 
+0282    detaPdPa    =  detaP(3);
+0283    detaPdPh    =  detaP(1);
+0284    detaPdepsP  =  detaP(4);
+0285 
+0286    Du = [dPhdPhPCC, dPhdPmPCC, 0, 0, 0, 0, dPhdD, dPhdsa1, dPhdsa2];
+0287 
+0288    Bu1 = (etaP*KIP + KIP*epsP*detaPdepsP) <span class="keyword">...</span>
+0289        * [depsPdPhPCC, depsPdPmPCC, 0, 0, 0, 0, depsPdD, 0, depsPdsa] <span class="keyword">...</span>
+0290        + KIP*epsP*(detaPdPh*Du + [0, 0, 0, detaPdPa, 0, 0, 0, 0, 0]);
+0291    Bu2 = wlp*KT <span class="keyword">...</span>
+0292        * [depsTdPhPCC, 0, depsTdmuV, 0, depsTdFT, depsTdW, depsTdD, depsTdsa, 0];
+0293 
+0294    A(1,1) = KIP*epsP*detaPdPh;
+0295    A(1,2) = KIP*epsP*detaPdPh;
+0296    A(2,2) = -wlp;
+0297    
+0298    A(jlp,jlp) = -alp*speye(Nu);     <span class="comment">% dulp/dt = -alp*ulp + alp*u.</span>
+0299    A(jn1,jn2) = speye(Nu);          <span class="comment">% dn1/dt = n2.</span>
+0300    A(jn2,jlp) = speye(Nu);          <span class="comment">% dn2/dt = -an2*n1 - tz2a*n2 + ulp.</span>
+0301    A(jn2,jn1) = -an2*speye(Nu);
+0302    A(jn2,jn2) = -tz2a*speye(Nu);
+0303    A(1,jlp) = Bu1;                  <span class="comment">% ufilt = tzza*n2 + ulp.</span>
+0304    A(1,jn2) = tzza*Bu1;
+0305    A(2,jlp) = Bu2;
+0306    A(2,jn2) = tzza*Bu2;
+0307 
+0308    B(jlp,:) = alp*speye(Nu);
+0309 
+0310    C(1,1:2) = [1, 1];
+0311    C(1,jlp) = Du;
+0312    C(1,jn2) = tzza*Du;
+0313 
+0314 <span class="keyword">end</span> <span class="comment">% linFlag</span>
+0315 
+0316 <span class="keyword">end</span> <span class="comment">% plantControl</span>
+0317 
+0318 
+0319 
+0320 
+0321 <a name="_sub1" href="#_subfunctions" class="code">function f = getcp (CPnom,cpct,R,muV,W,bet)</a>
+0322    [cp,~,~,~] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,R,muV,W,bet);
+0323    f = cp - CPnom;
+0324 <span class="keyword">end</span>
+0325 
+0326 
+0327 <a name="_sub2" href="#_subfunctions" class="code">function dcp = getdcp (cpct,R,muV,W,bet)</a>
+0328    [~,~,dcps,~] = <a href="../../STAS-WPP/STAS-Control/cpvwb.html" class="code" title="function [cp,ct,dcp,dct] = cpvwb (cpct,R,Vinf,W,bet)">cpvwb</a> (cpct,R,muV,W,bet);
+0329    dcp = dcps(3);
+0330 <span class="keyword">end</span> <span class="comment">% getcp</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

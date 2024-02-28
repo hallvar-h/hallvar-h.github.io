@@ -1,0 +1,616 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of internalLoadSpectra</title>
+  <meta name="keywords" content="internalLoadSpectra">
+  <meta name="description" content="Get spectra of internal loads at particular locations.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; internalLoadSpectra.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>internalLoadSpectra
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Get spectra of internal loads at particular locations.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Get spectra of internal loads at particular locations.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/diagmat.html" class="code" title="function Ts = diagmat (Nmat,T)">diagmat</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCtoBodyCoeffs.html" class="code" title="function [cB,rB] = MBCtoBodyCoeffs (opt,cpin,rpsi,azi,W,df)">MBCtoBodyCoeffs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCtoBodySpectra.html" class="code" title="function SB = MBCtoBodySpectra (opt,Spsi,azi,W,df)">MBCtoBodySpectra</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Get spectra of internal loads at particular locations.</span>
+0002 
+0003 clear;
+0004 
+0005 pkg load statistics;
+0006 
+0007 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0008  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0009  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0010  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0011 
+0012 load <span class="string">'Sij_V10_I183_Lu180_Y0.bin'</span>;
+0013 load <span class="string">'Sijp_V10_I183_Lu180_Y0.bin'</span>;
+0014 load <span class="string">'cvg_V10_I183_Lu180_Y0.bin'</span>;
+0015 load <span class="string">'Vavg_V10_I183_Lu180_Y0.bin'</span>;
+0016 
+0017 load <span class="string">'Savg_Hs20_TP6.bin'</span>;
+0018 
+0019 nm = <span class="string">'DTU10MW'</span>;
+0020 Vmag = 10;
+0021 
+0022 yaw = 0;
+0023 betas = [0;0;0];
+0024 azi = 0;
+0025 thw = 0*pi/180;
+0026 
+0027 Nmud = 5;
+0028 
+0029 Nf = 2^12;  <span class="comment">% = 4*nnf, that is, 4 times the number of analysis frequencies.</span>
+0030 df = 0.001;
+0031 
+0032 freqs = df*[[0:Nf/2-1] [-Nf/2:-1]].';
+0033 
+0034 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0035 eval([<span class="string">'epar  = STASElectric_'</span> nm <span class="string">' ();'</span>]);
+0036 eval([<span class="string">'ppar  = STASPitch_'</span>    nm <span class="string">' ();'</span>]);
+0037 eval([<span class="string">'ypar  = STASYaw_'</span>      nm <span class="string">' ();'</span>]);
+0038 eval([<span class="string">'c     = STASControl_'</span>  nm <span class="string">' ();'</span>]);
+0039 
+0040 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0041  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0042  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0043  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0044 
+0045 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0046 [imdofs,Nmd] = <a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a> (s);
+0047 Ndj = Ndof + 6;
+0048 
+0049 Pin = <a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0050 [q,P,Ts0_B,TB0_g] =                                                     <span class="keyword">...</span>
+0051       <a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a> (Pin,yaw,s.nacelle.delta,azi,s.driveshaft.phi, <span class="keyword">...</span>
+0052                           betas,0,idofs,idofm,inods,inodm);
+0053 
+0054 Nb  = a.Nb;
+0055 Neb = a.Neb;
+0056 Nae = Nb*Neb;
+0057 
+0058 Nmud = s.foundation.Nmud;
+0059 Nwater = s.foundation.Nwater;
+0060 
+0061 <span class="comment">% Load the operating-point state vector and matrices.</span>
+0062 txt = <span class="string">'_V'</span>;
+0063 eval([&quot;load <span class="string">'xpsi&quot; txt int2str(10*Vmag) &quot;.txt'</span>;&quot;]);
+0064 eval([&quot;load <span class="string">'dxpsi&quot; txt int2str(10*Vmag) &quot;.txt'</span>;&quot;]);
+0065 eval([&quot;load <span class="string">'ypsi&quot; txt int2str(10*Vmag) &quot;.txt'</span>;&quot;]);
+0066 eval([&quot;load <span class="string">'Lpsi&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0067 eval([&quot;load <span class="string">'Apsi&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0068 eval([&quot;load <span class="string">'Bpsi&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0069 eval([&quot;load <span class="string">'Cpsi&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0070 eval([&quot;load <span class="string">'Dpsi&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0071 eval([&quot;load <span class="string">'dret&quot; txt int2str(10*Vmag) &quot;.bin'</span>;&quot;]);
+0072 eval([&quot;load <span class="string">'bldof&quot; txt int2str(round(10*Vmag)) &quot;.bin'</span>;&quot;]);
+0073 eval([&quot;xpsi = xpsi&quot; txt int2str(10*Vmag) &quot;;&quot;]);
+0074 eval([&quot;dxpsi = dxpsi&quot; txt int2str(10*Vmag) &quot;;&quot;]);
+0075 eval([&quot;ypsi = ypsi&quot; txt int2str(10*Vmag) &quot;;&quot;]);
+0076 
+0077 blxdof = cell2mat (bldof(1));
+0078 bludof = cell2mat (bldof(2));
+0079 blydof = cell2mat (bldof(3));
+0080 
+0081 Nx = size(xpsi,1);
+0082 Nret = size(dret,1);
+0083 Neta = 6 + s.foundation.Nmod + s.tower.Nmod + s.nacelle.Nmod <span class="keyword">...</span>
+0084      + s.driveshaft.Nmod + s.blade(1).Nmod + s.blade(2).Nmod <span class="keyword">...</span>
+0085      + s.blade(3).Nmod + 6;
+0086 
+0087 WW = ypsi(Ndj+idofs(4)+6);
+0088 
+0089 <span class="comment">% Always partition/eliminate first, then invert L afterwards.</span>
+0090 geteigs;
+0091 
+0092 <span class="comment">% Diagonalize.</span>
+0093 Phi = shp(:,ifrq);
+0094 Psi = inv(Phi);
+0095 ii = [1:Nret].';
+0096 jj = ii;
+0097 
+0098 <span class="comment">% Some of the very closely spaced eigenfrequencies may lie out of order.</span>
+0099 <span class="comment">% This causes problems when I assume that conjugate modes are mirrored</span>
+0100 <span class="comment">% in the sorted mode shape matrix.  The solution is to force complex</span>
+0101 <span class="comment">% conjugacy by copying half the complex mode shapes and eigenvalues to</span>
+0102 <span class="comment">% the other half.  This is done in the 'for' loop below.</span>
+0103 iY = speye(Nret);
+0104 Nosc = 0;
+0105 <span class="keyword">for</span> im1 = 1:floor(Nret/2)
+0106 
+0107    imn = Nret - (im1-1);
+0108 
+0109    <span class="keyword">if</span> (abs(imag(slap(im1))) &gt; 0)
+0110       Nosc = Nosc + 1;
+0111       Phi(:,imn) = conj(Phi(:,im1));
+0112       Psi(imn,:) = conj(Psi(im1,:));
+0113       slap(imn) = conj(slap(im1));
+0114       iY([im1 imn],[im1 imn]) = [1 1;-i i];
+0115    <span class="keyword">end</span>
+0116 
+0117 <span class="keyword">end</span>
+0118 Nexp = Nret - 2*Nosc;
+0119 Nmds = Nosc + Nexp;
+0120 
+0121 Lam = sparse (ii,jj,slap,Nret,Nret);
+0122 
+0123 <span class="comment">% The wind is input as a set of rotationally-sampled velocity spectra</span>
+0124 <span class="comment">% in global coordinates, while the waves are input as unidirectional</span>
+0125 <span class="comment">% force spectra, in the wave direction, acting on the foundation nodes</span>
+0126 <span class="comment">% from the seabed to transition piece (z = surface+10 m for the DTU</span>
+0127 <span class="comment">% 10 MW).</span>
+0128 <span class="comment">%</span>
+0129 <span class="comment">% Prepare B matrices specifically for the wind and wave inputs.  The</span>
+0130 <span class="comment">% transform from wave coordinates to foundation body coordinates</span>
+0131 <span class="comment">% should be done as part of the Bw matrix.</span>
+0132 Nwnod = s.foundation.Nnod - s.foundation.Nmud;
+0133 ct = cos(thw);
+0134 st = sin(thw);
+0135 Twg = [ct, -st,  0; <span class="keyword">...</span>
+0136        st,  ct,  0; <span class="keyword">...</span>
+0137         0,   0,  1];
+0138 Twgs = <a href="../../STAS-WPP/STAS-Utilities/diagmat.html" class="code" title="function Ts = diagmat (Nmat,T)">diagmat</a> (2*Nwnod,Twg);
+0139 Twxg = Twgs(:,[1:6:6*Nwnod-5]);
+0140 LB = Lpsi(dret,dret)\Bpsi(dret,:);
+0141 Bv = LB(:,Ndj+Neta+[1:3*Nae]);
+0142 Bw = LB(:,idofs(1)+[6*s.foundation.Nmud+1:6*s.foundation.Nnod])*Twxg;
+0143 
+0144 <span class="comment">% I want to know the transfer functions between wind and wave inputs and</span>
+0145 <span class="comment">% internal loads; integrated wave loads and internal loads; control inputs</span>
+0146 <span class="comment">% and internal loads.  For internal loads, I have to convert from modal to</span>
+0147 <span class="comment">% nodal displacements, transform from body to section coordinates, and</span>
+0148 <span class="comment">% then use the element stiffness matrix to extract the internal loads.</span>
+0149 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0150 
+0151 inac = idofs(3) + [1:2].';             <span class="comment">% For nacelle motions.</span>
+0152 iblt = idofs(6) + 6*Neb + [2:3].';     <span class="comment">% For blade tip motions.</span>
+0153 
+0154 ielf = Nmud + 1;
+0155 ifnd = idofs(1) + 6*(ielf-1) + [1:12].';
+0156 
+0157 ielt = 10;
+0158 itow = idofs(2) + 6*(ielt-1) + [1:12].';
+0159 
+0160 ield = 4;
+0161 idrv = idofs(4) + 6*(ield-1) + [1:12].';
+0162 
+0163 ielb = 1;
+0164 ibl = zeros(12,3);
+0165 ibl(:,1) = idofs(6) + 6*(ielb-1) + [1:12].';
+0166 ibl(:,2) = idofs(7) + 6*(ielb-1) + [1:12].';
+0167 ibl(:,3) = idofs(8) + 6*(ielb-1) + [1:12].';
+0168 
+0169 <span class="comment">% Foundation.</span>
+0170 <span class="keyword">if</span> (ielf == 1)
+0171    qn1 = zeros(6,1);
+0172    qn2 = ypsi(ifnd(7:12));
+0173    Pn1 = [0;0;0;P(ifnd(10:12))];  <span class="comment">% Same T_B^B0 orientation as second node.</span>
+0174    Pn2 = P(ifnd(7:12));
+0175    kes = s.foundation.ke_s(:,12*(ielf-1)+[1:12]);
+0176    conn = s.foundation.conn(:,ielf);
+0177    [Pintf,dPintfdq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0178    dPintfdq(:,1:6) = 0;
+0179 <span class="keyword">else</span>
+0180    qn1 = ypsi(ifnd(1:6));
+0181    qn2 = ypsi(ifnd(7:12));
+0182    Pn1 = P(ifnd(1:6));
+0183    Pn2 = P(ifnd(7:12));
+0184    kes = s.foundation.ke_s(:,12*(ielf-1)+[1:12]);
+0185    conn = s.foundation.conn(:,ielf);
+0186    [Pintf,dPintfdq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0187 
+0188 <span class="keyword">end</span>
+0189 
+0190 <span class="comment">% Tower.</span>
+0191 <span class="keyword">if</span> (ielt == 1)
+0192    qn1 = zeros(6,1);
+0193    qn2 = ypsi(itow(7:12));
+0194    Pn1 = [0;0;0;P(itow(10:12))];  <span class="comment">% Same T_B^B0 orientation as second node.</span>
+0195    Pn2 = P(itow(7:12));
+0196    kes = s.tower.ke_s(:,12*(ielt-1)+[1:12]);
+0197    conn = s.tower.conn(:,ielt);
+0198    [Pintt,dPinttdq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0199    dPinttdq(:,1:6) = 0;
+0200 <span class="keyword">else</span>
+0201    qn1 = ypsi(itow(1:6));
+0202    qn2 = ypsi(itow(7:12));
+0203    Pn1 = P(itow(1:6));
+0204    Pn2 = P(itow(7:12));
+0205    kes = s.tower.ke_s(:,12*(ielt-1)+[1:12]);
+0206    conn = s.tower.conn(:,ielt);
+0207    [Pintt,dPinttdq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0208 <span class="keyword">end</span>
+0209 
+0210 <span class="comment">% Driveshaft.</span>
+0211 <span class="keyword">if</span> (ield == 1)
+0212    qn1 = zeros(6,1);
+0213    qn2 = ypsi(idrv(7:12));
+0214    Pn1 = [0;0;0;P(idrv(10:12))];  <span class="comment">% Same T_B^B0 orientation as second node.</span>
+0215    Pn2 = P(idrv(7:12));
+0216    kes = s.driveshaft.ke_s(:,12*(ield-1)+[1:12]);
+0217    conn = s.driveshaft.conn(:,ield);
+0218    [Pintd,dPintddq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0219    dPintddq(:,1:6) = 0;
+0220 <span class="keyword">else</span>
+0221    qn1 = ypsi(idrv(1:6));
+0222    qn2 = ypsi(idrv(7:12));
+0223    Pn1 = P(idrv(1:6));
+0224    Pn2 = P(idrv(7:12));
+0225    kes = s.driveshaft.ke_s(:,12*(ield-1)+[1:12]);
+0226    conn = s.driveshaft.conn(:,ield);
+0227    [Pintd,dPintddq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0228 <span class="keyword">end</span>
+0229 
+0230 <span class="comment">% Blades.  These need to include the cross-spectra for the three blades.</span>
+0231 <span class="comment">% The qn's are based on ypsi, which is in MBC.  To appropriately match</span>
+0232 <span class="comment">% the P's I need to put things in body coordinates.</span>
+0233 qpsi = ypsi(1:Ndj);
+0234 [b1,b2,b3] = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a> (Ndj,idofs);
+0235 [TpsiB,TBpsi] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Ndj,b1,b2,b3,azi);
+0236 qB = TpsiB*qpsi;
+0237 
+0238 Pintb = zeros(18,1);
+0239 dPintbdq = sparse(18,36);
+0240 qbs = zeros(36,1);
+0241 <span class="keyword">for</span> ib = 1:3
+0242    ir6 = 6*(ib-1);
+0243    ic12 = 12*(ib-1);
+0244    <span class="keyword">if</span> (ielb == 1)
+0245       qn1 = zeros(6,1);
+0246       qn2 = qB(ibl(7:12,ib));
+0247       Pn1 = [0;0;0;P(ibl(10:12,ib))];  <span class="comment">% Same T_B^B0 orientation as second node.</span>
+0248       Pn2 = P(ibl(7:12,ib));
+0249       kes = s.blade(ib).ke_s(:,12*(ielb-1)+[1:12]);
+0250       conn = s.blade(ib).conn(:,ielb);
+0251       [Pb,dPb] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0252       Pintb(ir6+[1:6]) = Pb;
+0253       dPintbdq(ir6+[1:6],ic12+[1:12]) = dPb;
+0254       dPintbdq(ir6+[1:6],ic12+[1:6]) = 0;
+0255    <span class="keyword">else</span>
+0256       qn1 = qB(ibl(1:6,ib));
+0257       qn2 = qB(ibl(7:12,ib));
+0258       Pn1 = P(ibl(1:6,ib));
+0259       Pn2 = P(ibl(7:12,ib));
+0260       kes = s.blade(ib).ke_s(:,12*(ielb-1)+[1:12]);
+0261       conn = s.blade(ib).conn(:,ielb);
+0262       [Pintb,dPintbdq] = <a href="../../STAS-WPP/STAS-Aeroelastic/internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a> (qn1,qn2,Pn1,Pn2,kes);
+0263       Pintb(ir6+[1:6]) = Pb;
+0264       dPintbdq(ir6+[1:6],ic12+[1:12]) = dPb;
+0265    <span class="keyword">end</span>
+0266    qbs(ic12+[1:12]) = [qn1;qn2];  <span class="comment">% Save for later.</span>
+0267 <span class="keyword">end</span>
+0268 
+0269 <span class="comment">% Transform the mean loads and disps to MBC, needed to get the right 1P.</span>
+0270 b1 = [1:6].';
+0271 b2 = [7:12].';
+0272 b3 = [13:18].';
+0273 [TpsiB,TBpsi] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (18,b1,b2,b3,azi);
+0274 Pbpsi = TBpsi*Pintb;
+0275 b1 = [1:12].';
+0276 b2 = [13:24].';
+0277 b3 = [25:36].';
+0278 [TpsiB,TBpsi] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (36,b1,b2,b3,azi);
+0279 qbpsi = TBpsi*qbs;
+0280 
+0281 PBv = Psi*Bv;
+0282 PBw = Psi*Bw;
+0283 
+0284 <span class="comment">% I want internal load spectra in the blades and driveshaft in rotating</span>
+0285 <span class="comment">% coordinates.  The dPintbdq transfer function is expressed in body</span>
+0286 <span class="comment">% coordinates.  The dPintddq transfer function should be expressed in</span>
+0287 <span class="comment">% the coordinates associated with the current rotor position.</span>
+0288 <span class="comment">%</span>
+0289 <span class="comment">% So, apply the MBC transfer functions to get the required qpsi cross-</span>
+0290 <span class="comment">% spectra.  Then transform these Sqpsi spectra to rotating coordinates,</span>
+0291 <span class="comment">% for the driveshaft and blades.  Then apply the internal-load TFs.</span>
+0292 qdofs = [ifnd;itow;idrv;ibl(:,1);ibl(:,2);ibl(:,3)];
+0293 CC = Cpsi(qdofs,dret);
+0294 CP = CC*Phi;
+0295 
+0296 <span class="comment">% Displacement spectra.</span>
+0297 <span class="comment">%</span>
+0298 <span class="comment">% 12-by-12 cross-spectra for each of three components (foundation,</span>
+0299 <span class="comment">% tower, driveshaft), and 36-by-36 for the blades.</span>
+0300 Nyc = 12*3 + 36;
+0301 Nys = 144*3 + 36^2; 
+0302 
+0303 i3a = [1:3:3*Nae-2].';
+0304 i3b = [2:3:3*Nae-1].';
+0305 i3c = [3:3:3*Nae].';
+0306 
+0307 i9a = [1:9:9*(Nae^2)-8].';
+0308 i9b = [2:9:9*(Nae^2)-7].';
+0309 i9c = [3:9:9*(Nae^2)-6].';
+0310 i9d = [4:9:9*(Nae^2)-5].';
+0311 i9e = [5:9:9*(Nae^2)-4].';
+0312 i9f = [6:9:9*(Nae^2)-3].';
+0313 i9g = [7:9:9*(Nae^2)-2].';
+0314 i9h = [8:9:9*(Nae^2)-1].';
+0315 i9i = [9:9:9*(Nae^2)].';
+0316 
+0317 Sq = zeros(Nf,Nys);
+0318 cq = zeros(Nf,Nyc);
+0319 fidm = fopen(&quot;TFmag.txt&quot;,&quot;w&quot;);
+0320 fidp = fopen(&quot;TFph.txt&quot;,&quot;w&quot;);
+0321 <span class="keyword">for</span> ifreq = 1:Nf
+0322 
+0323 <span class="comment">%printf('%6d of %6d\n',ifreq,Nf);</span>
+0324 <span class="comment">%fflush(stdout);</span>
+0325 
+0326    f = freqs(ifreq);
+0327    w = 2*pi*f;
+0328 
+0329    iwslap = i*w*speye(Nret) - Lam;
+0330 
+0331    Hv = CP*(iwslap\PBv);
+0332    Hw = CP*(iwslap\PBw);
+0333 
+0334 valry = Hv(36+11,3*11+1);
+0335 valrz = Hv(36+12,3*11+1);
+0336 fprintf(fidm,&quot;<span class="comment">%+5.6e %+5.6e %+5.6e\n&quot;,f,abs(valry),abs(valrz));</span>
+0337 fprintf(fidp,&quot;<span class="comment">%+5.6e %+5.6e %+5.6e\n&quot;,f, ...</span>
+0338         atan2(imag(valry),real(valry))/pi, <span class="keyword">...</span>
+0339         atan2(imag(valrz),real(valrz))/pi);
+0340 
+0341 
+0342 <span class="comment">%   Sijf = zeros(3*Nae,3*Nae);</span>
+0343 <span class="comment">%   for iel1 = 1:Nae</span>
+0344 <span class="comment">%      ir3 = 3*(iel1-1);</span>
+0345 <span class="comment">%      iref = 9*Nae*(iel1-1);</span>
+0346 <span class="comment">%      for iel2 = 1:Nae</span>
+0347 <span class="comment">%         ic3 = 3*(iel2-1);</span>
+0348 <span class="comment">%         icol = iref + 9*(iel2-1);</span>
+0349 <span class="comment">%         Sijf(ir3+[1:3],ic3+[1:3]) = reshape (Sij(ifreq,icol+[1:9]),3,3);</span>
+0350 <span class="comment">%      end</span>
+0351 <span class="comment">%   end</span>
+0352 
+0353    <span class="comment">% Gives the same answer as above, 10 times faster.</span>
+0354    Sijf = zeros(3*Nae,3*Nae);
+0355    Sijf(i3a,i3a) = reshape(Sij(ifreq,i9a),Nae,Nae).';
+0356    Sijf(i3b,i3a) = reshape(Sij(ifreq,i9b),Nae,Nae).';
+0357    Sijf(i3c,i3a) = reshape(Sij(ifreq,i9c),Nae,Nae).';
+0358    Sijf(i3a,i3b) = reshape(Sij(ifreq,i9d),Nae,Nae).';
+0359    Sijf(i3b,i3b) = reshape(Sij(ifreq,i9e),Nae,Nae).';
+0360    Sijf(i3c,i3b) = reshape(Sij(ifreq,i9f),Nae,Nae).';
+0361    Sijf(i3a,i3c) = reshape(Sij(ifreq,i9g),Nae,Nae).';
+0362    Sijf(i3b,i3c) = reshape(Sij(ifreq,i9h),Nae,Nae).';
+0363    Sijf(i3c,i3c) = reshape(Sij(ifreq,i9i),Nae,Nae).';
+0364   
+0365  
+0366    Swf = reshape (Savg(ifreq,:),Nwnod,Nwnod).'/(force^2/time);
+0367 
+0368    <span class="keyword">for</span> icomp = 1:3
+0369 
+0370       ir12  = 12*(icomp-1);
+0371       ir144 = 144*(icomp-1);
+0372 
+0373       Sqv = Hv(ir12+[1:12],:)*Sijf*(Hv(ir12+[1:12],:)');
+0374       Sqw = Hw(ir12+[1:12],:)*Swf*(Hw(ir12+[1:12],:)');
+0375       Sq(ifreq,ir144+[1:144]) = reshape(Sqv + Sqw,1,144);
+0376 
+0377       cq(ifreq,ir12+[1:12]) = (Hv(ir12+[1:12],:)*cvg(ifreq,:).').';
+0378 
+0379    <span class="keyword">end</span>
+0380 
+0381    ir12  = 3*12;
+0382    ir144 = 3*144;
+0383    Sqv = Hv(ir12+[1:36],:)*Sijf*(Hv(ir12+[1:36],:)');
+0384    Sqw = Hw(ir12+[1:36],:)*Swf*(Hw(ir12+[1:36],:)');
+0385    Sq(ifreq,ir144+[1:36^2]) = reshape(Sqv + Sqw,1,36^2);   
+0386 
+0387    cq(ifreq,ir12+[1:36]) = (Hv(ir12+[1:36],:)*cvg(ifreq,:).').';
+0388 
+0389 <span class="keyword">end</span>
+0390 fclose(<span class="string">'all'</span>);
+0391 
+0392 <span class="comment">% First convert the blade Sq's to rotating coordinates, retaining only</span>
+0393 <span class="comment">% Blade 1.</span>
+0394 Sqbr = zeros(Nf,144);
+0395 <span class="keyword">for</span> icol = 1:12
+0396    <span class="keyword">for</span> irow = 1:12
+0397       icomp = 12*(icol-1) + irow;
+0398       ind = [     irow + 36*(icol-1) + [0;36*12;36*24]; <span class="keyword">...</span>
+0399              12 + irow + 36*(icol-1) + [0;36*12;36*24]; <span class="keyword">...</span>
+0400              24 + irow + 36*(icol-1) + [0;36*12;36*24]];
+0401       SS = Sq(:,3*144+ind);
+0402       Stemp = <a href="../../STAS-WPP/STAS-WPP/MBCtoBodySpectra.html" class="code" title="function SB = MBCtoBodySpectra (opt,Spsi,azi,W,df)">MBCtoBodySpectra</a>(1,SS,azi,WW,df);
+0403       Sqbr(:,icomp) = Stemp(:,1);
+0404    <span class="keyword">end</span>
+0405 <span class="keyword">end</span>
+0406 
+0407 
+0408 
+0409 
+0410 save(<span class="string">'cq.bin'</span>,<span class="string">'cq'</span>);
+0411 save(<span class="string">'qbpsi.bin'</span>,<span class="string">'qbpsi'</span>);
+0412 
+0413 
+0414 
+0415 
+0416 cqbr = sparse(Nf,12);
+0417 <span class="keyword">for</span> icomp = 1:12
+0418    ind = icomp + [0;12;24];
+0419    [ctemp,qtemp] = <a href="../../STAS-WPP/STAS-WPP/MBCtoBodyCoeffs.html" class="code" title="function [cB,rB] = MBCtoBodyCoeffs (opt,cpin,rpsi,azi,W,df)">MBCtoBodyCoeffs</a> (1,cq(:,36+ind),qbpsi(ind),azi,WW,df);
+0420    cqbr(:,icomp) = ctemp(:,1);
+0421 <span class="keyword">end</span>
+0422 
+0423 Spf = zeros(Nf,36);
+0424 Spt = zeros(Nf,36);
+0425 Spd = zeros(Nf,36);
+0426 Spb = zeros(Nf,36);
+0427 cpb = zeros(Nf,6);
+0428 <span class="keyword">for</span> ifreq = 1:Nf
+0429 
+0430    Stemp = reshape(Sq(ifreq,1:144),12,12);
+0431    Spf(ifreq,:) = reshape(dPintfdq*Stemp*(dPintfdq'),1,36);
+0432 
+0433    Stemp = reshape(Sq(ifreq,144+[1:144]),12,12);
+0434    Spt(ifreq,:) = reshape(dPinttdq*Stemp*(dPinttdq'),1,36);
+0435 
+0436    Stemp = reshape(Sq(ifreq,2*144+[1:144]),12,12);
+0437    Spd(ifreq,:) = reshape(dPintddq*Stemp*(dPintddq'),1,36);
+0438 
+0439    Stemp = reshape(Sqbr(ifreq,[1:144]),12,12);
+0440    Spb(ifreq,:) = reshape(dPintbdq(1:6,1:12)*Stemp*(dPintbdq(1:6,1:12)'),1,36);
+0441 
+0442    cpb(ifreq,:) = (dPintbdq(1:6,1:12)*cqbr(ifreq,:).').';
+0443    Stemp = reshape((cpb(ifreq,:).')*conj(cpb(ifreq,:))/df,1,36);
+0444    Spb(ifreq,:) = Spb(ifreq,:) + Stemp;
+0445 <span class="comment">%   Spb(ifreq,:) = Spb(ifreq,:) + abs(Stemp);</span>
+0446 
+0447 <span class="keyword">end</span>
+0448 
+0449 <span class="comment">% Transform the driveshaft load spectra.  (Can't do this transformation</span>
+0450 <span class="comment">% on q because the displacement DOF's don't transform as vectors.  Loads,</span>
+0451 <span class="comment">% on the other hand, do.)</span>
+0452 Spd0 = Spd;
+0453 <span class="keyword">for</span> ii = 1:2
+0454    ir3 = 3*(ii-1);
+0455    <span class="keyword">for</span> jj = 1:2
+0456       ic3 = 3*(jj-1);
+0457       ind = 6*ic3 + ir3 + [1 2 3 7 8 9 13 14 15].';
+0458       SS = Spd0(:,ind);
+0459       Spd(:,ind) = <a href="../../STAS-WPP/STAS-WPP/MBCtoBodySpectra.html" class="code" title="function SB = MBCtoBodySpectra (opt,Spsi,azi,W,df)">MBCtoBodySpectra</a>(2,SS,azi,WW,df);
+0460 
+0461 <span class="comment">%'------------------------------'</span>
+0462 <span class="comment">%ifreq = 5;</span>
+0463 <span class="comment">%[ii jj]</span>
+0464 <span class="comment">%reshape(SS(5,:),3,3).'</span>
+0465 <span class="comment">%reshape(Spd(5,ind),3,3).'</span>
+0466 
+0467    <span class="keyword">end</span>
+0468 <span class="keyword">end</span>
+0469 
+0470 ind = [Nf/2+[1:Nf/2] [1:Nf/2]].';
+0471 
+0472 iel1 = 10;
+0473 iel2 = 10;
+0474 iref = 9*Nae*(iel1-1) + 9*(iel2-1);
+0475 figure(1);
+0476 clf;
+0477 hold on;
+0478 semilogy(freqs(ind),abs(Sij(ind,iref+[1 5 9])));
+0479 hold off;
+0480 
+0481 figure(2);
+0482 clf;
+0483 hold on;
+0484 semilogy(freqs(ind),abs(Savg(ind,9*16+10)));
+0485 hold off;
+0486 
+0487 figure(3);
+0488 clf;
+0489 hold on;
+0490 semilogy(freqs(ind),abs(Sq(ind,1)));
+0491 semilogy(freqs(ind),abs(Sq(ind,13)));
+0492 semilogy(freqs(ind),abs(Sq(ind,3*144+2*36+3)));
+0493 hold off;
+0494 
+0495 figure(4);
+0496 clf;
+0497 hold on;
+0498 semilogy(freqs(ind),abs(Spf(ind,6*3+4)));
+0499 semilogy(freqs(ind),abs(Spf(ind,6*4+5)));
+0500 semilogy(freqs(ind),abs(Spf(ind,6*5+6)));
+0501 hold off;
+0502 
+0503 figure(5);
+0504 clf;
+0505 hold on;
+0506 semilogy(freqs(ind),abs(Spt(ind,6*3+4)));
+0507 semilogy(freqs(ind),abs(Spt(ind,6*4+5)));
+0508 semilogy(freqs(ind),abs(Spt(ind,6*5+6)));
+0509 hold off;
+0510 
+0511 figure(6);
+0512 clf;
+0513 hold on;
+0514 semilogy(freqs(ind),abs(Spd(ind,6*3+4)));
+0515 semilogy(freqs(ind),abs(Spd(ind,6*4+5)));
+0516 semilogy(freqs(ind),abs(Spd(ind,6*5+6)));
+0517 hold off;
+0518 
+0519 figure(7);
+0520 clf;
+0521 hold on;
+0522 semilogy(freqs(ind),abs(Spb(ind,6*3+4)));
+0523 semilogy(freqs(ind),abs(Spb(ind,6*4+5)));
+0524 semilogy(freqs(ind),abs(Spb(ind,6*5+6)));
+0525 hold off;
+0526 
+0527 <span class="comment">%{</span>
+0528 
+0529 fida = fopen(<span class="string">'specsa.txt'</span>,<span class="string">'w'</span>);
+0530 fidw = fopen(<span class="string">'specsw.txt'</span>,<span class="string">'w'</span>);
+0531 fidq = fopen(<span class="string">'specsq.txt'</span>,<span class="string">'w'</span>);
+0532 fidf = fopen(<span class="string">'specsf.txt'</span>,<span class="string">'w'</span>);
+0533 fidt = fopen(<span class="string">'specst.txt'</span>,<span class="string">'w'</span>);
+0534 fidd = fopen(<span class="string">'specsd.txt'</span>,<span class="string">'w'</span>);
+0535 <span class="keyword">for</span> jj = 1:Nf
+0536 
+0537    <span class="keyword">if</span> (jj &lt;= Nf/2)
+0538       ifreq = Nf/2 + jj;
+0539    <span class="keyword">else</span>
+0540       ifreq = jj - Nf/2;
+0541    <span class="keyword">end</span>
+0542 
+0543    f = freqs(ifreq);
+0544 
+0545    fprintf(fid,<span class="string">'%+5.6e %+5.6e %+5.6e %+5.6e %+5.6e\n'</span>, <span class="keyword">...</span>
+0546            Sij(),);
+0547 
+0548 <span class="keyword">end</span>
+0549 
+0550 <span class="comment">%}</span>
+0551 
+0552 
+0553 <span class="comment">% Stresses.</span>
+0554 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of angularVelocity</title>
+  <meta name="keywords" content="angularVelocity">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; angularVelocity.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>angularVelocity
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function D = angularVelocity (q,inods,inodm,P0) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The nodal rotational DOFs in STAS consist of an axis-angle
+ representation, in the form of an exponential map.  That is, the
+ three parameters thx,thy,thz define the orientation of an axis
+ with norm(th) the angle of rotation, generating a transformation
+ matrix Tb^a.  The axis is defined in &quot;a&quot; coordinates.
+
+ The time derivatives of the rotation parameters are related to
+ the angular velocity vector by w_b/a^a = D (dth/dt), where D(th) 
+ is a matrix that is a function of theta.
+
+ To find D, write S = (dT/dt)T', or
+ (dT/dthx)T'(dthx/dt) + (dT/dthy)T'(dthy/dt) + (dT/dthz)T'(dthz/dt),
+ where S is spin(w_b/a^a).  Then extract the appropriate elements
+ of each of the (dT/dthj)T's, corresponding to the w's in S, and
+ write these in matrix-vector format.  If we say that Fj = (dT/dthj)T',
+ then
+     --                      --
+     | -Fx,23  -Fy,23  -Fz,23 |
+ D = |  Fx,13   Fy,13   Fz,13 |
+     | -Fx,12  -Fy,12  -Fz,12 |
+     --                      --
+
+ In general, T can be written as T_B0^g*T_B^B0*T_n0^B*T_n^n0.
+
+ This takes a vector of DOFs q and outputs the D matrix, which for
+ each set of three nodal rotations relates W_B\B0^g and Th_B^B0
+ (body reference nodes) or w_n\n0^g and th_n^n0.
+
+ w_n\g^g = D1 dTh_B^B0/dt + Dk dth_n^n0/dt
+
+ Version:        Changes:
+ --------        -------------
+ 07.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 07.10.2017      
+
+ Inputs:
+ -------
+ q               : DOF vector.  3 positions, 3 rotations for each node.
+ inods,inodm     : Body node indices.
+ iels            : Body element indices.
+ P0              : Initial undeformed node-to-body positions and
+                   rotations.
+
+ Outputs:
+ --------
+ D              : 3-by-3*Nnod matrix.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a>	Version:        Changes:</li>
+<li><a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a>	Version:        Changes:</li>
+<li><a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a>	Caution, the input TBg = T_B0^g*T_B^B0.</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function D = angularVelocity (q,inods,inodm,P0)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The nodal rotational DOFs in STAS consist of an axis-angle</span>
+0004 <span class="comment">% representation, in the form of an exponential map.  That is, the</span>
+0005 <span class="comment">% three parameters thx,thy,thz define the orientation of an axis</span>
+0006 <span class="comment">% with norm(th) the angle of rotation, generating a transformation</span>
+0007 <span class="comment">% matrix Tb^a.  The axis is defined in &quot;a&quot; coordinates.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% The time derivatives of the rotation parameters are related to</span>
+0010 <span class="comment">% the angular velocity vector by w_b/a^a = D (dth/dt), where D(th)</span>
+0011 <span class="comment">% is a matrix that is a function of theta.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% To find D, write S = (dT/dt)T', or</span>
+0014 <span class="comment">% (dT/dthx)T'(dthx/dt) + (dT/dthy)T'(dthy/dt) + (dT/dthz)T'(dthz/dt),</span>
+0015 <span class="comment">% where S is spin(w_b/a^a).  Then extract the appropriate elements</span>
+0016 <span class="comment">% of each of the (dT/dthj)T's, corresponding to the w's in S, and</span>
+0017 <span class="comment">% write these in matrix-vector format.  If we say that Fj = (dT/dthj)T',</span>
+0018 <span class="comment">% then</span>
+0019 <span class="comment">%     --                      --</span>
+0020 <span class="comment">%     | -Fx,23  -Fy,23  -Fz,23 |</span>
+0021 <span class="comment">% D = |  Fx,13   Fy,13   Fz,13 |</span>
+0022 <span class="comment">%     | -Fx,12  -Fy,12  -Fz,12 |</span>
+0023 <span class="comment">%     --                      --</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% In general, T can be written as T_B0^g*T_B^B0*T_n0^B*T_n^n0.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% This takes a vector of DOFs q and outputs the D matrix, which for</span>
+0028 <span class="comment">% each set of three nodal rotations relates W_B\B0^g and Th_B^B0</span>
+0029 <span class="comment">% (body reference nodes) or w_n\n0^g and th_n^n0.</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% w_n\g^g = D1 dTh_B^B0/dt + Dk dth_n^n0/dt</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Version:        Changes:</span>
+0034 <span class="comment">% --------        -------------</span>
+0035 <span class="comment">% 07.10.2017      Original code.</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">% Version:        Verification:</span>
+0038 <span class="comment">% --------        -------------</span>
+0039 <span class="comment">% 07.10.2017</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">% Inputs:</span>
+0042 <span class="comment">% -------</span>
+0043 <span class="comment">% q               : DOF vector.  3 positions, 3 rotations for each node.</span>
+0044 <span class="comment">% inods,inodm     : Body node indices.</span>
+0045 <span class="comment">% iels            : Body element indices.</span>
+0046 <span class="comment">% P0              : Initial undeformed node-to-body positions and</span>
+0047 <span class="comment">%                   rotations.</span>
+0048 <span class="comment">%</span>
+0049 <span class="comment">% Outputs:</span>
+0050 <span class="comment">% --------</span>
+0051 <span class="comment">% D              : 3-by-3*Nnod matrix.</span>
+0052 <span class="comment">%</span>
+0053 
+0054 Nnod = size(q,1)/6;
+0055 Nnb  = inods(8) - inods(7);
+0056 
+0057 D = zeros(3,3*Nnod);
+0058 
+0059 inod = 1;
+0060 ir3 = 3*(inod-1);
+0061 ir6 = 6*(inod-1);
+0062 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0063 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0064 TBg = TB0_g*TB_B0;
+0065 
+0066 <span class="comment">%{</span>
+0067 <span class="string">'--------------------------------------------------------------'</span>
+0068 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0069 TB_B0
+0070 dTB_B0
+0071 TB0_g
+0072 TBg
+0073 F
+0074 D(:,ir3+[1:3])
+0075 <span class="comment">%}</span>
+0076 
+0077 <span class="keyword">for</span> inod = inods(1)+1:inodm(2)
+0078    ir3 = 3*(inod-1);
+0079    ir6 = 6*(inod-1);
+0080    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0081    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0082    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0083 
+0084 <span class="comment">%{</span>
+0085 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0086 TBg
+0087 Ts0B
+0088 Tnn0
+0089 dTnn0
+0090 F
+0091 D(:,ir3+[1:3])
+0092 <span class="comment">%}</span>
+0093 
+0094 <span class="keyword">end</span>
+0095 
+0096 inod = inods(2);
+0097 ir3 = 3*(inod-1);
+0098 ir6 = 6*(inod-1);
+0099 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0100 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0101 TBg = TB0_g*TB_B0;
+0102 
+0103 <span class="comment">%{</span>
+0104 <span class="string">'--------------------------------------------------------------'</span>
+0105 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0106 TB_B0
+0107 dTB_B0
+0108 TB0_g
+0109 TBg
+0110 F
+0111 D(:,ir3+[1:3])
+0112 <span class="comment">%}</span>
+0113 
+0114 <span class="keyword">for</span> inod = inods(2)+1:inodm(3)
+0115    ir3 = 3*(inod-1);
+0116    ir6 = 6*(inod-1);
+0117    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0118    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0119    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0120 
+0121 <span class="comment">%{</span>
+0122 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0123 TBg
+0124 Ts0B
+0125 Tnn0
+0126 dTnn0
+0127 F
+0128 D(:,ir3+[1:3])
+0129 <span class="comment">%}</span>
+0130 
+0131 <span class="keyword">end</span>
+0132 
+0133 inod = inods(3);
+0134 ir3 = 3*(inod-1);
+0135 ir6 = 6*(inod-1);
+0136 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0137 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0138 TBg = TB0_g*TB_B0;
+0139 
+0140 <span class="comment">%{</span>
+0141 <span class="string">'--------------------------------------------------------------'</span>
+0142 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0143 TB_B0
+0144 dTB_B0
+0145 TB0_g
+0146 TBg
+0147 F
+0148 D(:,ir3+[1:3])
+0149 <span class="comment">%}</span>
+0150 
+0151 <span class="keyword">for</span> inod = inods(3)+1:inodm(5)
+0152    ir3 = 3*(inod-1);
+0153    ir6 = 6*(inod-1);
+0154    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0155    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0156    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0157 
+0158 <span class="comment">%{</span>
+0159 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0160 TBg
+0161 Ts0B
+0162 Tnn0
+0163 dTnn0
+0164 F
+0165 D(:,ir3+[1:3])
+0166 <span class="comment">%}</span>
+0167 
+0168 <span class="keyword">end</span>
+0169 
+0170 inod = inods(4);
+0171 ir3 = 3*(inod-1);
+0172 ir6 = 6*(inod-1);
+0173 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0174 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0175 TBg = TB0_g*TB_B0;
+0176 
+0177 <span class="comment">%{</span>
+0178 <span class="string">'--------------------------------------------------------------'</span>
+0179 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0180 TB_B0
+0181 dTB_B0
+0182 TB0_g
+0183 TBg
+0184 F
+0185 D(:,ir3+[1:3])
+0186 <span class="comment">%}</span>
+0187 
+0188 <span class="keyword">for</span> inod = inods(4)+1:inodm(8)
+0189    ir3 = 3*(inod-1);
+0190    ir6 = 6*(inod-1);
+0191    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0192    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0193    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0194 
+0195 <span class="comment">%{</span>
+0196 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0197 TBg
+0198 Ts0B
+0199 Tnn0
+0200 dTnn0
+0201 F
+0202 D(:,ir3+[1:3])
+0203 <span class="comment">%}</span>
+0204 
+0205 <span class="keyword">end</span>
+0206 
+0207 inod = inods(6);
+0208 ir3 = 3*(inod-1);
+0209 ir6 = 6*(inod-1);
+0210 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0211 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0212 TBg = TB0_g*TB_B0;
+0213 
+0214 <span class="comment">%{</span>
+0215 <span class="string">'--------------------------------------------------------------'</span>
+0216 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0217 TB_B0
+0218 dTB_B0
+0219 TB0_g
+0220 TBg
+0221 F
+0222 D(:,ir3+[1:3])
+0223 <span class="comment">%}</span>
+0224 
+0225 <span class="keyword">for</span> inod = inods(6)+[1:Nnb-1]
+0226    ir3 = 3*(inod-1);
+0227    ir6 = 6*(inod-1);
+0228    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0229    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0230    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0231 
+0232 <span class="comment">%{</span>
+0233 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0234 TBg
+0235 Ts0B
+0236 Tnn0
+0237 dTnn0
+0238 F
+0239 D(:,ir3+[1:3])
+0240 <span class="comment">%}</span>
+0241 
+0242 <span class="keyword">end</span>
+0243 
+0244 inod = inods(7);
+0245 ir3 = 3*(inod-1);
+0246 ir6 = 6*(inod-1);
+0247 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0248 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0249 TBg = TB0_g*TB_B0;
+0250 
+0251 <span class="comment">%{</span>
+0252 <span class="string">'--------------------------------------------------------------'</span>
+0253 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0254 TB_B0
+0255 dTB_B0
+0256 TB0_g
+0257 TBg
+0258 F
+0259 D(:,ir3+[1:3])
+0260 <span class="comment">%}</span>
+0261 
+0262 <span class="keyword">for</span> inod = inods(7)+[1:Nnb-1]
+0263    ir3 = 3*(inod-1);
+0264    ir6 = 6*(inod-1);
+0265    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0266    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0267    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0268 
+0269 <span class="comment">%{</span>
+0270 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0271 TBg
+0272 Ts0B
+0273 Tnn0
+0274 dTnn0
+0275 F
+0276 D(:,ir3+[1:3])
+0277 <span class="comment">%}</span>
+0278 
+0279 <span class="keyword">end</span>
+0280 
+0281 inod = inods(8);
+0282 ir3 = 3*(inod-1);
+0283 ir6 = 6*(inod-1);
+0284 [F,TB_B0,dTB_B0,TB0_g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (q(ir6+[4:6]),P0(ir6+[4:6]));
+0285 D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0286 TBg = TB0_g*TB_B0;
+0287 
+0288 <span class="comment">%{</span>
+0289 <span class="string">'--------------------------------------------------------------'</span>
+0290 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0291 TB_B0
+0292 dTB_B0
+0293 TB0_g
+0294 TBg
+0295 F
+0296 D(:,ir3+[1:3])
+0297 <span class="comment">%}</span>
+0298 
+0299 <span class="keyword">for</span> inod = inods(8)+[1:Nnb-1]
+0300    ir3 = 3*(inod-1);
+0301    ir6 = 6*(inod-1);
+0302    Ts0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P0(ir6+[4:6]));
+0303    [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (q(ir6+[4:6]),TBg,Ts0B);
+0304    D(:,ir3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0305 
+0306 <span class="comment">%{</span>
+0307 [inod P0(ir6+4) P0(ir6+5) P0(ir6+6) q(ir6+4) q(ir6+5) q(ir6+6)]
+0308 TBg
+0309 Ts0B
+0310 Tnn0
+0311 dTnn0
+0312 F
+0313 D(:,ir3+[1:3])
+0314 <span class="comment">%}</span>
+0315 
+0316 <span class="keyword">end</span>
+0317 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of clusdt</title>
+  <meta name="keywords" content="clusdt">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; clusdt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>clusdt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Vstar,phi] = clusdt (phim,Vdat,Lam,mus,sig,bet) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Update the cluster wind speed estimate as well as the probability
+ distribution.
+
+ Version:        Changes:
+ --------        -------------
+ 14.10.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 14.10.2020      
+
+ Inputs:
+ -------
+ phim            : Vector, length Nmu (number of bins).  Probability
+                   distribution of cluster mean.
+ Vdat            : Vector, length Nt.  Present wind speed at each
+                   turbine in the cluster.
+ Lam             : Transition probability, phi(k+1) = Lam phi(k).
+ mus             : Bins for the cluster mean wind speed.
+ sig             : Width of the central part of the phi(V|mu) profile.
+ bet             : Background probability of the phi(V|mu) profile.
+
+ Outputs:
+ --------
+ Vstar           : Updated wind speed estimate at the central turbine.
+ phi             : Updated probability distribution over mu's.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="phimugV.html" class="code" title="function phi = phimugV (Vm,mus,sig,bet,phim)">phimugV</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="TCD42Lin.html" class="code" title="">TCD42Lin</a>	y vector:        u vector:</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Vstar,phi] = clusdt (phim,Vdat,Lam,mus,sig,bet)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Update the cluster wind speed estimate as well as the probability</span>
+0004 <span class="comment">% distribution.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 14.10.2020      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 14.10.2020</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% phim            : Vector, length Nmu (number of bins).  Probability</span>
+0017 <span class="comment">%                   distribution of cluster mean.</span>
+0018 <span class="comment">% Vdat            : Vector, length Nt.  Present wind speed at each</span>
+0019 <span class="comment">%                   turbine in the cluster.</span>
+0020 <span class="comment">% Lam             : Transition probability, phi(k+1) = Lam phi(k).</span>
+0021 <span class="comment">% mus             : Bins for the cluster mean wind speed.</span>
+0022 <span class="comment">% sig             : Width of the central part of the phi(V|mu) profile.</span>
+0023 <span class="comment">% bet             : Background probability of the phi(V|mu) profile.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Outputs:</span>
+0026 <span class="comment">% --------</span>
+0027 <span class="comment">% Vstar           : Updated wind speed estimate at the central turbine.</span>
+0028 <span class="comment">% phi             : Updated probability distribution over mu's.</span>
+0029 
+0030 <span class="comment">% First update the estimate.</span>
+0031 phi1 = Lam*phim;
+0032 
+0033 <span class="comment">% Then incorporate the measurements.</span>
+0034 phi = <a href="phimugV.html" class="code" title="function phi = phimugV (Vm,mus,sig,bet,phim)">phimugV</a> (Vdat,mus,sig,bet,phi1);
+0035 
+0036 ind = (phi &lt; 1e-12);
+0037 phi(ind) = 0.0;
+0038 phi = phi/sum(phi);  <span class="comment">% Normalize to prevent drift from sum(p) = 1.</span>
+0039 
+0040 <span class="comment">% Estimate of cluster wind speed.</span>
+0041 Vstar = sum(mus.*phi);  <span class="comment">% Expected value.</span>
+0042 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

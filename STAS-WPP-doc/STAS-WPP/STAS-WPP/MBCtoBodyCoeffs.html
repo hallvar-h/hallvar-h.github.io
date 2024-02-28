@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of MBCtoBodyCoeffs</title>
+  <meta name="keywords" content="MBCtoBodyCoeffs">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-WPP</a> &gt; MBCtoBodyCoeffs.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-WPP&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>MBCtoBodyCoeffs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [cB,rB] = MBCtoBodyCoeffs (opt,cpin,rpsi,azi,W,df) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Convert an input set of Fourier coefficients in multi-blade or
+ nacelle coordinates to an output set in rotating coordinates.
+ Options are provided for transforming from multi-blade coordinates
+ to each blade, and from nacelle to driveshaft coordinates.
+
+ The function also transforms periodic Fourier coefficients and
+ provides the mean values in body coordinates.
+
+ If an MBC transform is being performed then the indices represent
+ the blade number, and if a driveshaft transform is being performed
+ then the indices represent 1=x, 2=y, 3=z.
+
+ Version:        Changes:
+ --------        -------------
+ 08.09.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 08.09.2020      Verified using an independent calculation based
+                 on a time-domain transform of the periodic signal.
+
+ Inputs:
+ -------
+ opt             : = 1 for MBC to body,
+                   = 2 for driveshaft.
+ cpin            : Fourier coefficients representing a periodic signal.
+                   rper(p) = sum_k c_k exp(-i 2 pi (k p / N)).
+ rpsi            : mean in MBC coordinates.
+ azi             : azimuth angle at t = 0 (usually 0).
+ W               : Rotor speed, rad/s.
+ df              : Frequency bin, Hz.
+
+ Outputs:
+ --------
+ cB              : periodic coefficients in body coordinates.
+ rB              : the mean in body coordinates.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [cB,rB] = MBCtoBodyCoeffs (opt,cpin,rpsi,azi,W,df)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Convert an input set of Fourier coefficients in multi-blade or</span>
+0004 <span class="comment">% nacelle coordinates to an output set in rotating coordinates.</span>
+0005 <span class="comment">% Options are provided for transforming from multi-blade coordinates</span>
+0006 <span class="comment">% to each blade, and from nacelle to driveshaft coordinates.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% The function also transforms periodic Fourier coefficients and</span>
+0009 <span class="comment">% provides the mean values in body coordinates.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% If an MBC transform is being performed then the indices represent</span>
+0012 <span class="comment">% the blade number, and if a driveshaft transform is being performed</span>
+0013 <span class="comment">% then the indices represent 1=x, 2=y, 3=z.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Changes:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 08.09.2020      Original code.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Verification:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 08.09.2020      Verified using an independent calculation based</span>
+0022 <span class="comment">%                 on a time-domain transform of the periodic signal.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Inputs:</span>
+0025 <span class="comment">% -------</span>
+0026 <span class="comment">% opt             : = 1 for MBC to body,</span>
+0027 <span class="comment">%                   = 2 for driveshaft.</span>
+0028 <span class="comment">% cpin            : Fourier coefficients representing a periodic signal.</span>
+0029 <span class="comment">%                   rper(p) = sum_k c_k exp(-i 2 pi (k p / N)).</span>
+0030 <span class="comment">% rpsi            : mean in MBC coordinates.</span>
+0031 <span class="comment">% azi             : azimuth angle at t = 0 (usually 0).</span>
+0032 <span class="comment">% W               : Rotor speed, rad/s.</span>
+0033 <span class="comment">% df              : Frequency bin, Hz.</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Outputs:</span>
+0036 <span class="comment">% --------</span>
+0037 <span class="comment">% cB              : periodic coefficients in body coordinates.</span>
+0038 <span class="comment">% rB              : the mean in body coordinates.</span>
+0039 
+0040 Nf = size(cpin,1);
+0041 ww = W/(2*pi*df);
+0042 cpsi = cpin;
+0043 
+0044 ei0 = exp(i*azi);
+0045 
+0046 <span class="keyword">if</span> (opt == 1)  <span class="comment">% MBC.</span>
+0047    ei2  = exp(i*2*pi/3);
+0048    ei4  = exp(i*4*pi/3);
+0049    E0 = [1 0 0; <span class="keyword">...</span>
+0050          1 0 0; <span class="keyword">...</span>
+0051          1 0 0];
+0052    E = 0.5*[0,   1,     -i; <span class="keyword">...</span>
+0053             0, ei2, -i*ei2; <span class="keyword">...</span>
+0054             0, ei4, -i*ei4]*ei0;
+0055 <span class="keyword">elseif</span> (opt == 2)  <span class="comment">% Driveshaft.</span>
+0056    E0 = [0 0 0; <span class="keyword">...</span>
+0057          0 0 0; <span class="keyword">...</span>
+0058          0 0 1];
+0059    E = 0.5*[1, -i,  0; <span class="keyword">...</span>
+0060             i,  1,  0; <span class="keyword">...</span>
+0061             0,  0,  0]*ei0;
+0062 <span class="keyword">elseif</span> (opt == -1)  <span class="comment">% Inverse MBC.</span>
+0063    ei2  = exp(i*2*pi/3);
+0064    ei4  = exp(i*4*pi/3);
+0065    third = 1/3;
+0066    E0 = third*[1 1 1; <span class="keyword">...</span>
+0067                0 0 0; <span class="keyword">...</span>
+0068                0 0 0];
+0069    E = third*[0,      0,      0; <span class="keyword">...</span>
+0070               1,    ei2,    ei4; <span class="keyword">...</span>
+0071              -i, -i*ei2, -i*ei4];
+0072 <span class="keyword">elseif</span> (opt == -2)  <span class="comment">% Inverse driveshaft.</span>
+0073    E0 = [0 0 0; <span class="keyword">...</span>
+0074          0 0 0; <span class="keyword">...</span>
+0075          0 0 1];
+0076    E = 0.5*[1,  i,  0; <span class="keyword">...</span>
+0077            -i,  1,  0; <span class="keyword">...</span>
+0078             0,  0,  0]*ei0;
+0079 <span class="keyword">end</span>
+0080 
+0081 Estar = conj(E);
+0082 
+0083 <span class="comment">% Mean value.</span>
+0084 ind = round([Nf-ww+1;ww+1]);
+0085 jj = (ind &gt; Nf);
+0086 ind(jj) = ind(jj) - Nf + 1;
+0087 
+0088 rB = E0*rpsi + E*cpsi(ind(1),:).' + Estar*cpsi(ind(2),:).';
+0089 
+0090 <span class="comment">% Coefficients.  Initialize with the E0 terms.</span>
+0091 cB = [E0(1,1)*cpsi(:,1)+E0(1,2)*cpsi(:,2)+E0(1,3)*cpsi(:,3), <span class="keyword">...</span>
+0092       E0(2,1)*cpsi(:,1)+E0(2,2)*cpsi(:,2)+E0(2,3)*cpsi(:,3), <span class="keyword">...</span>
+0093       E0(3,1)*cpsi(:,1)+E0(3,2)*cpsi(:,2)+E0(3,3)*cpsi(:,3)];
+0094 
+0095 ifreqs = [1:Nf].';
+0096 
+0097 <span class="comment">% Augment the c0 term with rpsi, which applies from here on, but</span>
+0098 <span class="comment">% not before.  This allows the calculations below to be done in</span>
+0099 <span class="comment">% one consistent step.</span>
+0100 cpsi(1,:) = rpsi.';
+0101 
+0102 <span class="comment">% The E c_(k-w) term.</span>
+0103 indw = round(ifreqs - ww);
+0104 ind = (indw &lt;= 0);
+0105 indw(ind) = indw(ind) + Nf;
+0106 cB = cB + [E(1,1)*cpsi(indw,1) + E(1,2)*cpsi(indw,2) + E(1,3)*cpsi(indw,3), <span class="keyword">...</span>
+0107            E(2,1)*cpsi(indw,1) + E(2,2)*cpsi(indw,2) + E(2,3)*cpsi(indw,3), <span class="keyword">...</span>
+0108            E(3,1)*cpsi(indw,1) + E(3,2)*cpsi(indw,2) + E(3,3)*cpsi(indw,3)];
+0109 
+0110 <span class="comment">% The E* c_(k+w) term.</span>
+0111 indw = round(ifreqs + ww);
+0112 ind = (indw &gt;= Nf+1);
+0113 indw(ind) = indw(ind) - Nf;
+0114 cB = cB + [Estar(1,1)*cpsi(indw,1) + Estar(1,2)*cpsi(indw,2) + Estar(1,3)*cpsi(indw,3), <span class="keyword">...</span>
+0115            Estar(2,1)*cpsi(indw,1) + Estar(2,2)*cpsi(indw,2) + Estar(2,3)*cpsi(indw,3), <span class="keyword">...</span>
+0116            Estar(3,1)*cpsi(indw,1) + Estar(3,2)*cpsi(indw,2) + Estar(3,3)*cpsi(indw,3)];
+0117 
+0118 <span class="comment">% The imperfect binning and rounding of the rotor frequency results in</span>
+0119 <span class="comment">% adjacent frequency bins filled with values that should in reality</span>
+0120 <span class="comment">% overlap and cancel.  Fix this by summing to the most-central frequency.</span>
+0121 cB(1,:) = 0.;  <span class="comment">% By definition, see derivations.</span>
+0122 cB(Nf,:) = 0.; <span class="comment">% Also zero the adjacent bins.</span>
+0123 cB(2,:) = 0.;
+0124 
+0125 jf = ww;
+0126 <span class="keyword">while</span> (jf &lt;= Nf/2-1)
+0127 
+0128    jj = round(jf) + 1;
+0129    cB(jj,:) = cB(jj-1,:) + cB(jj,:) + cB(jj+1,:);
+0130    cB(jj-1,:) = 0.;
+0131    cB(jj+1,:) = 0.;
+0132 
+0133    jf = jf + ww;
+0134 
+0135 <span class="keyword">end</span> <span class="comment">% while</span>
+0136 
+0137 jf = Nf - ww + 1;
+0138 <span class="keyword">while</span> (jf &gt;= Nf/2)
+0139 
+0140    jj = round(jf);
+0141    cB(jj,:) = cB(jj-1,:) + cB(jj,:) + cB(jj+1,:);
+0142    cB(jj-1,:) = 0.;
+0143    cB(jj+1,:) = 0.;
+0144 
+0145    jf = jf - ww;
+0146 
+0147 <span class="keyword">end</span> <span class="comment">% while</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

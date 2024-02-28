@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of gridFrequency</title>
+  <meta name="keywords" content="gridFrequency">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; gridFrequency.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>gridFrequency
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C] = gridFrequency (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Measurement of the grid frequency with a phase-locked loop.
+
+   states:           y vector:
+   th_m       1      th_e       1     in   (grid)
+   vmsd,q    2,3     vsd,q     2,3    in   (grid)
+   Psie       4      wem        4     out
+
+ Version:        Changes:
+ --------        -------------
+ 25.11.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.11.2018      Derivatives verified with complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               :  1    th_m  (rad)    Measured electrical angle.
+                   2,3   vms   (V)      Measured voltage at the network side terminals.
+                    4    Psie  (rad)    Integral of voltage angle.
+ yin             :  1    th_e  (rad)    Actual grid voltage angle.
+                   2,3   vs    (V)      Voltage at the network side terminals.
+ params          :  1    av    (rad/s)  Filter on voltage measurement.
+                    2    KPe   (rad/s)  Proportional gain.
+                    3    KIe   (rad/s2) Integral gain.
+                    4    weh   (rad/s)  Reference frequency.
+
+ Outputs:
+ --------
+ yout            :  1    wem   (rad/s)  Measured electrical frequency.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C] = gridFrequency (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Measurement of the grid frequency with a phase-locked loop.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   states:           y vector:</span>
+0006 <span class="comment">%   th_m       1      th_e       1     in   (grid)</span>
+0007 <span class="comment">%   vmsd,q    2,3     vsd,q     2,3    in   (grid)</span>
+0008 <span class="comment">%   Psie       4      wem        4     out</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 25.11.2018      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 25.11.2018      Derivatives verified with complex step.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0021 <span class="comment">% x               :  1    th_m  (rad)    Measured electrical angle.</span>
+0022 <span class="comment">%                   2,3   vms   (V)      Measured voltage at the network side terminals.</span>
+0023 <span class="comment">%                    4    Psie  (rad)    Integral of voltage angle.</span>
+0024 <span class="comment">% yin             :  1    th_e  (rad)    Actual grid voltage angle.</span>
+0025 <span class="comment">%                   2,3   vs    (V)      Voltage at the network side terminals.</span>
+0026 <span class="comment">% params          :  1    av    (rad/s)  Filter on voltage measurement.</span>
+0027 <span class="comment">%                    2    KPe   (rad/s)  Proportional gain.</span>
+0028 <span class="comment">%                    3    KIe   (rad/s2) Integral gain.</span>
+0029 <span class="comment">%                    4    weh   (rad/s)  Reference frequency.</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% Outputs:</span>
+0032 <span class="comment">% --------</span>
+0033 <span class="comment">% yout            :  1    wem   (rad/s)  Measured electrical frequency.</span>
+0034 
+0035 Nx   = size(x,1);
+0036 Nyi  = size(yin,1);
+0037 Nyo  = 1;
+0038 Ny   = Nyi + Nyo;
+0039 dxdt = zeros(Nx,1);
+0040 A    = zeros(Nx,Nx);
+0041 By   = zeros(Nx,Ny);
+0042 C    = zeros(Ny,Nx);
+0043 Dy   = zeros(Ny,Ny);
+0044 
+0045 av   = params(1);
+0046 KPe  = params(2);
+0047 KIe  = params(3);
+0048 weh  = params(4);
+0049 
+0050 ce   = cos(yin(1));
+0051 se   = sin(yin(1));
+0052 cm   = cos(x(1));
+0053 sm   = sin(x(1));
+0054 cc   = ce*cm;
+0055 ss   = se*sm;
+0056 cs   = ce*sm;
+0057 sc   = se*cm;
+0058 Td   = [cc+ss, cs-sc; <span class="keyword">...</span>
+0059         sc-cs, cc+ss];
+0060 vp   = Td*yin(2:3);
+0061 
+0062 err       =  <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(x(3),x(2));
+0063 dxdt(2:3) = -av*x(2:3) + av*vp;
+0064 dxdt(4)   =  KIe*err;
+0065 yout      =  KPe*err + x(4) + weh;
+0066 dxdt(1)   =  yout;
+0067 
+0068 <span class="keyword">if</span> (Linflag == 1)
+0069 
+0070    dTde = [cs-sc, -cc-ss; <span class="keyword">...</span>
+0071            cc+ss,  cs-sc];
+0072    dTdm = [sc-cs,  cc+ss; <span class="keyword">...</span>
+0073           -cc-ss,  sc-cs];
+0074 
+0075    nrm2 = x(2)^2 + x(3)^2;
+0076    daty =  x(2)/nrm2;
+0077    datx = -x(3)/nrm2;
+0078    A  = [                    0, KPe*datx, KPe*daty, 1; <span class="keyword">...</span>
+0079          av*dTdm(1,:)*yin(2:3),      -av,        0, 0; <span class="keyword">...</span>
+0080          av*dTdm(2,:)*yin(2:3),        0,      -av, 0; <span class="keyword">...</span>
+0081                              0, KIe*datx, KIe*daty, 0];
+0082    By = [0, 0, 0, 0;                           <span class="keyword">...</span>
+0083          av*dTde(1,:)*yin(2:3), av*Td(1,:), 0; <span class="keyword">...</span>
+0084          av*dTde(2,:)*yin(2:3), av*Td(2,:), 0; <span class="keyword">...</span>
+0085          0, 0, 0, 0];
+0086    C  = [zeros(3,4); <span class="keyword">...</span>
+0087          0, KPe*datx, KPe*daty, 1];
+0088 
+0089 <span class="keyword">end</span>
+0090 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

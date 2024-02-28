@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of DBprob</title>
+  <meta name="keywords" content="DBprob">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; DBprob.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>DBprob
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 fid = fopen(<span class="string">'prob.txt'</span>,<span class="string">'w'</span>);
+0002 fid2 = fopen(<span class="string">'table.txt'</span>,<span class="string">'w'</span>);
+0003 
+0004 dTp = 0.1;
+0005 dHs = 0.1;
+0006 <span class="comment">%Tp = [1:dTp:24]';</span>
+0007 <span class="comment">%Hs = [0.1:dHs:20]';</span>
+0008 
+0009 dTp = 1;
+0010 dHs = 0.5;
+0011 Tp = [2:dTp:20]';
+0012 Hs = [0.5:dHs:10]';
+0013 
+0014 
+0015 Nh = size(Hs,1);
+0016 Nt = size(Tp,1);
+0017 
+0018 ph = zeros(Nh,1);
+0019 p = zeros(Nt,Nh);
+0020 
+0021 beta = 1.315;
+0022 rho = 1.546;
+0023 eta = 2.802;
+0024 alpha = 0.591;
+0025 theta = 0.313;
+0026 a1 = 0.889;
+0027 a2 = 0.913;
+0028 a3 = 0.300;
+0029 b1 = 0.005;
+0030 b2 = 0.123;
+0031 b3 = 0.486;
+0032 mu = a1 + a2*(Hs.^a3);
+0033 sigma = sqrt(b1 + b2*exp(-b3*Hs));
+0034 
+0035 hh = Hs(Hs &lt;= eta);
+0036 ph(Hs&lt;=eta) = exp(-((log(hh) - theta).^2)/(2*(alpha^2))) <span class="keyword">...</span>
+0037           ./ (sqrt(2*pi)*alpha*hh);
+0038 
+0039 hh = Hs(Hs &gt; eta);
+0040 ph(Hs&gt;eta) = (beta/rho)*((hh/rho).^(beta-1)).*exp(-(hh/rho).^beta);
+0041 
+0042 <span class="keyword">for</span> ih = 1:Nh
+0043 
+0044    p(:,ih) = ph(ih) <span class="keyword">...</span>
+0045            * exp(-((log(Tp) - mu(ih)).^2)./(2*(sigma(ih).^2))) <span class="keyword">...</span>
+0046           ./ (sqrt(2*pi)*sigma(ih).*Tp);
+0047 
+0048 <span class="keyword">end</span>
+0049 
+0050 p(abs(p)&lt;1e-12) = 0;
+0051 
+0052 sump = sum(sum(p)*dTp*dHs);
+0053 
+0054 <span class="keyword">for</span> ih = 1:Nh
+0055    <span class="keyword">if</span> (ih == 1)
+0056       fprintf(fid2,<span class="string">'%5.6e'</span>,0);
+0057       <span class="keyword">for</span> it = 1:Nt
+0058          fprintf(fid2,<span class="string">' %+5.6e'</span>,Tp(it));
+0059       <span class="keyword">end</span>
+0060       fprintf(fid2,<span class="string">'\n'</span>);
+0061    <span class="keyword">end</span>
+0062    fprintf(fid2,<span class="string">'%+5.6e'</span>,Hs(ih));
+0063    <span class="keyword">for</span> it = 1:Nt
+0064 <span class="comment">%      fprintf(fid,'%+5.6e %+5.6e %+5.6e\n', ...</span>
+0065 <span class="comment">%              Tp(it),Hs(ih),p(it,ih));</span>
+0066 <span class="comment">%      fprintf(fid,'%+5.6e %+5.6e %+5.6e\n', ...</span>
+0067 <span class="comment">%              Tp(it),Hs(ih),max(log10(p(it,ih)),-12));</span>
+0068       fprintf(fid,<span class="string">'%+5.6e %+5.6e %+5.6e\n'</span>, <span class="keyword">...</span>
+0069               Tp(it),Hs(ih),p(it,ih)*dTp*dHs/sump);
+0070       fprintf(fid2,<span class="string">' %+5.6e'</span>,p(it,ih)*dTp*dHs/sump);
+0071 
+0072    <span class="keyword">end</span>
+0073    fprintf(fid2,<span class="string">'\n'</span>);
+0074 <span class="keyword">end</span>
+0075 
+0076 sump
+0077 
+0078 fclose(<span class="string">'all'</span>);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

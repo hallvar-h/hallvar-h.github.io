@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of structure</title>
+  <meta name="keywords" content="structure">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; structure.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>structure
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Assemble the structural equations in state space form.  Note that
+ q = (Lamq shape) eta, where Lamq has undone the partitioning of 
+ Lambda.
+
+   States:              y vector:             u vector:
+   eta      Neta        q          Ndj        F          Ndj
+   deta/dt  Neta        dqdt       Ndj        d2eta/dt2  Neta
+                        d2qdt2     Ndj
+
+ Version:        Changes:
+ --------        -------------
+ 22.05.2018      Original code.
+ 18.01.2020      Rewritten to accommodate updated buildMRQ and
+                 transforms of the basis.
+
+ Version:        Verification:
+ --------        -------------
+ 22.05.2018      Match with structureNL verified by complex step.
+                 Converged Newton solutions for nonlinear equations.
+                 NREL 5 MW turbine modes match published values.
+ 18.01.2020      A-matrix derivatives of Lmat and Rvec verified by
+                 complex step.  C-matrix derivatives of y verified
+                 by complex step.
+
+ Inputs:
+ -------
+ linFlag         : = 1 for linearization.
+ Tflag           : = 0 if the basis is [q,qd]
+                   = 1 if the basis is [qh,qhd]
+                   = 2 if the basis is [eta,etad]
+ s               : Data structure describing the structure.
+ x               : [eta;etad].
+ dx              : d/dt [eta;etad].
+ P               : Undeformed nodal positions.
+ F               : Ndj nodal forces.
+ shape,mdamp     : Mode shapes and modal damping vector.
+ grav            : Gravity vector in global coordinates.
+
+ Outputs:
+ --------
+ Lmat,A...Dy     : State matrices.
+ Rvec            : NL RHS vector of forces.
+ ret,slv         : Retained and slave DOFs.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qhat.html" class="code" title="function Qh = Qhat (qq,PP,idofs,inods)">Qhat</a>	</li>
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+<li><a href="buildTetaqh.html" class="code" title="function [qh,qhd,qhdd,T] = buildTetaqh (eta,etad,etadd,shape)">buildTetaqh</a>	</li>
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =  </a><span class="keyword">...</span>
+0002                structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Assemble the structural equations in state space form.  Note that</span>
+0005 <span class="comment">% q = (Lamq shape) eta, where Lamq has undone the partitioning of</span>
+0006 <span class="comment">% Lambda.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   States:              y vector:             u vector:</span>
+0009 <span class="comment">%   eta      Neta        q          Ndj        F          Ndj</span>
+0010 <span class="comment">%   deta/dt  Neta        dqdt       Ndj        d2eta/dt2  Neta</span>
+0011 <span class="comment">%                        d2qdt2     Ndj</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Changes:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 22.05.2018      Original code.</span>
+0016 <span class="comment">% 18.01.2020      Rewritten to accommodate updated buildMRQ and</span>
+0017 <span class="comment">%                 transforms of the basis.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Verification:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 22.05.2018      Match with structureNL verified by complex step.</span>
+0022 <span class="comment">%                 Converged Newton solutions for nonlinear equations.</span>
+0023 <span class="comment">%                 NREL 5 MW turbine modes match published values.</span>
+0024 <span class="comment">% 18.01.2020      A-matrix derivatives of Lmat and Rvec verified by</span>
+0025 <span class="comment">%                 complex step.  C-matrix derivatives of y verified</span>
+0026 <span class="comment">%                 by complex step.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Inputs:</span>
+0029 <span class="comment">% -------</span>
+0030 <span class="comment">% linFlag         : = 1 for linearization.</span>
+0031 <span class="comment">% Tflag           : = 0 if the basis is [q,qd]</span>
+0032 <span class="comment">%                   = 1 if the basis is [qh,qhd]</span>
+0033 <span class="comment">%                   = 2 if the basis is [eta,etad]</span>
+0034 <span class="comment">% s               : Data structure describing the structure.</span>
+0035 <span class="comment">% x               : [eta;etad].</span>
+0036 <span class="comment">% dx              : d/dt [eta;etad].</span>
+0037 <span class="comment">% P               : Undeformed nodal positions.</span>
+0038 <span class="comment">% F               : Ndj nodal forces.</span>
+0039 <span class="comment">% shape,mdamp     : Mode shapes and modal damping vector.</span>
+0040 <span class="comment">% grav            : Gravity vector in global coordinates.</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">% Outputs:</span>
+0043 <span class="comment">% --------</span>
+0044 <span class="comment">% Lmat,A...Dy     : State matrices.</span>
+0045 <span class="comment">% Rvec            : NL RHS vector of forces.</span>
+0046 <span class="comment">% ret,slv         : Retained and slave DOFs.</span>
+0047 
+0048 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0049 
+0050 Nx   = size(x,1);
+0051 Neta = Nx/2;
+0052 Ndj  = size(P,1);
+0053 Nu   = Ndj + Neta;
+0054 
+0055 iep = [1:Neta].';
+0056 iev  = Neta + [1:Neta].';
+0057 
+0058 iqp = [1:Ndj].';
+0059 iqv = Ndj + [1:Ndj].';
+0060 
+0061 <span class="comment">% Get retained and slave DOFs.</span>
+0062 slv = <a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a> (idofs);
+0063 vec = [1:Ndj].';
+0064 [jnk,ret,jnk2] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a> (vec,slv,[]);
+0065 
+0066 <span class="comment">% In order to call buildMRQ, which is in the q basis, we need to</span>
+0067 <span class="comment">% get there from the input.  This is nominally the eta basis</span>
+0068 <span class="comment">% (constrained, and reduced with body modes) but this can be</span>
+0069 <span class="comment">% bypassed using the Tflag input.</span>
+0070 <span class="comment">%</span>
+0071 <span class="comment">% Build the nonlinear transforms, without knowing the acceleration.</span>
+0072 eta   = x(iep);
+0073 etad  = x(iev);
+0074 etadd = dx(iev);
+0075 
+0076 <span class="keyword">if</span> (Tflag &gt;= 2)
+0077    [qh,qhd,qhdd,Tetaqh] = <a href="buildTetaqh.html" class="code" title="function [qh,qhd,qhdd,T] = buildTetaqh (eta,etad,etadd,shape)">buildTetaqh</a> (eta,etad,etadd,shape);
+0078 <span class="keyword">else</span>
+0079    qh     = eta;
+0080    qhd    = etad;
+0081    qhdd   = etadd;
+0082    Tetaqh = speye(2*size(qh,1));
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="keyword">if</span> (Tflag &gt;= 1)
+0086    [q,qd,qdd,Tqhq,jnk,jnk2] = <a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a> (0,s,qh,qhd,qhdd,P,ret,slv);
+0087 <span class="keyword">else</span>
+0088    q    = qh;
+0089    qd   = qhd;
+0090    qdd  = qhdd;
+0091    Tqhq = speye(2*size(q,1));
+0092 <span class="keyword">end</span>
+0093 
+0094 <span class="comment">% Overall transform matrix.</span>
+0095 T = Tqhq*Tetaqh;
+0096 TT = T.';
+0097 
+0098 <span class="comment">% Build the nonlinear terms.  Tflag = 2, basis is eta.</span>
+0099 [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] = <span class="keyword">...</span>
+0100                       <a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a> (0,s,q,qd,qdd,P,F,grav);
+0101 
+0102 y = [q;qd;qdd];
+0103 
+0104 <span class="comment">% This should reproduce the effective gravity vector implemented</span>
+0105 <span class="comment">% by assembleElements when computing dMg.  Each body reference</span>
+0106 <span class="comment">% node is given an acceleration of g.</span>
+0107 gvec = zeros(Ndj,1);
+0108 indb = [1 2 3 4 6 7 8].';  <span class="comment">% Joint 5 is not a body reference.</span>
+0109 <span class="keyword">for</span> ibod = 1:7
+0110    gvec(idofs(indb(ibod))+[1:3]) = grav;
+0111 <span class="keyword">end</span>
+0112 Mg = M*gvec;
+0113 
+0114 <span class="comment">% Build and transform/reduce the state equations for the structure.</span>
+0115 Rq = -G+H-C-K+Q+Mg;
+0116 
+0117 Lmat = sparse(Nx,Nx);
+0118 Lmat(iep,iep) = speye(Neta);
+0119 Lmat(iev,:) = real(TT(iev,iqv))*M*T(iqv,:);  <span class="comment">% Shp'*Lam'*M*[Gam*Shp Lam*Shp]</span>
+0120 
+0121 Rvec = zeros(Nx,1);
+0122 Rvec(iep) = x(iev);
+0123 Rvec(iev) = real(TT(iev,iqv))*Rq;
+0124 
+0125 <span class="keyword">if</span> (real(s.zdamp) &gt; 0)
+0126    Rvec(Neta+[1:Neta]) = Rvec(Neta+[1:Neta]) <span class="keyword">...</span>
+0127                        - mdamp.*x(Neta+[1:Neta]);
+0128 <span class="keyword">end</span>
+0129 
+0130 <span class="keyword">if</span> (linFlag == 1)
+0131 
+0132    etadd = dx(Neta+[1:Neta]);
+0133 
+0134    <span class="comment">% Get the linearized transforms.</span>
+0135    <span class="keyword">if</span> (Tflag &gt;= 2)
+0136       [qh,qhd,qhdd,Tetaqh] = <a href="buildTetaqh.html" class="code" title="function [qh,qhd,qhdd,T] = buildTetaqh (eta,etad,etadd,shape)">buildTetaqh</a> (eta,etad,etadd,shape);
+0137    <span class="keyword">else</span>
+0138       qh     = eta;
+0139       qhd    = etad;
+0140       qhdd   = etadd;
+0141       Tetaqh = speye(2*size(qh,1));
+0142    <span class="keyword">end</span>
+0143 
+0144    <span class="keyword">if</span> (Tflag &gt;= 1)
+0145       [q,qd,qdd,Tqhq,dT,dTd] = <a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a> (1,s,qh,qhd,qhdd,P,ret,slv);
+0146    <span class="keyword">else</span>
+0147       q    = qh;
+0148       qd   = qhd;
+0149       qdd  = qhdd;
+0150       Tqhq = speye(2*Ndj);
+0151       dT   = sparse(2*Ndj,Ndj);
+0152       dTd  = sparse(2*Ndj,Ndj);
+0153    <span class="keyword">end</span>
+0154 
+0155    <span class="comment">% (Note, dQd is not due to the Qhat matrix, which is only a function</span>
+0156    <span class="comment">%  of q, but rather it is due to the soil damping.)</span>
+0157    [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] = <span class="keyword">...</span>
+0158                      <a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a> (1,s,q,qd,qdd,P,F,grav);
+0159    Qh = <a href="Qhat.html" class="code" title="function Qh = Qhat (qq,PP,idofs,inods)">Qhat</a> (q,P,idofs,inods);
+0160 
+0161    dRq  = [-dG+dH-dC-dK+dQ+dMg, -dGd+dHd-dCd+dQd];
+0162    dRdamp = [sparse(Neta,Neta), diag(mdamp)];
+0163    AM = dM;
+0164    AT = M*dT(iqv,:);
+0165    ATd = M*dTd(iqv,:);
+0166 
+0167    A = sparse(Nx,Nx);
+0168    A(iep,iev) = speye(Neta);
+0169    A(iev,:) = real(TT(iev,iqv))*(dRq - [AM+AT, ATd])*T - dRdamp;
+0170    Bu = sparse(Nx,Nu);
+0171    Bu(iev,:) = real(TT(iev,iqv))*[Qh, sparse(Ndj,Neta)];
+0172    By = sparse(Nx,3*Ndj);
+0173    C  = [T;                               <span class="keyword">...</span>
+0174          [sparse(Ndj,Neta), T(iqv,1:Neta)] <span class="keyword">...</span>
+0175       +   dT(iqv,:)*T(1:Ndj,:)             <span class="keyword">...</span>
+0176       +   dTd(iqv,:)*T(iqv,:)];
+0177    Du = [sparse(2*Ndj,Ndj+Neta); sparse(Ndj,Ndj), T(iqv,Neta+[1:Neta])];
+0178    Dy = sparse(3*Ndj,3*Ndj);
+0179 
+0180 <span class="keyword">else</span>
+0181 
+0182    A = sparse(Nx,Nx);
+0183    Bu = sparse(Nx,Ndj+Neta);
+0184    By = sparse(Nx,3*Ndj);
+0185    C  = sparse(3*Ndj,Nx);
+0186    Du = sparse(3*Ndj,Ndj+Neta);
+0187    Dy = sparse(3*Ndj,3*Ndj);
+0188 
+0189 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

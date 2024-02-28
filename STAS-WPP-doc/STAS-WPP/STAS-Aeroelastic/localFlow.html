@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of localFlow</title>
+  <meta name="keywords" content="localFlow">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; localFlow.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>localFlow
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Ua,Du,Dy] = localFlow (Tag,dTag,Tar,dTar,Vg,Vir,wa) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The flow local to the airfoil, in airfoil coordinates.
+
+   States:           y vector:         u vector:
+                     qy     1:6        Vg
+                     qp     7:12
+                     qn1   13:18
+                     qn2   19:24
+                     wa    25:27
+                     Vir   28:30
+
+ Version:        Changes:
+ --------        -------------
+ 21.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.12.2017      Checked using complex step via Ua output.
+
+ Inputs:
+ -------
+ Tag,dTag        : Transform from airfoil to global: qp,qn1,qn2.
+ Tar,dTar        : Transform from airfoil to rotor: qy,qp,qn1,qn2.
+ Vg,Vir,wa       : Velocities.
+
+ Outputs:
+ --------
+ Ua              : Local flow in airfoil coordinates.
+ Du,Dy           : State space, dUa = Dy*[dqy,dqp,dqn1,dqn2,dwa,dVir] + Du*dVg.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Ua,Du,Dy] = localFlow (Tag,dTag,Tar,dTar,Vg,Vir,wa)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The flow local to the airfoil, in airfoil coordinates.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   States:           y vector:         u vector:</span>
+0006 <span class="comment">%                     qy     1:6        Vg</span>
+0007 <span class="comment">%                     qp     7:12</span>
+0008 <span class="comment">%                     qn1   13:18</span>
+0009 <span class="comment">%                     qn2   19:24</span>
+0010 <span class="comment">%                     wa    25:27</span>
+0011 <span class="comment">%                     Vir   28:30</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Changes:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 21.12.2017      Original code.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version:        Verification:</span>
+0018 <span class="comment">% --------        -------------</span>
+0019 <span class="comment">% 21.12.2017      Checked using complex step via Ua output.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% Tag,dTag        : Transform from airfoil to global: qp,qn1,qn2.</span>
+0024 <span class="comment">% Tar,dTar        : Transform from airfoil to rotor: qy,qp,qn1,qn2.</span>
+0025 <span class="comment">% Vg,Vir,wa       : Velocities.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Outputs:</span>
+0028 <span class="comment">% --------</span>
+0029 <span class="comment">% Ua              : Local flow in airfoil coordinates.</span>
+0030 <span class="comment">% Du,Dy           : State space, dUa = Dy*[dqy,dqp,dqn1,dqn2,dwa,dVir] + Du*dVg.</span>
+0031 
+0032 Dy = zeros (3,30);
+0033 
+0034 Tga = Tag.';
+0035 Tra = Tar.';
+0036 
+0037 Ua =  Tga*Vg + Tra*Vir - wa;
+0038 
+0039 <span class="comment">%{</span>
+0040 <span class="string">'---Ua---'</span>
+0041 Tga
+0042 Tra
+0043 Tgr = Tar*Tga
+0044 Vg
+0045 Vir
+0046 wa
+0047 wg = Tag*wa
+0048 Ua
+0049 Ur = Tar*Ua
+0050 <span class="string">'--------'</span>
+0051 <span class="comment">%}</span>
+0052 
+0053 Du = Tga;
+0054 
+0055 Dy(:,25:27) = -eye(3);
+0056 Dy(:,28:30) = Tra;
+0057 
+0058 <span class="keyword">for</span> jj = 1:6
+0059 
+0060    j3a = 3*(jj-1);
+0061 
+0062    <span class="comment">% qy.  Only Tar.</span>
+0063    Dy(:,jj) = (dTar(:,j3a+[1:3]).')*Vir;
+0064 
+0065 <span class="keyword">end</span>
+0066 
+0067 <span class="keyword">for</span> jj = 1:18
+0068 
+0069    j3a = 3*(jj+6-1);
+0070    j3b = 3*(jj-1);
+0071 
+0072    Dy(:,jj+6) = (dTag(:,j3b+[1:3]).')*Vg + (dTar(:,j3a+[1:3]).')*Vir;
+0073 
+0074 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

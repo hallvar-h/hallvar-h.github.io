@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildClosedLoopTurbine</title>
+  <meta name="keywords" content="buildClosedLoopTurbine">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-WPP</a> &gt; buildClosedLoopTurbine.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-WPP&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildClosedLoopTurbine
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Link the turbine control functions with the wind turbine.
+
+   States:              y vector:                u vector:
+                                                 F       Ndj   (Env)
+                                              d2eta/dt2  Neta  (u)
+                                                 Vg    3*Nae   (Env)
+                                                 we        1   (Grid)
+                                                 th_e      2   (Grid)
+                                                 vsd,q   3,4   (Grid)
+                                                 Pc        5   (Pl.cont.)
+                                                 Qc        6   (Pl.cont.)
+ ----------------------- Structure --------------------------
+   eta        N         q         Ndj            F       Ndj   (u)
+   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (u)
+                        d2q/dt2   Ndj
+                        F         Ndj
+
+ ---------------------- Aerodynamic -------------------------
+   ad         1                                  Vg        3   (u)
+   a1,a2     2:3
+   Vih z,t   4:5
+   Vi z,t    6:7
+
+ ------------------------ Actuators --------------------------
+ (Repeat for each blade and yaw system.)
+   ba         1         b,dbdt    (-)  (Turb)    bhat      1   (Cont)
+   dbadt      2         Ta         1
+
+ ----------------------- Electrical --------------------------
+   igd,q     1,2        wg        (-)  (Turb)    we        1   (u)
+   Vdc        3         Tg         1             th_e      2   (u)
+   ipd,q     4,5        isd,q     2,3            vsd,q    3,4  (u)
+   imgd,q    6,7                                 ihgd,q   5,6  (Cont)
+   Psig      8,9                                 Vhdc      7   (cpar)
+   wemg      10                                  Qh        8   (u)
+   th_m      11
+   vmsd,q   12,13
+   Psie      14
+   impd,q   15,16
+   imsd,q   17,18
+   vmsd,q   19,20
+   Vmdc      21
+   PsiDC     22
+   PsiQ      23
+   PsiP     24,25
+
+ ------------------------- Control ---------------------------
+   W*         1         bhat      1:3             Pc        1   (u)
+   V*         2         ihgd,q    4:5             azi       2   (turbine)
+   Wm         3         yhat       6              W         3   (turbine)
+   betm       4                                   bet      4:6  (turbine)
+   PsiWb      5                                   Pe        7   (turbine)
+   Pf         6                                   vT       8:9  (turbine)
+   PehRSC     7                                   Mbl     10:12 (turbine)(moment or th_nod)
+   ntw       8,9                                  wang     13   (turbine)(derived?)
+   ntb      10,11
+   blp       12
+   wgm       13  
+   iwg       14
+   Pem       15
+   PsiP      16
+   nd       17,18
+   vmF       19
+   ivmF      20
+   vdF       21
+   vmS       22
+   ivmS      23
+   vdS       24
+   vmS       25
+   ivmS      26
+   vdS       27
+   Mpsim    28,29
+   PsiM     30,31
+
+ Version:        Changes:
+ --------        -------------
+ 02.02.2019      Original code.
+ 23.01.2020      Minor updates to accommodate the revisions to the
+                 structural equations-of-motion and the u vector.
+
+ Version:        Verification:
+ --------        -------------
+ 02.02.2019      
+ 23.01.2020      Derivatives of A matrix verified via complex step.
+
+ Inputs:
+ -------
+ 
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/genSpeed.html" class="code" title="function [Wg,Dy] = genSpeed (qgen,dqgen,Pgen)">genSpeed</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>	</li>
+<li><a href="buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [L,R,yout,A,B,C,D] =                                              </a><span class="keyword">...</span>
+0002               buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,    <span class="keyword">...</span><span class="comment">                                     </span>
+0003                                       grav,P,shape0,mdamp0,                <span class="keyword">...</span>
+0004                                       Tas,Try,ch,Lel,foilwt,aoaz,aoast,    <span class="keyword">...</span>
+0005                                       xas,yas,Psi0,igen,ipit,iyaw)
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Link the turbine control functions with the wind turbine.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   States:              y vector:                u vector:</span>
+0010 <span class="comment">%                                                 F       Ndj   (Env)</span>
+0011 <span class="comment">%                                              d2eta/dt2  Neta  (u)</span>
+0012 <span class="comment">%                                                 Vg    3*Nae   (Env)</span>
+0013 <span class="comment">%                                                 we        1   (Grid)</span>
+0014 <span class="comment">%                                                 th_e      2   (Grid)</span>
+0015 <span class="comment">%                                                 vsd,q   3,4   (Grid)</span>
+0016 <span class="comment">%                                                 Pc        5   (Pl.cont.)</span>
+0017 <span class="comment">%                                                 Qc        6   (Pl.cont.)</span>
+0018 <span class="comment">% ----------------------- Structure --------------------------</span>
+0019 <span class="comment">%   eta        N         q         Ndj            F       Ndj   (u)</span>
+0020 <span class="comment">%   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (u)</span>
+0021 <span class="comment">%                        d2q/dt2   Ndj</span>
+0022 <span class="comment">%                        F         Ndj</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% ---------------------- Aerodynamic -------------------------</span>
+0025 <span class="comment">%   ad         1                                  Vg        3   (u)</span>
+0026 <span class="comment">%   a1,a2     2:3</span>
+0027 <span class="comment">%   Vih z,t   4:5</span>
+0028 <span class="comment">%   Vi z,t    6:7</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% ------------------------ Actuators --------------------------</span>
+0031 <span class="comment">% (Repeat for each blade and yaw system.)</span>
+0032 <span class="comment">%   ba         1         b,dbdt    (-)  (Turb)    bhat      1   (Cont)</span>
+0033 <span class="comment">%   dbadt      2         Ta         1</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% ----------------------- Electrical --------------------------</span>
+0036 <span class="comment">%   igd,q     1,2        wg        (-)  (Turb)    we        1   (u)</span>
+0037 <span class="comment">%   Vdc        3         Tg         1             th_e      2   (u)</span>
+0038 <span class="comment">%   ipd,q     4,5        isd,q     2,3            vsd,q    3,4  (u)</span>
+0039 <span class="comment">%   imgd,q    6,7                                 ihgd,q   5,6  (Cont)</span>
+0040 <span class="comment">%   Psig      8,9                                 Vhdc      7   (cpar)</span>
+0041 <span class="comment">%   wemg      10                                  Qh        8   (u)</span>
+0042 <span class="comment">%   th_m      11</span>
+0043 <span class="comment">%   vmsd,q   12,13</span>
+0044 <span class="comment">%   Psie      14</span>
+0045 <span class="comment">%   impd,q   15,16</span>
+0046 <span class="comment">%   imsd,q   17,18</span>
+0047 <span class="comment">%   vmsd,q   19,20</span>
+0048 <span class="comment">%   Vmdc      21</span>
+0049 <span class="comment">%   PsiDC     22</span>
+0050 <span class="comment">%   PsiQ      23</span>
+0051 <span class="comment">%   PsiP     24,25</span>
+0052 <span class="comment">%</span>
+0053 <span class="comment">% ------------------------- Control ---------------------------</span>
+0054 <span class="comment">%   W*         1         bhat      1:3             Pc        1   (u)</span>
+0055 <span class="comment">%   V*         2         ihgd,q    4:5             azi       2   (turbine)</span>
+0056 <span class="comment">%   Wm         3         yhat       6              W         3   (turbine)</span>
+0057 <span class="comment">%   betm       4                                   bet      4:6  (turbine)</span>
+0058 <span class="comment">%   PsiWb      5                                   Pe        7   (turbine)</span>
+0059 <span class="comment">%   Pf         6                                   vT       8:9  (turbine)</span>
+0060 <span class="comment">%   PehRSC     7                                   Mbl     10:12 (turbine)(moment or th_nod)</span>
+0061 <span class="comment">%   ntw       8,9                                  wang     13   (turbine)(derived?)</span>
+0062 <span class="comment">%   ntb      10,11</span>
+0063 <span class="comment">%   blp       12</span>
+0064 <span class="comment">%   wgm       13</span>
+0065 <span class="comment">%   iwg       14</span>
+0066 <span class="comment">%   Pem       15</span>
+0067 <span class="comment">%   PsiP      16</span>
+0068 <span class="comment">%   nd       17,18</span>
+0069 <span class="comment">%   vmF       19</span>
+0070 <span class="comment">%   ivmF      20</span>
+0071 <span class="comment">%   vdF       21</span>
+0072 <span class="comment">%   vmS       22</span>
+0073 <span class="comment">%   ivmS      23</span>
+0074 <span class="comment">%   vdS       24</span>
+0075 <span class="comment">%   vmS       25</span>
+0076 <span class="comment">%   ivmS      26</span>
+0077 <span class="comment">%   vdS       27</span>
+0078 <span class="comment">%   Mpsim    28,29</span>
+0079 <span class="comment">%   PsiM     30,31</span>
+0080 <span class="comment">%</span>
+0081 <span class="comment">% Version:        Changes:</span>
+0082 <span class="comment">% --------        -------------</span>
+0083 <span class="comment">% 02.02.2019      Original code.</span>
+0084 <span class="comment">% 23.01.2020      Minor updates to accommodate the revisions to the</span>
+0085 <span class="comment">%                 structural equations-of-motion and the u vector.</span>
+0086 <span class="comment">%</span>
+0087 <span class="comment">% Version:        Verification:</span>
+0088 <span class="comment">% --------        -------------</span>
+0089 <span class="comment">% 02.02.2019</span>
+0090 <span class="comment">% 23.01.2020      Derivatives of A matrix verified via complex step.</span>
+0091 <span class="comment">%</span>
+0092 <span class="comment">% Inputs:</span>
+0093 <span class="comment">% -------</span>
+0094 <span class="comment">%</span>
+0095 <span class="comment">%</span>
+0096 <span class="comment">% Outputs:</span>
+0097 <span class="comment">% --------</span>
+0098 <span class="comment">%</span>
+0099 
+0100 <span class="comment">% Determine some indices.</span>
+0101 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0102 Nnod = Ndof/6;
+0103 Ndj  = Ndof + 6;
+0104 Nae  = a.Nb*a.Neb;
+0105 Neta = size(shape0,2);
+0106 Nxs  = 2*Neta;
+0107 Nxa  = size(Psi0,2);
+0108 
+0109 Nxp = 6;
+0110 Nxy = 2;
+0111 Nxe = 25;
+0112 Nxc = 31;
+0113 
+0114 Nxt = Nxs + Nxa + Nxp + Nxy + Nxe;
+0115 Nx1  = 2*Neta + Nxa;
+0116 
+0117 Nys  = 4*Ndj + 9*Nnod;
+0118 Nya  = 137*Nae + 5;
+0119 Ny1  = Nys + Nya;
+0120 Ny1n = 4*Ndj;     <span class="comment">% The nonlinear outputs.</span>
+0121 
+0122 <span class="comment">% Note, the indexing here is for the u vector input.  Note the</span>
+0123 <span class="comment">% difference in Pc, Qc (u vector) versus Qh, Pc (matrices).</span>
+0124 Nuin = size(u,1);
+0125 Nus  = Ndj + Neta;
+0126 Nua  = 3*Nae;
+0127 Nu1  = Nus + Nua;
+0128 Nup  = 0;
+0129 Nue  = 4;
+0130 Nuc  = 2;
+0131 
+0132 ius  = 0;
+0133 iua  = ius + Nus;
+0134 iup  = iua + Nua;
+0135 iue  = iup + Nup;
+0136 iuc  = iue + Nue;
+0137 
+0138 F    = u(ius+[1:Ndj]);
+0139 etadd= u(ius+Ndj+[1:Neta]);
+0140 Vg   = u(iua+[1:3*Nae]);
+0141 we   = u(iue+1);
+0142 th_e = u(iue+2);
+0143 vs   = [u(iue+3);u(iue+4)];
+0144 Pc   = u(iuc+1);
+0145 Qc   = u(iuc+2);
+0146 
+0147 <span class="comment">% Call the nonlinear control first.  The controller command outputs are</span>
+0148 <span class="comment">% functions of the measured rotor azimuth (for IBP), and the internal</span>
+0149 <span class="comment">% controller states.  So provided that the azimuth can be determined,</span>
+0150 <span class="comment">% the control commands will be correct, regardless of whether the other</span>
+0151 <span class="comment">% inputs are in error.  For the azimuth, use the driveshaft body</span>
+0152 <span class="comment">% rotary joint position (rear bearing).  This may differ subtly from</span>
+0153 <span class="comment">% the location where the rotor speed is measured, but it is expedient</span>
+0154 <span class="comment">% to use this definition of azimuth here.</span>
+0155 azi   = x(Neta-4);
+0156 jnkW  = x(2*Neta-4);
+0157 bet   = x(Neta-[2:-1:0]);
+0158 jnkPe = Pc;
+0159 jnkvT = [0;0];
+0160 jnkMbl = [0;0;0];
+0161 jnkwang = 0;
+0162 xc = x(Nx1+Nxp+Nxy+Nxe+[1:Nxc]);
+0163 uc = [Pc;azi;jnkW;bet;jnkPe;jnkvT;jnkMbl;jnkwang];
+0164 
+0165 [jnkdx,ycout,jnka,jnkb,jnkc,jnkd,blyc,bluc] =                        <span class="keyword">...</span>
+0166         <a href="../../STAS-WPP/STAS-Control/turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a> (0,xc,uc,c.cpar,c.cpct,                       <span class="keyword">...</span>
+0167                         c.KeTab,c.WVTab,c.WPTab,c.bminTab,c.KTables, <span class="keyword">...</span>
+0168                         c.KFTab,c.KSTab,c.KSqTab,c.KpiTab,c.KiiTab,c.RSCFlag);
+0169 
+0170 <span class="comment">% Now we have the correct control commands.  Call the linear/nonlinear</span>
+0171 <span class="comment">% turbine model.</span>
+0172 bhat = ycout(1:3);
+0173 ihg  = ycout(4:5);
+0174 yang = 0;    <span class="comment">% Yaw control not yet implemented.</span>
+0175 xt = x(1:Nx1+Nxp+Nxy+Nxe);
+0176 ut = [F;etadd;Vg;bhat;yang;we;th_e;vs;ihg;c.Vhdc;Qc];
+0177 [llt,rrt,ytout,aat,bbt,cct,ddt] =                                 <span class="keyword">...</span>
+0178       <a href="buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a> (linFlag,xt,ut,s,a,epar,ppar,ypar,     <span class="keyword">...</span>
+0179                             grav,P,shape0,mdamp0,                 <span class="keyword">...</span>
+0180                             Tas,Try,ch,Lel,foilwt,aoaz,aoast,     <span class="keyword">...</span>
+0181                             xas,yas,Psi0,igen,ipit,iyaw);
+0182 
+0183 <span class="comment">% Call the linear/nonlinear controller again to get the correct dx/dt</span>
+0184 <span class="comment">% and if needed the linearized state matrices.</span>
+0185 q  = ytout(1:Ndj);
+0186 dq = ytout(Ndj+[1:Ndj]);
+0187 [Wg,ddyg] = <a href="../../STAS-WPP/STAS-Aeroelastic/genSpeed.html" class="code" title="function [Wg,Dy] = genSpeed (qgen,dqgen,Pgen)">genSpeed</a> (q(igen),dq(igen),P(igen));
+0188 Pe = (ytout(Ny1n+4+[2:3]).')*u(Nu1+[3:4]);
+0189 TB0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(idofs(3)+[4:6]));
+0190 [TBB0,dTBB0] = <a href="../../STAS-WPP/STAS-Aeroelastic/dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (q(idofs(3)+[4:6]));
+0191 TgB = (TB0g*TBB0).';
+0192 vT = TgB(1:2,:)*dq(idofs(3)+[1:3]) + dq(idofs(3)+6+[1:2]);
+0193 wang = 0;    <span class="comment">% Yaw control not yet implemented.</span>
+0194 
+0195 zetpy = zeros(3,1);  <span class="comment">% Use nodal rotations as a proxy for blade root moments.</span>
+0196 <span class="keyword">for</span> ib = 1:3
+0197    qn1 = q(idofs(5+ib)+6+[1:6]);
+0198    Pn1 = P(idofs(5+ib)+6+[1:6]);
+0199    qn2 = q(idofs(5+ib)+12+[1:6]);
+0200    Pn2 = P(idofs(5+ib)+12+[1:6]);
+0201    [xe,TsB] = <a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0202    mu = <a href="../../STAS-WPP/STAS-Aeroelastic/getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a> (qn1,qn2,Pn1,Pn2,TsB);
+0203    zets = mu(4:6);
+0204    zetpy(ib) = TsB(2,:)*zets;
+0205 <span class="keyword">end</span>
+0206 
+0207 uc = [Pc;azi;Wg;bet;Pe;vT;zetpy;0];
+0208 
+0209 [dxcdt,ycout,aac,bbc,ccc,ddc,blyc,bluc] =                            <span class="keyword">...</span>
+0210         <a href="../../STAS-WPP/STAS-Control/turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a> (linFlag,xc,uc,c.cpar,c.cpct,                 <span class="keyword">...</span>
+0211                         c.KeTab,c.WVTab,c.WPTab,c.bminTab,c.KTables, <span class="keyword">...</span>
+0212                         c.KFTab,c.KSTab,c.KSqTab,c.KpiTab,c.KiiTab,c.RSCFlag);
+0213 
+0214 L = [llt sparse(Nxt,Nxc);sparse(Nxc,Nxt) speye(Nxc)];
+0215 R = [rrt;dxcdt];
+0216 yout = [ytout;ycout];
+0217 
+0218 Nx = size(R,1);
+0219 Nu = size(u,1);
+0220 Ny = size(cct,1) + size(ccc,1);
+0221 
+0222 <span class="keyword">if</span> (linFlag == 1)
+0223 
+0224    <span class="comment">% Define a z vector for linking, consisting of the local u variables,</span>
+0225    <span class="comment">% and then a subset of the local y variables: q and dq/dt, systems,</span>
+0226    <span class="comment">% and controls.</span>
+0227    ixs = 0;
+0228    ixa = ixs + Nxs;
+0229    ixp = ixa + Nxa;
+0230    ixy = ixp + Nxp;
+0231    ixe = ixy + Nxy;
+0232    ixc = ixe + Nxe;
+0233 
+0234    Nus = Ndj + Neta;
+0235    Nua = 3*Nae;
+0236    Nup = 3;
+0237    Nuy = 1;
+0238    Nue = 8;
+0239    Nuc = 13;
+0240    Nut = Nus + Nua + Nup + Nuy + Nue;
+0241    ius = 0;
+0242    iua = ius + Nus;
+0243    iup = iua + Nua;
+0244    iuy = iup + Nup;
+0245    iue = iuy + Nuy;
+0246    iuc = iue + Nue;
+0247 
+0248    Nys = 4*Ndj;
+0249    Nya = 0;
+0250    Nyp = 3;
+0251    Nyy = 1;
+0252    Nye = 3;
+0253    Nyc = 6;
+0254    Nyt = Nys + Nya + Nyp + Nyy + Nye;
+0255    iys = iuc + Nuc;
+0256    iyp = iys + Nys;
+0257    iyy = iyp + Nyp;
+0258    iye = iyy + Nyy;
+0259    iyc = iye + Nye;
+0260 
+0261    <span class="comment">% (This should be done in a cleaner way... I've dropped some y's in order</span>
+0262    <span class="comment">%  that the linear matrix row entries match the NL vector entries...)</span>
+0263    jz1 = [[1:3*Ndj] 3*Ndj+9*Nnod+[1:Ndj] Ny1+[3 6 9] Ny1+9+3 Ny1+12+[2 3 4]];
+0264 
+0265    Nz = iyc + Nyc;
+0266 
+0267    Az = spalloc (Nx,Nx,0.3*Nx*Nx);
+0268    Bu = spalloc (Nx,Nuin,0.2*Nx*Nuin);
+0269    Bz = spalloc (Nx,Nz,0.1*Nx*Nz);
+0270    Cz = spalloc (Nz,Nx,0.1*Nz*Nx);
+0271    Du = spalloc (Nz,Nuin,0.05*Ny*Nuin);
+0272    Dz = spalloc (Nz,Nz,0.02*Nz*Nz);
+0273 
+0274    Az(ixs+[1:Nxt],ixs+[1:Nxt]) = aat;
+0275    Bz(ixs+[1:Nxt],ius+[1:Nut]) = bbt;
+0276    Cz(iys+[1:Nyt],ixs+[1:Nxt]) = cct(jz1,:);
+0277    Dz(iys+[1:Nyt],ius+[1:Nut]) = ddt(jz1,:);
+0278 
+0279    Az(ixc+[1:Nxc],ixc+[1:Nxc]) = aac;
+0280    Bz(ixc+[1:Nxc],iuc+[1:Nuc]) = bbc;
+0281    Cz(iyc+[1:Nyc],ixc+[1:Nxc]) = ccc(1:Nyc,:);
+0282    Dz(iyc+[1:Nyc],iuc+[1:Nuc]) = ddc(1:Nyc,:);
+0283 
+0284    <span class="comment">% Link z vector u's with global u's.</span>
+0285    ir = [ius+[1:Nus] iua+[1:Nua] iue+[1 2 3 4 8] iuc+1];
+0286    ic = [[1:Ndj+Neta] Ndj+Neta+[1:3*Nae] Nu1+[1 2 3 4 6 5]];
+0287    ss = ones(1,Ndj+Neta+3*Nae+6);
+0288    Du = Du + sparse (ir,ic,ss,Nz,Nuin);
+0289 
+0290    <span class="comment">% Link z vector system u's with z vector control y's.</span>
+0291    ir = [iup+[1 2 3] iuy+1 iue+[5 6]];
+0292    ic = [iyc+[1 2 3 6] iyc+[4 5]];
+0293    ss = ones(1,6);
+0294    Dz = Dz + sparse (ir,ic,ss,Nz,Nz);
+0295 
+0296    <span class="comment">% Link the (simple) z vector control u's with the turbine x's.</span>
+0297    ir = iuc+[2 4 5 6];
+0298    ic = [ixs+Neta-[4 2 1 0]];
+0299    ss = ones(1,4);
+0300    Cz = Cz + sparse(ir,ic,ss,Nz,Nx);
+0301 
+0302    <span class="comment">% Linearization of rotor speed sensor input to control.</span>
+0303    ir = iuc + 3;
+0304    ic = iys+[igen Ndj+igen];
+0305    Dz(ir,ic) = Dz(ir,ic) + ddyg;
+0306 
+0307    <span class="comment">% Linearization of electric power.  Pe = isd*vsd + isq*vsq.</span>
+0308    ir = iuc + [7 7];
+0309    ic = Nu1 + [3 4];
+0310    ss = yout(iye-iys+[2 3]);
+0311    Du = Du + sparse (ir,ic,ss,Nz,Nuin);
+0312    ic = iye + [2 3];
+0313    ss = u(Nu1+[3 4]);
+0314    Dz = Dz + sparse (ir,ic,ss,Nz,Nz);
+0315 
+0316    <span class="comment">% Linearization of vT.</span>
+0317    <span class="comment">% vT = TgB(1:2,:)*dq(idofs(3)+[1:3]) + dq(idofs(3)+6+[1:2]);</span>
+0318    ir = iuc + [8 9];
+0319    ic = iys + Ndj + idofs(3) + 6 + [1 2];
+0320    Dz(ir,ic) = Dz(ir,ic) + speye(2);
+0321    ic = iys + Ndj + idofs(3) + [1:3];
+0322    Dz(ir,ic) = Dz(ir,ic) + TgB(1:2,:);
+0323    <span class="keyword">for</span> jj = 1:3
+0324       jc3 = 3*(jj-1);
+0325       ic = iys + idofs(3) + 3 + jj;
+0326       TT = (TB0g*dTBB0(:,jc3+[1:3])).';
+0327       Dz(ir,ic) = Dz(ir,ic) + TT(1:2,:)*dq(idofs(3)+[1:3]);
+0328    <span class="keyword">end</span>
+0329 
+0330    <span class="comment">% Linearization of blade root rotations.</span>
+0331    <span class="keyword">for</span> ib = 1:3
+0332       qn1 = q(idofs(5+ib)+6+[1:6]);
+0333       Pn1 = P(idofs(5+ib)+6+[1:6]);
+0334       qn2 = q(idofs(5+ib)+12+[1:6]);
+0335       Pn2 = P(idofs(5+ib)+12+[1:6]);
+0336       [xe,TsB] = <a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0337       mu = <a href="../../STAS-WPP/STAS-Aeroelastic/getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a> (qn1,qn2,Pn1,Pn2,TsB);
+0338       dTsB = <a href="../../STAS-WPP/STAS-Aeroelastic/derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB);
+0339       dmu = <a href="../../STAS-WPP/STAS-Aeroelastic/dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a> (qn1,qn2,Pn1,Pn2,TsB,dTsB);
+0340       ir = iuc + 9 + ib;
+0341       ic = idofs(5+ib) + 6 + [1:12];
+0342       Dz(ir,ic) = Dz(ir,ic) + TsB(2,:)*dmu(4:6,:);
+0343       <span class="keyword">for</span> jj = 1:12
+0344          jc3 = 3*(jj-1);
+0345          Dz(ir,ic(jj)) = Dz(ir,ic(jj)) + dTsB(2,jc3+[1:3])*mu(4:6);
+0346       <span class="keyword">end</span>
+0347    <span class="keyword">end</span>
+0348 
+0349    <span class="comment">% Reduce the matrices.</span>
+0350    Dnorm = ones(Nz,1);
+0351    [A,B,C,D] = <a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a> (Az,Bu,Bz,Cz,Du,Dz,Dnorm);
+0352    C = C(iys+1:Nz,:);
+0353    D = D(iys+1:Nz,:);
+0354 
+0355 <span class="keyword">else</span>
+0356 
+0357    Nyo = size(yout,1);
+0358    A = sparse (Nx,Nx);
+0359    B = sparse (Nx,Nuin);
+0360    C = sparse (Nyo,Nx);
+0361    D = sparse (Nyo,Nuin);
+0362 
+0363 <span class="keyword">end</span>
+0364 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

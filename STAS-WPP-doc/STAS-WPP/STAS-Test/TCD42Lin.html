@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of TCD42Lin</title>
+  <meta name="keywords" content="TCD42Lin">
+  <meta name="description" content="y vector:        u vector:">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; TCD42Lin.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>TCD42Lin
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>y vector:        u vector:</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> y vector:        u vector:
+ (controls)       muV      1
+ Phat     1       Dam      2
+ Pe       2       asum     3
+ beta     3       PhPCC    4
+ yaw      4       PmPCC    5
+ (sensors)        V        6  % Rotor-avg V at turbine.
+ W        5
+ vnacx,y 6-7
+ V,thV   8-9
+ (estimates)
+ Vst     10
+ FTst    11
+ Past    12
+ (grid)
+ ist   13,14
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a>	Utilize Matlab/Octave spline interpolation capability.  "tab" is then</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="Vcascade.html" class="code" title="function [A,B] = Vcascade (NvC)">Vcascade</a>	</li>
+<li><a href="clusdt.html" class="code" title="function [Vstar,phi] = clusdt (phim,Vdat,Lam,mus,sig,bet)">clusdt</a>	</li>
+<li><a href="cluster.html" class="code" title="function [d,ind] = cluster (x,nn)">cluster</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/assignPhi.html" class="code" title="function Phi = assignPhi (jc,wc,Np);">assignPhi</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/nearestCells.html" class="code" title="function [ic,wc] = nearestCells (x,xb)">nearestCells</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/xFromCell.html" class="code" title="function x = xFromCell (ic,xb)">xFromCell</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% y vector:        u vector:</span>
+0002 <span class="comment">% (controls)       muV      1</span>
+0003 <span class="comment">% Phat     1       Dam      2</span>
+0004 <span class="comment">% Pe       2       asum     3</span>
+0005 <span class="comment">% beta     3       PhPCC    4</span>
+0006 <span class="comment">% yaw      4       PmPCC    5</span>
+0007 <span class="comment">% (sensors)        V        6  % Rotor-avg V at turbine.</span>
+0008 <span class="comment">% W        5</span>
+0009 <span class="comment">% vnacx,y 6-7</span>
+0010 <span class="comment">% V,thV   8-9</span>
+0011 <span class="comment">% (estimates)</span>
+0012 <span class="comment">% Vst     10</span>
+0013 <span class="comment">% FTst    11</span>
+0014 <span class="comment">% Past    12</span>
+0015 <span class="comment">% (grid)</span>
+0016 <span class="comment">% ist   13,14</span>
+0017 
+0018 clear;
+0019 
+0020 pkg load statistics;
+0021 
+0022 nm = <span class="string">'DTU10MW'</span>;
+0023 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0024 
+0025 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0026  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0027  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0028  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0029 
+0030 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0031 Ndj = Ndof + 6;
+0032 
+0033 Vref = 10                              / velocity;
+0034 Dia  = 2*89.15                         / length;
+0035 we   = 50*2*pi                         * time;    <span class="comment">% [rad/s], grid frequency</span>
+0036 vpcc = [400;0].'                       / voltage;
+0037 
+0038 <span class="comment">% Wind cascade.</span>
+0039 dtvC = 1                               / time;
+0040 NvC  = 2^8;  <span class="comment">% That'll be about 4 minutes.</span>
+0041 
+0042 <span class="comment">% Cluster probabilities.</span>
+0043 gam  = 0.01;                  <span class="comment">% Binary white noise amplitude.</span>
+0044 sig0 = 2.0;                   <span class="comment">% Gaussian stdev.</span>
+0045 bet0 = 0.2;                   <span class="comment">% Background probability.</span>
+0046 dmu  = 0.1;
+0047 <span class="comment">%mbnd = [-0.5*Vref dmu 0.5*Vref];</span>
+0048 mbnd = [-Vref dmu Vref];
+0049 
+0050 <span class="comment">% Load turbine positions.</span>
+0051 load <span class="string">'TurbinePosition.dat'</span>;  <span class="comment">% x/D, y/D.</span>
+0052 npos = TurbinePosition*Dia;
+0053 Nturb = size(npos,1);
+0054 
+0055 a1table = interp1 ([0, 0.25,  0.50,  0.75,   1], <span class="keyword">...</span>
+0056                    [1, 0.975, 0.95,  0.925,  0.90],<span class="string">'pchip'</span>,<span class="string">'pp'</span>);
+0057 a2table = interp1 ([0, 0.25,  0.50,  0.75,   1], <span class="keyword">...</span>
+0058                    [1, 0.75,  0.50,  0.25,   0.00],<span class="string">'pchip'</span>,<span class="string">'pp'</span>);
+0059 atables.a1 = a1table;
+0060 atables.a2 = a2table;
+0061 
+0062 <span class="comment">% Damage and production factors, not yet updated dynamically.</span>
+0063 Dam = zeros(Nturb,1);
+0064 a1sum = zeros(Nturb,1);
+0065 a2sum = zeros(Nturb,1);
+0066 
+0067 <span class="comment">%iturb = 24;</span>
+0068 <span class="comment">%Dam(iturb) = 1;</span>
+0069 
+0070 rand(<span class="string">'state'</span>,1234);
+0071 <span class="comment">%Dam = rand(Nturb,1);</span>
+0072 <span class="comment">%Dam(1) = 1;</span>
+0073 ind = [1:Nturb].';
+0074 alf1 = zeros(Nturb,1);
+0075 alf2 = zeros(Nturb,1);
+0076 <span class="keyword">for</span> iturb = 1:Nturb
+0077    [alf1(iturb),da1dD] = <a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Dam(iturb),a1table);
+0078    [alf2(iturb),da2dD] = <a href="../../STAS-WPP/STAS-Control/gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Dam(iturb),a2table);
+0079 <span class="keyword">end</span>
+0080 <span class="keyword">for</span> iturb = 1:Nturb
+0081    a1sum(iturb) = sum(alf1(ind ~= iturb));
+0082    a2sum(iturb) = sum(alf2(ind ~= iturb));
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% Simulation.</span>
+0086 dt = 0.05                              / time;
+0087 Nt = 72000;
+0088 ts = dt*[0:Nt-1].';
+0089 
+0090 NtvC = Nt/round(dtvC/dt);
+0091 Nf = 2*NvC;
+0092 df = 1/(Nf*dtvC);
+0093 freqs = df*[[0:Nf/2-1] [-Nf/2:-1]].';
+0094 tvCs = dtvC*[0:NtvC-1].';
+0095 
+0096 <span class="comment">% Load wind files.  W: Vmag, thV for each turbine.</span>
+0097 <span class="comment">% Truncate to 3 hours, eliminating the earliest timesteps.  Valentin</span>
+0098 <span class="comment">% said there may be a &quot;burn-in&quot; period at the beginning.</span>
+0099 dtW = 5                                / time;
+0100 NtW = 1801;
+0101 tWs = dtW*[0:NtW-1];
+0102 load <span class="string">'WindTS.bin'</span>;
+0103 NW = size(W,1);
+0104 W = W(NW-NtW+[1:NtW],:)                / velocity;
+0105 
+0106 <span class="comment">% Load subsystem matrices.</span>
+0107 inpnm = <span class="string">'_P060_V100'</span>;
+0108 eval([&quot;load <span class="string">'ACL&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0109 eval([&quot;load <span class="string">'BCL&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0110 eval([&quot;load <span class="string">'CCL&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0111 eval([&quot;load <span class="string">'DCL&quot;   inpnm &quot;.bin'</span>;&quot;]);
+0112 eval([&quot;load <span class="string">'xpsi&quot; inpnm &quot;.txt'</span>;&quot;]);
+0113 eval([&quot;load <span class="string">'ypsi&quot; inpnm &quot;.txt'</span>;&quot;]);
+0114 eval([&quot;xpsi = xpsi&quot; inpnm &quot;;&quot;]);
+0115 eval([&quot;ypsi = ypsi&quot; inpnm &quot;;&quot;]);
+0116 
+0117 
+0118 inpnm = <span class="string">'_TCRWP_P060'</span>;
+0119 eval([&quot;load <span class="string">'Bgq&quot;  inpnm &quot;.bin'</span>;&quot;]);   <span class="comment">% Quasi-steady grid.</span>
+0120 eval([&quot;load <span class="string">'gret&quot; inpnm &quot;.bin'</span>;&quot;]);
+0121 eval([&quot;load <span class="string">'xgf&quot; inpnm &quot;.bin'</span>;&quot;]);
+0122 
+0123 xgf0 = xgf;  <span class="comment">% Reserve xgf for the perturbations.</span>
+0124 
+0125 <span class="comment">%load 'Sij_V10_I183_Lu180_W911.bin';</span>
+0126 <span class="comment">%load 'Sijp_V10_I183_Lu180_W911.bin';</span>
+0127 <span class="comment">%load 'dSdV_V10_I183_Lu180_W911.bin';  % For special method of scaling with W.</span>
+0128 <span class="comment">%TInom = 0.183;</span>
+0129 <span class="comment">%Wnom = 0.91146;  % Rotor speed used when generating this particular turbulence file.</span>
+0130 
+0131 Nx = size(ACL,1);
+0132 Nu = size(BCL,2);
+0133 Ny = size(CCL,1);
+0134 
+0135 Nxt = 44;
+0136 Nxo = 25;
+0137 Nxc = 29;
+0138 
+0139 <span class="comment">% The full grid states.  Bgq is based on the reduced &quot;gret&quot; DOFs.</span>
+0140 <span class="comment">% Inputs to Bgq: we(1), vPCCd,q(2), itd,q(2*Ngnod)</span>
+0141 Ngcab = 32;
+0142 Ngnod = 33;  <span class="comment">% Collector grid and substation.</span>
+0143 Nxgf = 2*Ngcab + 4*Ngnod + 14;  <span class="comment">% Cable currents, bus voltages, bus shunt currents,</span>
+0144                                 <span class="comment">% and the export system states.</span>
+0145 
+0146 <span class="comment">% Determine clusters.</span>
+0147 [dcl,icl] = <a href="cluster.html" class="code" title="function [d,ind] = cluster (x,nn)">cluster</a> (npos.',9);
+0148 
+0149 <span class="comment">% Initialize the cascade with the wind speed at t = 0.</span>
+0150 vcas = W(1,1:2:2*Nturb-1).*ones(NvC,Nturb) - Vref;
+0151 [AvC,BvC] = <a href="Vcascade.html" class="code" title="function [A,B] = Vcascade (NvC)">Vcascade</a> (NvC);
+0152 
+0153 <span class="comment">% Initialize the cluster probabilities.</span>
+0154 sig = sig0*ones(Nturb,1);
+0155 bet = bet0*ones(Nturb,1);
+0156 mus = [mbnd(1):mbnd(2):mbnd(3)].';
+0157 Nmu = size(mus,1);
+0158 phi = (1/Nmu)*ones(Nmu,Nturb);  <span class="comment">% Uniform prior.</span>
+0159 Ncells = Nmu;
+0160 ics = [1:Ncells].';
+0161 mc = <a href="../../STAS-WPP/STAS-Utilities/xFromCell.html" class="code" title="function x = xFromCell (ic,xb)">xFromCell</a> (ics,mbnd);
+0162 mc1 = mc + gam*dt;
+0163 [ics,wcs] = <a href="../../STAS-WPP/STAS-Utilities/nearestCells.html" class="code" title="function [ic,wc] = nearestCells (x,xb)">nearestCells</a> (mc1,mbnd);
+0164 Lam = <a href="../../STAS-WPP/STAS-Utilities/assignPhi.html" class="code" title="function Phi = assignPhi (jc,wc,Np);">assignPhi</a> (ics,0.5*wcs,Ncells);
+0165 mc1 = mc - gam*dt;
+0166 [ics,wcs] = <a href="../../STAS-WPP/STAS-Utilities/nearestCells.html" class="code" title="function [ic,wc] = nearestCells (x,xb)">nearestCells</a> (mc1,mbnd);
+0167 L2 = <a href="../../STAS-WPP/STAS-Utilities/assignPhi.html" class="code" title="function Phi = assignPhi (jc,wc,Np);">assignPhi</a> (ics,0.5*wcs,Ncells);
+0168 Lam = Lam + L2;  <span class="comment">% Transition probability matrix.</span>
+0169 
+0170 <span class="comment">% Step in time; use the smallest timestep, that of the observer</span>
+0171 <span class="comment">% and turbine models.</span>
+0172 del = sqrt(eps);
+0173 <span class="comment">%xpc = zeros(Nt,2*Nturb);</span>
+0174 <span class="comment">%ys = zeros(Nt,Ny*Nturb);</span>
+0175 <span class="comment">%us = zeros(Nt,Nu*Nturb);</span>
+0176 
+0177 x = zeros(Nx*Nturb,1);
+0178 y = zeros(Ny*Nturb,1);
+0179 u = zeros(Nu*Nturb,1);
+0180 
+0181 i2a = 1 + [0:2:2*(Nturb-1)].';
+0182 i2b = 2 + [0:2:2*(Nturb-1)].';
+0183 
+0184 imuV = 1 + [0:7:7*(Nturb-1)].';
+0185 iDam = 2 + [0:7:7*(Nturb-1)].';
+0186 ia1s = 3 + [0:7:7*(Nturb-1)].';
+0187 ia2s = 4 + [0:7:7*(Nturb-1)].';
+0188 iPh  = 5 + [0:7:7*(Nturb-1)].';
+0189 iPm  = 6 + [0:7:7*(Nturb-1)].';
+0190 iV   = 7 + [0:7:7*(Nturb-1)].';
+0191 
+0192 iPhat = 1  + [0:14:14*(Nturb-1)].';
+0193 iPe   = 2  + [0:14:14*(Nturb-1)].';
+0194 ibet  = 3  + [0:14:14*(Nturb-1)].';
+0195 iyaw  = 4  + [0:14:14*(Nturb-1)].';
+0196 iW    = 5  + [0:14:14*(Nturb-1)].';
+0197 ivnx  = 6  + [0:14:14*(Nturb-1)].';
+0198 ivny  = 7  + [0:14:14*(Nturb-1)].';
+0199 iVV   = 8  + [0:14:14*(Nturb-1)].';
+0200 ithV  = 9  + [0:14:14*(Nturb-1)].';
+0201 iVst  = 10 + [0:14:14*(Nturb-1)].';
+0202 iFTst = 11 + [0:14:14*(Nturb-1)].';
+0203 iPast = 12 + [0:14:14*(Nturb-1)].';
+0204 iistd = 13 + [0:14:14*(Nturb-1)].';
+0205 iistq = 14 + [0:14:14*(Nturb-1)].';
+0206 iist = sort([iistd;iistq],<span class="string">'ascend'</span>);
+0207 
+0208 fidv = fopen (<span class="string">'tcas.txt'</span>,<span class="string">'w'</span>);
+0209 
+0210 itvC = 1;
+0211 Cflg = false;
+0212 <span class="keyword">for</span> it = 1:Nt
+0213 
+0214    t = ts(it);
+0215    <span class="keyword">if</span> (abs(mod(t,dtvC)) &lt; del)
+0216       Cflg = true;
+0217       itvC = itvC + 1;
+0218       ict = Nturb*(itvC-1);
+0219 printf(<span class="string">'%12.3f\n'</span>,t);
+0220 fflush(stdout);
+0221    <span class="keyword">else</span>
+0222       Cflg = false;
+0223    <span class="keyword">end</span>
+0224 
+0225    PhPCC = 0;
+0226 
+0227    <span class="comment">% Update the wind inputs.</span>
+0228    V = interp1 (tWs,W,t);
+0229 
+0230 
+0231 
+0232 <span class="comment">%{</span>
+0233 <span class="keyword">if</span> (it &lt; 12000)
+0234 V = interp1 (tWs,W,t);
+0235 <span class="keyword">else</span>
+0236 V = interp1 (tWs,W,t);
+0237 V = V - 5;
+0238 <span class="keyword">end</span>
+0239 V(2*11+1) = 0;
+0240 V(2*18+1) = 0;
+0241 <span class="comment">%}</span>
+0242 
+0243 
+0244 
+0245    dV = zeros(2*Nturb,1);
+0246    dV(1:2:2*Nturb-1) = V(1:2:2*Nturb-1) - Vref;
+0247    dV(2:2:2*Nturb)   = V(2:2:2*Nturb);
+0248    u(iV)   = dV(1:2:2*Nturb-1);
+0249 
+0250    <span class="comment">% Update the grid model.  we, vpccd,q, turbine currents (d,q).</span>
+0251    ug = [0;0;0;0.5*y(iist);0;0];  <span class="comment">% 0.5: 33 kV turbine model, 66 kV grid.</span>
+0252    xg = Bgq*ug;
+0253    xgf = sparse(Nxgf,1);
+0254    xgf(gret) = xg;
+0255    iref = 2*Ngcab + 4*Ngnod;
+0256    u(iPm) = xgf0(iref+11)*xgf(iref+13) + xgf0(iref+12)*xgf(iref+14) <span class="keyword">...</span>
+0257           + xgf(iref+11)*xgf0(iref+13) + xgf(iref+12)*xgf0(iref+14);
+0258 
+0259    u(iDam) = Dam;  <span class="comment">% Constant for now, until the spectral part is working.</span>
+0260    u(ia1s) = a1sum;
+0261    u(ia2s) = a2sum;
+0262    u(iPh)  = PhPCC;
+0263 
+0264    fprintf (fidv,<span class="string">'%+5.6e'</span>,t);
+0265 
+0266    <span class="keyword">for</span> iturb = 1:Nturb
+0267 
+0268       ic2 = 2*(iturb-1);
+0269       ic6 = 6*(iturb-1);
+0270       icx = Nx*(iturb-1);
+0271       icu = Nu*(iturb-1);
+0272       icy = Ny*(iturb-1);
+0273 
+0274       <span class="comment">% Update the dynamic turbine models.</span>
+0275       <span class="comment">% Inputs: muV, Dam, asum, PhPCC, PmPCC, V</span>
+0276       x(icx+[1:Nx]) = ACL*x(icx+[1:Nx]) + BCL*u(icu+[1:Nu]);
+0277       y(icy+[1:Ny]) = CCL*x(icx+[1:Nx]) + DCL*u(icu+[1:Nu]);
+0278 
+0279       <span class="comment">% Update the cluster wind speed estimates and cascade.</span>
+0280       <span class="keyword">if</span> (Cflg)
+0281 
+0282          vobs = y(iVst);
+0283          phi0 = phi(:,iturb);
+0284          Vdat = vobs(icl(:,iturb));  <span class="comment">% The cluster.</span>
+0285          [u(imuV(iturb)),phi(:,iturb)] = <span class="keyword">...</span>
+0286             <a href="clusdt.html" class="code" title="function [Vstar,phi] = clusdt (phim,Vdat,Lam,mus,sig,bet)">clusdt</a> (phi0,Vdat,Lam,mus,sig(iturb),bet(iturb));
+0287          vcas(:,iturb) = AvC*vcas(:,iturb) <span class="keyword">...</span>
+0288                        + BvC*(vobs(iturb) - u(imuV(iturb)));
+0289 
+0290          <span class="comment">% Scale sig to a reasonable value with respect to the present</span>
+0291          <span class="comment">% wind speed.</span>
+0292          sig(iturb) = 0.2*(u(imuV(iturb)) + Vref);
+0293 
+0294       <span class="keyword">end</span>
+0295 
+0296 <span class="comment">%      xpc(it,ic2+[1:2]) = x(icx+Nxt+Nxo+[1:2]);</span>
+0297 <span class="comment">%      ys(it,icy+[1:Ny]) = y(icy+[1:Ny]);</span>
+0298 <span class="comment">%      us(it,icu+[1:Nu]) = u(icu+[1:Nu]);</span>
+0299 
+0300       fprintf (fidv,<span class="string">' %+5.6e %+5.6e'</span>,V(ic2+1),u(imuV(iturb))+Vref);
+0301 
+0302    <span class="keyword">end</span> <span class="comment">% iturb</span>
+0303 
+0304    fprintf (fidv,<span class="string">'\n'</span>);
+0305 
+0306 <span class="keyword">end</span> <span class="comment">% it</span>
+0307 
+0308 clrz = [0.0, 0.0, 0.0; <span class="keyword">...</span>
+0309         0.6, 0.6, 0.6; <span class="keyword">...</span>
+0310         0.8, 0.0, 0.0; <span class="keyword">...</span>
+0311         0.4, 0.0, 0.0; <span class="keyword">...</span>
+0312         0.0, 0.8, 0.0; <span class="keyword">...</span>
+0313         0.0, 0.4, 0.0; <span class="keyword">...</span>
+0314         0.0, 0.0, 0.8; <span class="keyword">...</span>
+0315         0.0, 0.0, 0.4];
+0316 
+0317 <span class="comment">%{</span>
+0318 
+0319 iturb = 2;
+0320 
+0321 <span class="comment">% Control block interface variables.</span>
+0322 figure(1);
+0323 clf;
+0324 hold on;
+0325 plot(ts,ys(:,iPhat(iturb)),<span class="string">'color'</span>,clrz(6,:),<span class="string">'linewidth'</span>,2);
+0326 plot(ts,us(:,imuV(iturb)),<span class="string">'color'</span>,clrz(1,:),<span class="string">'linewidth'</span>,2);
+0327 plot(ts,us(:,iPm(iturb))/10,<span class="string">'color'</span>,clrz(5,:),<span class="string">'linewidth'</span>,2);
+0328 plot(ts,ys(:,iFTst(iturb)),<span class="string">'color'</span>,clrz(2,:),<span class="string">'linewidth'</span>,2);
+0329 plot(ts,ys(:,iPast(iturb)),<span class="string">'color'</span>,clrz(3,:),<span class="string">'linewidth'</span>,2);
+0330 plot(ts,ys(:,iW(iturb)),<span class="string">'color'</span>,clrz(7,:),<span class="string">'linewidth'</span>,2);
+0331 hold off;
+0332 
+0333 figure(2);
+0334 clf;
+0335 hold on;
+0336 plot(ts,ys(:,iPhat(iturb)),<span class="string">'color'</span>,clrz(6,:),<span class="string">'linewidth'</span>,2);
+0337 plot(ts,xpc(:,i2a(iturb)),<span class="string">'color'</span>,clrz(3,:),<span class="string">'linewidth'</span>,2);
+0338 plot(ts,xpc(:,i2b(iturb)),<span class="string">'color'</span>,clrz(4,:),<span class="string">'linewidth'</span>,2);
+0339 hold off;
+0340 
+0341 <span class="comment">% Turbine.</span>
+0342 figure(3);
+0343 clf;
+0344 hold on;
+0345 plot(ts,ys(:,iPhat(iturb)),<span class="string">'color'</span>,clrz(6,:),<span class="string">'linewidth'</span>,2);
+0346 plot(ts,us(:,iV(iturb)),<span class="string">'color'</span>,clrz(1,:),<span class="string">'linewidth'</span>,2);
+0347 plot(ts,ys(:,iPe(iturb)),<span class="string">'color'</span>,clrz(5,:),<span class="string">'linewidth'</span>,2);
+0348 plot(ts,ys(:,iW(iturb)),<span class="string">'color'</span>,clrz(7,:),<span class="string">'linewidth'</span>,2);
+0349 hold off;
+0350 
+0351 <span class="comment">% Observer wind output versus actual.</span>
+0352 figure(4);
+0353 clf;
+0354 hold on;
+0355 plot(ts,ys(:,iVst(iturb)),<span class="string">'color'</span>,clrz(3,:),<span class="string">'linewidth'</span>,2);
+0356 plot(ts,us(:,iV(iturb)),<span class="string">'color'</span>,clrz(4,:),<span class="string">'linewidth'</span>,2);
+0357 hold off;
+0358 
+0359 <span class="comment">%}</span>
+0360 
+0361 fclose(<span class="string">'all'</span>);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

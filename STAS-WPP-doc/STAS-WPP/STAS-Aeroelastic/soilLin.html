@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of soilLin</title>
+  <meta name="keywords" content="soilLin">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; soilLin.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>soilLin
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute soil stiffness and damping matrices at an operating point.
+ We have a soil force F(q,qdot).  This is applied to the equations
+ of motion as Qhat(q)*F.  Thus terms in the linear equations of
+ motion are
+ Ks = -Qhat*(dF/dq), Kf = -(dQhat/dq)*F, Cs = -Qhat*(dF/dqdot).  
+ This function returns the operating-point force F, and its
+ derivatives.  The Qhat operations are implemented externally.
+
+ Version:        Changes:
+ --------        -------------
+ 13.05.2017      Original code, reformulation of soil.m.
+
+ Version:        Verification:
+ --------        -------------
+ 13.05.2017      
+
+ Inputs:
+ -------
+ kx...cthz       : x,y,z displacement, z rotational spring
+                   stiffness and damping, in global coordinates.
+ PF              : Nodal offsets.  The first six are the global
+                   position and orientation of the foundation
+                   reference node.
+ qF,dqFdt        : Nodal displacements and velocities.  The first
+                   six are the displacements and orientations of
+                   the foundation reference node.
+
+ Outputs:
+ --------
+ F               : Nodal force vector containing soil stiffness
+                   and damping forces.
+ dFdq,dFdqd      : Derivatives wrt q and dq/dt.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+<li><a href="soilPower.html" class="code" title="function [y,Du] = soilPower (s,qf,dqfdt,P)">soilPower</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz, </a><span class="keyword">...</span>
+0002                                    PF,qF,dqFdt)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Compute soil stiffness and damping matrices at an operating point.</span>
+0005 <span class="comment">% We have a soil force F(q,qdot).  This is applied to the equations</span>
+0006 <span class="comment">% of motion as Qhat(q)*F.  Thus terms in the linear equations of</span>
+0007 <span class="comment">% motion are</span>
+0008 <span class="comment">% Ks = -Qhat*(dF/dq), Kf = -(dQhat/dq)*F, Cs = -Qhat*(dF/dqdot).</span>
+0009 <span class="comment">% This function returns the operating-point force F, and its</span>
+0010 <span class="comment">% derivatives.  The Qhat operations are implemented externally.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Changes:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 13.05.2017      Original code, reformulation of soil.m.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 13.05.2017</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Inputs:</span>
+0021 <span class="comment">% -------</span>
+0022 <span class="comment">% kx...cthz       : x,y,z displacement, z rotational spring</span>
+0023 <span class="comment">%                   stiffness and damping, in global coordinates.</span>
+0024 <span class="comment">% PF              : Nodal offsets.  The first six are the global</span>
+0025 <span class="comment">%                   position and orientation of the foundation</span>
+0026 <span class="comment">%                   reference node.</span>
+0027 <span class="comment">% qF,dqFdt        : Nodal displacements and velocities.  The first</span>
+0028 <span class="comment">%                   six are the displacements and orientations of</span>
+0029 <span class="comment">%                   the foundation reference node.</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% Outputs:</span>
+0032 <span class="comment">% --------</span>
+0033 <span class="comment">% F               : Nodal force vector containing soil stiffness</span>
+0034 <span class="comment">%                   and damping forces.</span>
+0035 <span class="comment">% dFdq,dFdqd      : Derivatives wrt q and dq/dt.</span>
+0036 
+0037 Nnod = size(kx,1);
+0038 Nd = 6*Nnod;
+0039 
+0040 F     = zeros(Nd,1);
+0041 dFdq  = spalloc (Nd,Nd,6*Nd);
+0042 dFdqd = spalloc (Nd,Nd,6*Nd);
+0043 
+0044 TF0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PF(4:6));
+0045 TgF0 = TF0g.';
+0046 [TFF0,dTFF0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qF(4:6));
+0047 d2TFF0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qF(4:6),TFF0,dTFF0);
+0048 TF0F = TFF0.';
+0049 
+0050 <span class="keyword">for</span> inod = 1:Nnod
+0051 
+0052    ic6 = 6*(inod-1);
+0053 
+0054    Kd = diag([kx(inod) ky(inod) kz(inod)].');
+0055    Cd = diag([cx(inod) cy(inod) cz(inod)].');
+0056    TK = TF0F*Kd;
+0057    TC = TF0F*Cd;
+0058 
+0059    PB  = PF(1:6);
+0060    qB  = qF(1:6);
+0061    dqB = dqFdt(1:6);
+0062 
+0063    <span class="keyword">if</span> (inod == 1)
+0064       <span class="comment">% Reference node.</span>
+0065       Pn  = zeros(6,1);
+0066       qn  = zeros(6,1);
+0067       dqn = zeros(6,1);
+0068       Pn(4:6) = PF(6+[4:6]);
+0069    <span class="keyword">else</span>
+0070       Pn  = PF(ic6+[1:6]);
+0071       qn  = qF(ic6+[1:6]);
+0072       dqn = dqFdt(ic6+[1:6]);
+0073    <span class="keyword">end</span>
+0074 
+0075    <span class="comment">% Forces due to linear displacements.</span>
+0076    F(ic6+[1:3]) = -TK*(TgF0*qB(1:3)                        <span class="keyword">...</span>
+0077                 +      TFF0*(Pn(1:3) + qn(1:3)) - Pn(1:3)) <span class="keyword">...</span>
+0078                 -  TC*(TgF0*dqB(1:3) + TFF0*dqn(1:3));
+0079 
+0080    <span class="keyword">for</span> jj = 1:3
+0081       jc3 = 3*(jj-1);
+0082       F(ic6+[1:3]) = F(ic6+[1:3])          <span class="keyword">...</span>
+0083                    - TC*dTFF0(:,jc3+[1:3])*(Pn(1:3) + qn(1:3))*dqB(3+jj);
+0084    <span class="keyword">end</span>
+0085 
+0086    <span class="comment">% Moments due to torsion.</span>
+0087    Tn0F = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn(4:6));
+0088    [Tnn0,dTnn0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn(4:6));
+0089    d2Tnn0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qn(4:6),Tnn0,dTnn0);
+0090    mat = TFF0*Tn0F*Tnn0;
+0091    x = mat(1,2);
+0092    y = mat(2,2);
+0093    thz = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(y,x);
+0094    F(ic6+[4:6]) = -TF0F*[0 0 kthz(inod)*thz].';
+0095 
+0096    dT = zeros(3,3);
+0097    <span class="keyword">for</span> jj = 1:3
+0098       jc3 = 3*(jj-1);
+0099       dT = dT + dTFF0(:,jc3+[1:3])*Tn0F*Tnn0*dqB(3+jj) <span class="keyword">...</span>
+0100          +      TFF0*Tn0F*dTnn0(:,jc3+[1:3])*dqn(3+jj);
+0101    <span class="keyword">end</span>
+0102    dxdt   =  dT(1,2);
+0103    dydt   =  dT(2,2);
+0104    x2y2   =  x^2 + y^2;
+0105    dthdx  = -y/x2y2;
+0106    dthdy  =  x/x2y2;
+0107    dthzdt =  dthdx*dxdt + dthdy*dydt;
+0108    F(ic6+[4:6]) = F(ic6+[4:6]) - TF0F*[0 0 cthz(inod)*dthzdt].';
+0109 
+0110 <span class="comment">%del = sqrt(eps);</span>
+0111 <span class="comment">%yc = y + i*del;</span>
+0112 <span class="comment">%tc = atan2c (yc,x);</span>
+0113 <span class="comment">%dtcdy = imag(tc)/del;</span>
+0114 <span class="comment">%'atan'</span>
+0115 <span class="comment">%dthdy-dtcdy</span>
+0116 
+0117    dFdq(ic6+[1:3],1:3) = dFdq(ic6+[1:3],1:3) - TK*TgF0;
+0118 
+0119    <span class="keyword">if</span> (inod ~= 1)
+0120       dFdq(ic6+[1:3],ic6+[1:3]) = dFdq(ic6+[1:3],ic6+[1:3]) - TK*TFF0;
+0121    <span class="keyword">end</span>
+0122 
+0123    <span class="keyword">for</span> jj = 1:3
+0124       jc3 = 3*(jj-1);
+0125       jc9 = 9*(jj-1);
+0126       dFdq(ic6+[1:3],3+jj) = dFdq(ic6+[1:3],3+jj)        <span class="keyword">...</span>
+0127              - TK*dTFF0(:,jc3+[1:3])*(Pn(1:3) + qn(1:3)) <span class="keyword">...</span>
+0128              - TC*dTFF0(:,jc3+[1:3])*dqn(1:3)            <span class="keyword">...</span>
+0129              + (dTFF0(:,jc3+[1:3]).')*TFF0*F(ic6+[1:3]);
+0130       <span class="keyword">if</span> (inod ~= 1)
+0131          dFdq(ic6+[1:3],ic6+[1:3]) = dFdq(ic6+[1:3],ic6+[1:3]) <span class="keyword">...</span>
+0132                                    - TC*dTFF0(:,jc3+[1:3])*dqB(3+jj);
+0133       <span class="keyword">end</span>
+0134       <span class="keyword">for</span> ii = 1:3
+0135          i3 = 3*(ii-1);
+0136          dFdq(ic6+[1:3],3+jj) = dFdq(ic6+[1:3],3+jj) <span class="keyword">...</span>
+0137               - TC*d2TFF0(:,jc9+i3+[1:3])*(Pn(1:3) + qn(1:3))*dqB(3+ii);
+0138       <span class="keyword">end</span>
+0139    <span class="keyword">end</span>
+0140 
+0141    dFdqd(ic6+[1:3],1:3) = dFdqd(ic6+[1:3],1:3) - TC*TgF0;
+0142    <span class="keyword">if</span> (inod ~= 1)
+0143       dFdqd(ic6+[1:3],ic6+[1:3]) = dFdqd(ic6+[1:3],ic6+[1:3]) - TC*TFF0;
+0144    <span class="keyword">end</span>
+0145    <span class="keyword">for</span> jj = 1:3
+0146       jc3 = 3*(jj-1);
+0147       dFdqd(ic6+[1:3],3+jj) = dFdqd(ic6+[1:3],3+jj) <span class="keyword">...</span>
+0148                             - TC*dTFF0(:,jc3+[1:3])*(Pn(1:3) + qn(1:3));
+0149    <span class="keyword">end</span>
+0150 
+0151    delT = zeros (3,3*6);    <span class="comment">% d/d(thB,thn)</span>
+0152    <span class="keyword">for</span> jj = 1:3
+0153       jc3 = 3*(jj-1);
+0154       delT(:,jc3+[1:3]) = delT(:,jc3+[1:3]) <span class="keyword">...</span>
+0155                         + dTFF0(:,jc3+[1:3])*Tn0F*Tnn0;
+0156       delT(:,jc3+9+[1:3]) = delT(:,jc3+9+[1:3]) <span class="keyword">...</span>
+0157                           + TFF0*Tn0F*dTnn0(:,jc3+[1:3]);
+0158    <span class="keyword">end</span>
+0159 
+0160    ddelT = zeros (3,3*12);  <span class="comment">% d/d(thB,thn,dthB,dthn)</span>
+0161 
+0162    <span class="keyword">for</span> jj = 1:3
+0163       jc9 = 9*(jj-1);
+0164       jc3 = 3*(jj-1);
+0165       ddelT(:,18+jc3+[1:3]) = ddelT(:,jc3+[1:3]) <span class="keyword">...</span>
+0166                             + dTFF0(:,jc3+[1:3])*Tn0F*Tnn0;
+0167       ddelT(:,27+jc3+[1:3]) = ddelT(:,27+jc3+[1:3]) <span class="keyword">...</span>
+0168                             + TFF0*Tn0F*dTnn0(:,jc3+[1:3]);
+0169       <span class="keyword">for</span> ii = 1:3
+0170          i3 = 3*(ii-1);
+0171          ddelT(:,jc3+[1:3]) = ddelT(:,jc3+[1:3])             <span class="keyword">...</span>
+0172                 + d2TFF0(:,jc9+i3+[1:3])*Tn0F*Tnn0*dqB(3+ii) <span class="keyword">...</span>
+0173                 + dTFF0(:,jc3+[1:3])*Tn0F*dTnn0(:,i3+[1:3])*dqn(3+ii);
+0174          ddelT(:,9+jc3+[1:3]) = ddelT(:,9+jc3+[1:3])                  <span class="keyword">...</span>
+0175                 + dTFF0(:,i3+[1:3])*Tn0F*dTnn0(:,jc3+[1:3])*dqB(3+ii) <span class="keyword">...</span>
+0176                 + TFF0*Tn0F*d2Tnn0(:,jc9+i3+[1:3])*dqn(3+ii);
+0177 
+0178       <span class="keyword">end</span>
+0179 
+0180    <span class="keyword">end</span>
+0181 
+0182    dMdthz   = -kthz(inod);
+0183    dMdthzd  = -cthz(inod);
+0184    x2y2     =  x^2 + y^2;
+0185    dthdx    = -y/x2y2;
+0186    dthdy    =  x/x2y2;
+0187    d2thdx2  =  2*x*y/(x2y2^2);
+0188    d2thdy2  = -d2thdx2;
+0189    d2thdxdy = (y^2 - x^2)/(x2y2^2);
+0190 
+0191    dxdthB = [delT(1,2)  delT(1,5)  delT(1,8)];
+0192    dydthB = [delT(2,2)  delT(2,5)  delT(2,8)];
+0193    dxdthn = [delT(1,11) delT(1,14) delT(1,17)];
+0194    dydthn = [delT(2,11) delT(2,14) delT(2,17)];
+0195 
+0196    dxddthB  = [ddelT(1,2)  ddelT(1,5)  ddelT(1,8)];
+0197    dyddthB  = [ddelT(2,2)  ddelT(2,5)  ddelT(2,8)];
+0198    dxddthn  = [ddelT(1,11) ddelT(1,14) ddelT(1,17)];
+0199    dyddthn  = [ddelT(2,11) ddelT(2,14) ddelT(2,17)];
+0200    dxddthBd = [ddelT(1,20) ddelT(1,23) ddelT(1,26)];
+0201    dyddthBd = [ddelT(2,20) ddelT(2,23) ddelT(2,26)];
+0202    dxddthnd = [ddelT(1,29) ddelT(1,32) ddelT(1,35)];
+0203    dyddthnd = [ddelT(2,29) ddelT(2,32) ddelT(2,35)];
+0204 
+0205    dthddx  = d2thdx2*dxdt + d2thdxdy*dydt;
+0206    dthddy  = d2thdxdy*dxdt + d2thdy2*dydt;
+0207    dthddxd = dthdx;
+0208    dthddyd = dthdy;
+0209 
+0210    dFdq(ic6+[4:6],4:6) = dFdq(ic6+[4:6],4:6)              <span class="keyword">...</span>
+0211           + TF0F*[zeros(1,3);zeros(1,3);                  <span class="keyword">...</span>
+0212                   dMdthz*(dthdx*dxdthB + dthdy*dydthB)    <span class="keyword">...</span>
+0213           +       dMdthzd*(dthddx*dxdthB + dthddy*dydthB) <span class="keyword">...</span>
+0214           +       dMdthzd*(dthddxd*dxddthB + dthddyd*dyddthB)];
+0215    <span class="keyword">for</span> jj = 1:3
+0216       jc3 = 3*(jj-1);
+0217       dFdq(ic6+[4:6],3+jj) = dFdq(ic6+[4:6],3+jj)         <span class="keyword">...</span>
+0218           + (dTFF0(:,jc3+[1:3]).')*TFF0*F(ic6+[4:6]);
+0219    <span class="keyword">end</span>
+0220    <span class="keyword">if</span> (inod ~= 1)
+0221       dFdq(ic6+[4:6],ic6+[4:6]) = dFdq(ic6+[4:6],ic6+[4:6]) <span class="keyword">...</span>
+0222           + TF0F*[zeros(1,3);zeros(1,3);                    <span class="keyword">...</span>
+0223                   dMdthz*(dthdx*dxdthn + dthdy*dydthn)      <span class="keyword">...</span>
+0224           +       dMdthzd*(dthddx*dxdthn + dthddy*dydthn)   <span class="keyword">...</span>
+0225           +       dMdthzd*(dthddxd*dxddthn + dthddyd*dyddthn)];
+0226    <span class="keyword">end</span>
+0227    dFdqd(ic6+[4:6],4:6) = dFdqd(ic6+[4:6],4:6)              <span class="keyword">...</span>
+0228           + TF0F*[zeros(1,3);zeros(1,3);                    <span class="keyword">...</span>
+0229                   dMdthzd*(dthddxd*dxddthBd + dthddyd*dyddthBd)];
+0230    <span class="keyword">if</span> (inod ~= 1)
+0231       dFdqd(ic6+[4:6],ic6+[4:6]) = dFdqd(ic6+[4:6],ic6+[4:6]) <span class="keyword">...</span>
+0232           + TF0F*[zeros(1,3);zeros(1,3);                      <span class="keyword">...</span>
+0233                   dMdthzd*(dthddxd*dxddthnd + dthddyd*dyddthnd)];
+0234    <span class="keyword">end</span>
+0235 
+0236 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

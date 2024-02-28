@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of soilNL</title>
+  <meta name="keywords" content="soilNL">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; soilNL.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>soilNL
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function F = soilNL (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Add soil stiffness and damping to the foundation.  Consider the
+ stiffness.  Each nodal spring applies a force F^f0 = -ks*d^f0,
+ with d^f0 the lateral or vertical displacement in undeformed
+ foundation coordinates.  Together, the stiffness and damping
+ nodal forces can be written
+ F^f0 = T_F0^F*K*(T_g^F0*O_F/F0^g + T_F^F0(P_n0/F^F + q_n/n0^F) - P_n0/F^F)
+      + T_F0^F*C*(T_g^F0*dO_F/F0^g/dt + T_F^F0*dq_n/n0^F/dt
+      +           dT_F^F0/dPhi*(Pn0/F^F + q_n/n0^F)*dPhi/dt).
+ The torsional displacement is defined as 
+ thz = atan(y/x), where x = (TF^F0*Tn0^F*T_n^n0)(1,2) and z = ()(2,2),
+ with torsional moment Mz^F = -kz*thz.
+ The torsional velocity is dthz/dt, with torsional moment
+ Mz^F = 
+ Applying the nodal forces requires the operation Qh*F.  This
+ is accomplished outside this function, which returns the nodal
+ force.
+
+ Version:        Changes:
+ --------        -------------
+ 13.05.2017      Original code, reformulation of soil.m.
+
+ Version:        Verification:
+ --------        -------------
+ 13.05.2017      Verified results for some simple cases.
+
+ Inputs:
+ -------
+ kx...cthz       : x,y,z displacement, z rotational spring
+                   stiffness and damping, in global coordinates.
+ PF              : Nodal offsets.  The first six are the global
+                   position and orientation of the foundation
+                   reference node.
+ qF,dqFdt        : Nodal displacements and velocities.  The first
+                   six are the displacements and orientations of
+                   the foundation reference node.
+
+ Outputs:
+ --------
+ F               : Nodal force vector containing soil stiffness
+                   and damping forces.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function F = soilNL (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Add soil stiffness and damping to the foundation.  Consider the</span>
+0004 <span class="comment">% stiffness.  Each nodal spring applies a force F^f0 = -ks*d^f0,</span>
+0005 <span class="comment">% with d^f0 the lateral or vertical displacement in undeformed</span>
+0006 <span class="comment">% foundation coordinates.  Together, the stiffness and damping</span>
+0007 <span class="comment">% nodal forces can be written</span>
+0008 <span class="comment">% F^f0 = T_F0^F*K*(T_g^F0*O_F/F0^g + T_F^F0(P_n0/F^F + q_n/n0^F) - P_n0/F^F)</span>
+0009 <span class="comment">%      + T_F0^F*C*(T_g^F0*dO_F/F0^g/dt + T_F^F0*dq_n/n0^F/dt</span>
+0010 <span class="comment">%      +           dT_F^F0/dPhi*(Pn0/F^F + q_n/n0^F)*dPhi/dt).</span>
+0011 <span class="comment">% The torsional displacement is defined as</span>
+0012 <span class="comment">% thz = atan(y/x), where x = (TF^F0*Tn0^F*T_n^n0)(1,2) and z = ()(2,2),</span>
+0013 <span class="comment">% with torsional moment Mz^F = -kz*thz.</span>
+0014 <span class="comment">% The torsional velocity is dthz/dt, with torsional moment</span>
+0015 <span class="comment">% Mz^F =</span>
+0016 <span class="comment">% Applying the nodal forces requires the operation Qh*F.  This</span>
+0017 <span class="comment">% is accomplished outside this function, which returns the nodal</span>
+0018 <span class="comment">% force.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Version:        Changes:</span>
+0021 <span class="comment">% --------        -------------</span>
+0022 <span class="comment">% 13.05.2017      Original code, reformulation of soil.m.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Version:        Verification:</span>
+0025 <span class="comment">% --------        -------------</span>
+0026 <span class="comment">% 13.05.2017      Verified results for some simple cases.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Inputs:</span>
+0029 <span class="comment">% -------</span>
+0030 <span class="comment">% kx...cthz       : x,y,z displacement, z rotational spring</span>
+0031 <span class="comment">%                   stiffness and damping, in global coordinates.</span>
+0032 <span class="comment">% PF              : Nodal offsets.  The first six are the global</span>
+0033 <span class="comment">%                   position and orientation of the foundation</span>
+0034 <span class="comment">%                   reference node.</span>
+0035 <span class="comment">% qF,dqFdt        : Nodal displacements and velocities.  The first</span>
+0036 <span class="comment">%                   six are the displacements and orientations of</span>
+0037 <span class="comment">%                   the foundation reference node.</span>
+0038 <span class="comment">%</span>
+0039 <span class="comment">% Outputs:</span>
+0040 <span class="comment">% --------</span>
+0041 <span class="comment">% F               : Nodal force vector containing soil stiffness</span>
+0042 <span class="comment">%                   and damping forces.</span>
+0043 <span class="comment">%</span>
+0044 
+0045 Nnod = size(kx,1);
+0046 Nd = 6*Nnod;
+0047 
+0048 F = zeros(Nd,1);
+0049 
+0050 TF0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PF(4:6));
+0051 TgF0 = TF0g.';
+0052 [TFF0,dTFF0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qF(4:6));
+0053 TF0F = TFF0.';
+0054 
+0055 <span class="keyword">for</span> inod = 1:Nnod
+0056 
+0057    ic6 = 6*(inod-1);
+0058 
+0059    Kd = diag([kx(inod) ky(inod) kz(inod)].');
+0060    Cd = diag([cx(inod) cy(inod) cz(inod)].');
+0061 
+0062    PB  = PF(1:6);
+0063    qB  = qF(1:6);
+0064    dqB = dqFdt(1:6);
+0065 
+0066 
+0067    <span class="keyword">if</span> (inod == 1)
+0068       <span class="comment">% Reference node.</span>
+0069       Pn  = zeros(6,1);
+0070       qn  = zeros(6,1);
+0071       dqn = zeros(6,1);
+0072       Pn(4:6) = PF(6+[4:6]);
+0073    <span class="keyword">else</span>
+0074       Pn  = PF(ic6+[1:6]);
+0075       qn  = qF(ic6+[1:6]);
+0076       dqn = dqFdt(ic6+[1:6]);
+0077    <span class="keyword">end</span>
+0078 
+0079    <span class="comment">% Forces due to linear displacements.</span>
+0080    F(ic6+[1:3]) = -TF0F*Kd*(TgF0*qB(1:3)                        <span class="keyword">...</span>
+0081                 +           TFF0*(Pn(1:3) + qn(1:3)) - Pn(1:3)) <span class="keyword">...</span>
+0082                 -  TF0F*Cd*(TgF0*dqB(1:3) + TFF0*dqn(1:3));
+0083 
+0084    <span class="keyword">for</span> jj = 1:3
+0085       jc3 = 3*(jj-1);
+0086       F(ic6+[1:3]) = F(ic6+[1:3])               <span class="keyword">...</span>
+0087                    - TF0F*Cd*dTFF0(:,jc3+[1:3]) <span class="keyword">...</span>
+0088                    * (Pn(1:3) + qn(1:3))*dqB(3+jj);
+0089    <span class="keyword">end</span>
+0090 
+0091    <span class="comment">% Moments due to torsion.</span>
+0092    Tn0F = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn(4:6));
+0093    [Tnn0,dTnn0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qn(4:6));
+0094    mat = TFF0*Tn0F*Tnn0;
+0095    x = mat(1,2);
+0096    y = mat(2,2);
+0097    thz = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(y,x);   
+0098    F(ic6+[4:6]) = -TF0F*[0 0 kthz(inod)*thz].';
+0099 
+0100    dT = zeros(3,3);
+0101    <span class="keyword">for</span> jj = 1:3
+0102       jc3 = 3*(jj-1);
+0103       dT = dT + dTFF0(:,jc3+[1:3])*Tn0F*Tnn0*dqB(3+jj) <span class="keyword">...</span>
+0104          +      TFF0*Tn0F*dTnn0(:,jc3+[1:3])*dqn(3+jj);
+0105    <span class="keyword">end</span>
+0106    dxdt   =  dT(1,2);
+0107    dydt   =  dT(2,2);
+0108    x2y2   =  x^2 + y^2;
+0109    dthdx  = -y/x2y2;
+0110    dthdy  =  x/x2y2;
+0111    dthzdt =  dthdx*dxdt + dthdy*dydt;
+0112    F(ic6+[4:6]) = F(ic6+[4:6]) - TF0F*[0 0 cthz(inod)*dthzdt].';
+0113 
+0114 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

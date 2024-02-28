@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of runSplineAirfoilCoefficients</title>
+  <meta name="keywords" content="runSplineAirfoilCoefficients">
+  <meta name="description" content="Generate splined airfoil coefficients.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Main</a> &gt; runSplineAirfoilCoefficients.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Main&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>runSplineAirfoilCoefficients
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Generate splined airfoil coefficients.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Generate splined airfoil coefficients.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/ClCdCm.html" class="code" title="function [Cld,C,Dy] = ClCdCm (Co,aoa,aq,az)">ClCdCm</a>	</li>
+<li><a href="getLift.html" class="code" title="function Cl = getLift (aoas,kfoils,weights,aoa);">getLift</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Generate splined airfoil coefficients.</span>
+0002 
+0003 nm = <span class="string">'Tjaereborg'</span>
+0004 
+0005 clear;
+0006 
+0007 <span class="comment">% First column is aoa (deg), then trios of Cl,Cd,Cm for each airfoil type.</span>
+0008 load([<span class="string">'ClCdCm_'</span> nm <span class="string">'.txt'</span>]);
+0009 eval([<span class="string">'ClCdCm = ClCdCm_'</span> nm]);
+0010 
+0011 aoas = <a href="../../STAS-WPP/STAS-Aeroelastic/ClCdCm.html" class="code" title="function [Cld,C,Dy] = ClCdCm (Co,aoa,aq,az)">ClCdCm</a>(:,1)*pi/180;
+0012 
+0013 [A,B] = <a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a> (aoas);
+0014 k = (A\B)*<a href="../../STAS-WPP/STAS-Aeroelastic/ClCdCm.html" class="code" title="function [Cld,C,Dy] = ClCdCm (Co,aoa,aq,az)">ClCdCm</a>(:,2:size(<a href="../../STAS-WPP/STAS-Aeroelastic/ClCdCm.html" class="code" title="function [Cld,C,Dy] = ClCdCm (Co,aoa,aq,az)">ClCdCm</a>,2));
+0015 kd = zeros(size(k));
+0016 Nk = size(k,1);
+0017 <span class="keyword">for</span> jj = 1:Nk/4
+0018    irow = 4*(jj-1);
+0019    kd(irow+[1:3],:) = k(irow+[2:4],:).*[1;2;3];
+0020 <span class="keyword">end</span>
+0021 kfoils = [k kd];
+0022 
+0023 <span class="comment">% Find the zero-lift angles-of-attack, needed for dynamic stall.</span>
+0024 <span class="comment">% These values may need manual modification in the event that</span>
+0025 <span class="comment">% the airfoils do not behave as normal airfoils.  This can be</span>
+0026 <span class="comment">% the case for very thick inboard profiles.</span>
+0027 Nfoils = (size(<a href="../../STAS-WPP/STAS-Aeroelastic/ClCdCm.html" class="code" title="function [Cld,C,Dy] = ClCdCm (Co,aoa,aq,az)">ClCdCm</a>,2) - 1)/3;
+0028 aoazs = zeros(Nfoils,1);
+0029 <span class="keyword">for</span> ifoil = 1:Nfoils
+0030 
+0031    wt        = zeros(Nfoils,1);
+0032    wt(ifoil) = 1;
+0033 
+0034    [aoazs(ifoil),fval,exFlg,outp] = <span class="keyword">...</span>
+0035       fzero (@(aoa) <a href="getLift.html" class="code" title="function Cl = getLift (aoas,kfoils,weights,aoa);">getLift</a> (aoas,kfoils,wt,aoa),[-pi/4;pi/4]);
+0036 
+0037 <span class="keyword">end</span>
+0038 
+0039 <span class="comment">% Valid for Gnu Octave only.</span>
+0040 save(<span class="string">'-binary'</span>,[<span class="string">'aoas_'</span> nm <span class="string">'.bin'</span>],<span class="string">'aoas'</span>);
+0041 save(<span class="string">'-binary'</span>,[<span class="string">'kfoils_'</span> nm <span class="string">'.bin'</span>],<span class="string">'kfoils'</span>);
+0042 save(<span class="string">'-binary'</span>,[<span class="string">'aoazs_'</span> nm <span class="string">'.bin'</span>],<span class="string">'aoazs'</span>);
+0043 
+0044 <span class="comment">%weights = [0.5 0.5 0 0 0 0].';</span>
+0045 <span class="comment">%aoa = [-180:1:180]'*(pi/180);</span>
+0046 <span class="comment">%C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa);</span>
+0047 <span class="comment">%[aoa*180/pi C]</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

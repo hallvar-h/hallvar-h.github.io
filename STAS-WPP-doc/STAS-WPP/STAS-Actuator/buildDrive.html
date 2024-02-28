@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildDrive</title>
+  <meta name="keywords" content="buildDrive">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Actuator</a> &gt; buildDrive.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Actuator&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildDrive
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C,Dy] = buildDrive (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This builds the equations associated with a pitch or yaw drive.
+
+   states:             y vector:
+   ba      1           bhat      1          in   (Controller)
+   dbadt   2           b,dbdt   2,3         in   (Turbine)
+                       Ta        4         out
+    
+ Version:        Changes:
+ --------        -------------
+ 11.01.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 11.01.2019      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ params          : 1: ka    (Nm/rad)   Torsional stiffness.
+                   2: ca    (Nms/rad)  Torsional damping.
+                   3: aa    (rad/s)    Frequency of motor dynamics.
+                   4: K     (1/s)      Gain on pitch rate control.
+                   5: bmax  (rad)      Max slew angle.
+                   6: bmin  (rad)      Min slew angle.
+                   7: bdmax (rad/s)    Max slew rate.
+
+ Outputs:
+ --------
+ State matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C,Dy] = buildDrive (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This builds the equations associated with a pitch or yaw drive.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   states:             y vector:</span>
+0006 <span class="comment">%   ba      1           bhat      1          in   (Controller)</span>
+0007 <span class="comment">%   dbadt   2           b,dbdt   2,3         in   (Turbine)</span>
+0008 <span class="comment">%                       Ta        4         out</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 11.01.2019      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 11.01.2019      Derivatives verified by complex step.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% params          : 1: ka    (Nm/rad)   Torsional stiffness.</span>
+0021 <span class="comment">%                   2: ca    (Nms/rad)  Torsional damping.</span>
+0022 <span class="comment">%                   3: aa    (rad/s)    Frequency of motor dynamics.</span>
+0023 <span class="comment">%                   4: K     (1/s)      Gain on pitch rate control.</span>
+0024 <span class="comment">%                   5: bmax  (rad)      Max slew angle.</span>
+0025 <span class="comment">%                   6: bmin  (rad)      Min slew angle.</span>
+0026 <span class="comment">%                   7: bdmax (rad/s)    Max slew rate.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Outputs:</span>
+0029 <span class="comment">% --------</span>
+0030 <span class="comment">% State matrices.</span>
+0031 
+0032 Nx = 2;
+0033 Ny = 4;
+0034 
+0035 ka    = params(1);
+0036 ca    = params(2);
+0037 aa    = params(3);
+0038 K     = params(4);
+0039 bmax  = params(5);
+0040 bmin  = params(6);
+0041 bdmax = params(7);
+0042 
+0043 h = 0.5*(bmax - bmin);
+0044 g = bmin + h;
+0045 
+0046 [S1,dS1] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> ((yin(1)-g)/h,[0.9;1.1]);
+0047 bst = h*S1 + g;
+0048 epsd = bst - x(1);
+0049 badh = K*epsd;
+0050 [S2,dS2] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> (badh/bdmax,[0.8,1.2]);
+0051 badhs = bdmax*S2;
+0052 dxdt = [x(2);(-aa*x(2) + aa*badhs)];
+0053 yout = ka*(x(1) - yin(2)) + ca*(x(2) - yin(3));
+0054 
+0055 adSK = aa*dS2*K;
+0056 
+0057 <span class="keyword">if</span> (Linflag == 1)
+0058 
+0059    A = [0, 1; -adSK, -aa];
+0060    By = [[0; adSK*dS1], zeros(2,3)];
+0061    C = [zeros(3,2);[ka, ca]];
+0062    Dy = [zeros(3,4);[0, -ka, -ca, 0]];
+0063 
+0064 <span class="keyword">else</span>
+0065 
+0066    A = zeros(2,2);
+0067    By = zeros(2,4);
+0068    C = zeros(4,2);
+0069    Dy = zeros(4,4);
+0070 
+0071 <span class="keyword">end</span>
+0072 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

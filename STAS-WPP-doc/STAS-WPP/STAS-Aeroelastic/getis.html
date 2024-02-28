@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getis</title>
+  <meta name="keywords" content="getis">
+  <meta name="description" content="Version:        Changes:">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; getis.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>getis
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Version:        Changes:</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [iad,ia1,ia2,iVih,iVi,iq,idq,ixng1,ixng2,ivng1,ivng2,iwg,iwa,iaq,iC,iFldm,iFa,iFp,iFr,iFzts,iVg,iUa,iUmag,iUr,iUzts,iVzts,iViq,iViy,iVixyz,iWmag,ixeg,ixhg,ixnr1,ixnr2,ixer,ir,iL,iz,iPr] = getis (iel); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Version:        Changes:
+ --------        -------------
+ 10.02.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 10.02.2018      Checked visually.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="linkAeroelastic.html" class="code" title="function [LHS,A,Bu,By,C,Du,Dy] =linkAeroelastic (s,a,lls,aas,bbus,bbys,ccs,ddus,ddys,lla,aaa,bbya,cca,ddya,ddypv,ddyRSA)">linkAeroelastic</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [iad,ia1,ia2,iVih,iVi,               </a><span class="keyword">...</span>
+0002     iq,idq,ixng1,ixng2,ivng1,ivng2,           <span class="keyword">...</span>
+0003     iwg,iwa,iaq,iC,iFldm,iFa,iFp,iFr,iFzts,   <span class="keyword">...</span>
+0004     iVg,iUa,iUmag,iUr,iUzts,iVzts,iViq,       <span class="keyword">...</span>
+0005     iViy,iVixyz,iWmag,ixeg,ixhg,              <span class="keyword">...</span>
+0006     ixnr1,ixnr2,ixer,ir,iL,iz,iPr] = getis (iel);
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 10.02.2018      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 10.02.2018      Checked visually.</span>
+0014 
+0015 ioff = 7*(iel-1);
+0016 
+0017 iad   = ioff;
+0018 ia1   = iad + 1;
+0019 ia2   = ia1 + 1;
+0020 iVih  = ia2 + 1;
+0021 iVi   = iVih + 2;
+0022 
+0023 ioff = 137*(iel-1);
+0024 
+0025 iq    = ioff;
+0026 idq   = iq    + 24;
+0027 ixng1 = idq   + 24; 
+0028 ixng2 = ixng1 + 3;
+0029 ivng1 = ixng2 + 3;
+0030 ivng2 = ivng1 + 3;
+0031 iwg   = ivng2 + 3;
+0032 iwa   = iwg   + 3;
+0033 iaq   = iwa   + 3;
+0034 iC    = iaq   + 1;
+0035 iFldm = iC    + 3; 
+0036 iFa   = iFldm + 3;
+0037 iFp   = iFa   + 6;
+0038 iFr   = iFp   + 6;
+0039 iFzts = iFr   + 6; 
+0040 iVg   = iFzts + 3;
+0041 iUa   = iVg   + 3;
+0042 iUmag = iUa   + 3; 
+0043 iUr   = iUmag + 1;
+0044 iUzts = iUr   + 3;
+0045 iVzts = iUzts + 3;
+0046 iViq  = iVzts + 3;
+0047 iViy  = iViq  + 2;
+0048 iVixyz= iViy  + 2;
+0049 iWmag = iVixyz+ 3;
+0050 ixeg  = iWmag + 1;
+0051 ixhg  = ixeg  + 3;
+0052 ixnr1 = ixhg  + 3;
+0053 ixnr2 = ixnr1 + 3;
+0054 ixer  = ixnr2 + 3;
+0055 ir    = ixer  + 3;
+0056 iL    = ir    + 1;
+0057 iz    = iL    + 1;
+0058 iPr   = iz    + 1;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

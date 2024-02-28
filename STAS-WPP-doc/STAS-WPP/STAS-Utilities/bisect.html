@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of bisect</title>
+  <meta name="keywords" content="bisect">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; bisect.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>bisect
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function x = bisect (fun,x1,x2,del,maxit) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/plantControl.html" class="code" title="function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag)">plantControl</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function x = bisect (fun,x1,x2,del,maxit)</a>
+0002 
+0003 xlb = x1;
+0004 xub = x2;
+0005 ylb = fun(xlb);
+0006 
+0007 x = 0.5*real(xlb + xub) + imag(xlb + xub);
+0008 y = fun(x);
+0009 
+0010 iter = 0;
+0011 <span class="keyword">while</span> ((abs(real(y)) &gt; del) &amp;&amp; (iter &lt; maxit))
+0012 
+0013    iter = iter + 1;
+0014 
+0015    <span class="keyword">if</span> (sign(real(y)) == sign(real(ylb)))
+0016       <span class="comment">% Move right.</span>
+0017       xlb = real(x);  <span class="comment">% real: moving the boundary, so no longer retaining.</span>
+0018       ylb = y;        <span class="comment">%       the complex part of input x1 or x2.</span>
+0019    <span class="keyword">else</span>
+0020       <span class="comment">% Move left.</span>
+0021       xub = real(x);
+0022    <span class="keyword">end</span>
+0023 
+0024    x = 0.5*real(xlb + xub) + imag(xlb + xub);
+0025    y = fun(x);
+0026 
+0027 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

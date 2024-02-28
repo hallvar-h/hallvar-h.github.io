@@ -1,0 +1,30 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  FADamping -> gains1;
+  IBPLF -> gains1;
+  IBPSS -> gains1;
+  RSC -> gains1;
+  SSDamping -> gains1;
+  shaftFunc -> cpvwb;
+  shaftFunc -> gains1;
+  turbineControl -> FADamping;
+  turbineControl -> IBPLF;
+  turbineControl -> IBPSS;
+  turbineControl -> RSC;
+  turbineControl -> SSDamping;
+  turbineControl -> genPcontrol;
+  turbineControl -> shaftFunc;
+  turbineControl -> virtualInduction;
+
+  FADamping [URL="FADamping.html"];
+  IBPLF [URL="IBPLF.html"];
+  IBPSS [URL="IBPSS.html"];
+  RSC [URL="RSC.html"];
+  SSDamping [URL="SSDamping.html"];
+  cpvwb [URL="cpvwb.html"];
+  gains1 [URL="gains1.html"];
+  genPcontrol [URL="genPcontrol.html"];
+  shaftFunc [URL="shaftFunc.html"];
+  turbineControl [URL="turbineControl.html"];
+  virtualInduction [URL="virtualInduction.html"];
+}

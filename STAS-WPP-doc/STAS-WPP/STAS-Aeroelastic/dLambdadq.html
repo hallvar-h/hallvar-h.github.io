@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dLambdadq</title>
+  <meta name="keywords" content="dLambdadq">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dLambdadq.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dLambdadq
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dL = dLambdadq (Lambda,L,dLdq,dofs,ret,slv,v) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the derivative of the partitioned/inverted constraint
+ equation matrix, times some vector, (dLambda/dq)*v.
+
+ Version:        Changes:
+ --------        -------------
+ 22.03.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 22.03.2018      Verified by complex step using constraints.m
+
+ Inputs:
+ -------
+ Lambda          : Partitioned/inverted constraint matrix.
+ L               : Constraint equations.
+ dLdq            : Derivatives of constraint equations.
+ dofs            : Master and slave dofs, wrt which dLdq is nonzero.
+ ret,slv         : Lists of retained and slave DOFs.
+ v               : Vector to postmultiply by.
+
+ Outputs:
+ --------
+ dL              : (dLambda/dq)*v
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="dGammadq.html" class="code" title="function [dG,dGd] = dGammadq (csflag,q,P,dqdt,ret,slv,dofs,idofs,idofm,Tbh,L,dLdq,Lambda,Gamma,v)">dGammadq</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dL = dLambdadq (Lambda,L,dLdq,dofs,ret,slv,v)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the derivative of the partitioned/inverted constraint</span>
+0004 <span class="comment">% equation matrix, times some vector, (dLambda/dq)*v.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 22.03.2018      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 22.03.2018      Verified by complex step using constraints.m</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% Lambda          : Partitioned/inverted constraint matrix.</span>
+0017 <span class="comment">% L               : Constraint equations.</span>
+0018 <span class="comment">% dLdq            : Derivatives of constraint equations.</span>
+0019 <span class="comment">% dofs            : Master and slave dofs, wrt which dLdq is nonzero.</span>
+0020 <span class="comment">% ret,slv         : Lists of retained and slave DOFs.</span>
+0021 <span class="comment">% v               : Vector to postmultiply by.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% dL              : (dLambda/dq)*v</span>
+0026 
+0027 Ndj  = size(Lambda,1);
+0028 Nret = size(ret,1);
+0029 Nslv = size(slv,1);
+0030 Ndof = size(dofs,1);
+0031 
+0032 dL = spalloc (Ndj,Ndj,5*Ndj);
+0033 Ls    = L(:,slv);
+0034 ILs   = [speye(Nret) sparse(Nret,Nslv);sparse(Nslv,Nret) Ls];
+0035 
+0036 <span class="keyword">for</span> idof = 1:Ndof
+0037 
+0038    icN = Ndj*(idof-1);
+0039    
+0040    dLhdq = [sparse(Nret,Nret);dLdq(:,icN+ret)];
+0041    dLsdq = [sparse(Nret,Nret) sparse(Nret,Nslv); <span class="keyword">...</span>
+0042             sparse(Nslv,Nret) dLdq(:,icN+slv)];
+0043 
+0044    dL(:,dofs(idof)) = -ILs\((dLhdq + dLsdq*Lambda)*v);
+0045 
+0046 <span class="keyword">end</span>
+0047 
+0048  
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

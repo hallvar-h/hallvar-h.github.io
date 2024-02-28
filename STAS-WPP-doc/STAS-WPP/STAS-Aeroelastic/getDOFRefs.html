@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getDOFRefs</title>
+  <meta name="keywords" content="getDOFRefs">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; getDOFRefs.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>getDOFRefs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 26.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 26.10.2017      Frequently used in the code.  No errors observed.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="BEMsetup.html" class="code" title="function [Tas,ch,Lel,foilwt,aoaz,aoast,xas,yas,iq] = BEMsetup (s,a)">BEMsetup</a>	</li>
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a>	</li>
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+<li><a href="assembleElements.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] =assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav)">assembleElements</a>	</li>
+<li><a href="assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a>	</li>
+<li><a href="bodyModes.html" class="code" title="function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv)">bodyModes</a>	</li>
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="initialDOFVelocity.html" class="code" title="function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)">initialDOFVelocity</a>	</li>
+<li><a href="linkAeroelastic.html" class="code" title="function [LHS,A,Bu,By,C,Du,Dy] =linkAeroelastic (s,a,lls,aas,bbus,bbys,ccs,ddus,ddys,lla,aaa,bbya,cca,ddya,ddypv,ddyRSA)">linkAeroelastic</a>	</li>
+<li><a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a>	</li>
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42Lin.html" class="code" title="">TCD42Lin</a>	y vector:        u vector:</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/getPsia.html" class="code" title="function Psia = getPsia (modalAero,s,a,azi,q,qd,P,shape0)">getPsia</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 26.10.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 26.10.2017      Frequently used in the code.  No errors observed.</span>
+0010 <span class="comment">%</span>
+0011 
+0012 idofs = zeros(8,1);
+0013 idofm = zeros(8,1);
+0014 inods = zeros(8,1);
+0015 inodm = zeros(8,1);
+0016 
+0017 <span class="comment">% Global to foundation.</span>
+0018 idofm(1) = 0;
+0019 inodm(1) = 0;
+0020 idofs(1) = 0;
+0021 inods(1) = 1;
+0022 
+0023 <span class="comment">% Foundation to tower.</span>
+0024 idofm(2) = s.foundation.Ndof - 6;
+0025 inodm(2) = s.foundation.Nnod;
+0026 idofs(2) = idofm(2) + 6;
+0027 inods(2) = inodm(2) + 1;
+0028 
+0029 <span class="comment">% Tower to nacelle.</span>
+0030 idofm(3) = idofm(2) + s.tower.Ndof;
+0031 inodm(3) = inodm(2) + s.tower.Nnod;
+0032 idofs(3) = idofm(3) + 6;
+0033 inods(3) = inodm(3) + 1;
+0034 
+0035 <span class="comment">% Nacelle to driveshaft, rear bearing.</span>
+0036 idofm(4) = idofm(3) + 6*(s.Nev + s.Ner + 1);
+0037 inodm(4) = inodm(3) + s.Nev + s.Ner + 1;
+0038 idofs(4) = idofs(3) + s.nacelle.Ndof;
+0039 inods(4) = inods(3) + s.nacelle.Nnod;
+0040 
+0041 <span class="comment">% Nacelle to driveshaft, front bearing.</span>
+0042 idofm(5) = idofm(3) + s.nacelle.Ndof;
+0043 inodm(5) = inodm(3) + s.nacelle.Nnod;
+0044 idofs(5) = idofs(4) + 6*s.Ned;
+0045 inods(5) = inods(4) + s.Ned;
+0046 
+0047 <span class="comment">% Driveshaft to blade 1.</span>
+0048 idofm(6) = idofs(4) + s.driveshaft.Ndof - 18;
+0049 inodm(6) = inods(4) + s.driveshaft.Nnod - 3;
+0050 idofs(6) = idofs(4) + s.driveshaft.Ndof;
+0051 inods(6) = inods(4) + s.driveshaft.Nnod;
+0052 
+0053 <span class="comment">% Driveshaft to blade 2.</span>
+0054 idofm(7) = idofm(6) + 6;
+0055 inodm(7) = inodm(6) + 1;
+0056 idofs(7) = idofs(6) + s.blade(1).Ndof;
+0057 inods(7) = inods(6) + s.blade(1).Nnod;
+0058 
+0059 <span class="comment">% Driveshaft to blade 3.</span>
+0060 idofm(8) = idofm(7) + 6;
+0061 inodm(8) = inodm(7) + 1;
+0062 idofs(8) = idofs(7) + s.blade(2).Ndof;
+0063 inods(8) = inods(7) + s.blade(2).Nnod;
+0064 
+0065 Ndof = idofs(8) + s.blade(3).Ndof;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

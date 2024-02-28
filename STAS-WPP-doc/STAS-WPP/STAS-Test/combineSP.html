@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of combineSP</title>
+  <meta name="keywords" content="combineSP">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; combineSP.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>combineSP
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function nSP = combineSP (sbin,nS,sP,nalf) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Combine cycle counts of a stochastic signal s_S with a periodic
+ signal s_P.
+
+ Version:        Changes:
+ --------        -------------
+ 17.09.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 17.09.2020      
+
+ Inputs:
+ -------
+ sbin            : [smin,ds,smax]
+ nS              : Cycle counts for each bin.
+ sP              : Amplitude of periodic signal.
+ nalf            : Number of relative phases to consider.
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/nearestCells.html" class="code" title="function [ic,wc] = nearestCells (x,xb)">nearestCells</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function nSP = combineSP (sbin,nS,sP,nalf)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Combine cycle counts of a stochastic signal s_S with a periodic</span>
+0004 <span class="comment">% signal s_P.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 17.09.2020      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 17.09.2020</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% sbin            : [smin,ds,smax]</span>
+0017 <span class="comment">% nS              : Cycle counts for each bin.</span>
+0018 <span class="comment">% sP              : Amplitude of periodic signal.</span>
+0019 <span class="comment">% nalf            : Number of relative phases to consider.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Outputs:</span>
+0022 <span class="comment">% --------</span>
+0023 <span class="comment">%</span>
+0024 
+0025 n = size(nS,1);
+0026 nSP = zeros(n,1);
+0027 
+0028 <span class="keyword">for</span> ia = 1:nalf
+0029 <span class="comment">%   alf = 2*pi*(ia-1)/nalf;</span>
+0030    alf = pi*(ia-1)/(nalf-1);  <span class="comment">% Take advantage of symmetry.</span>
+0031    sb = sbin(1) + sbin(2)*([0:n-1]);
+0032    AA = sb + sP*cos(alf);
+0033    BB = -sP*sin(alf);
+0034    th = atan2(BB,AA);
+0035    s = abs(AA.*cos(th) + BB.*sin(th));
+0036    [ic,wc] = <a href="../../STAS-WPP/STAS-Utilities/nearestCells.html" class="code" title="function [ic,wc] = nearestCells (x,xb)">nearestCells</a> (s,sbin);
+0037 
+0038    <span class="comment">% Leverage sparse to sum repeated indices.</span>
+0039    vals = nS.*(wc(1,:).')/nalf;
+0040    vec = sparse(ic(1,:),1,vals,n,1);
+0041    nSP = nSP + vec;
+0042    vals = nS.*(wc(2,:).')/nalf;
+0043    vec = sparse(ic(2,:),1,vals,n,1);
+0044    nSP = nSP + vec;
+0045 
+0046 <span class="comment">% Incorrect because this overwrites repeated indices, rather than summing.</span>
+0047 <span class="comment">%   nSP(ic(1,:)) = nSP(ic(1,:)) + nS.*(wc(1,:).')/nalf;</span>
+0048 <span class="comment">%   nSP(ic(2,:)) = nSP(ic(2,:)) + nS.*(wc(2,:).')/nalf;</span>
+0049 
+0050 <span class="comment">%'----------------------'</span>
+0051 <span class="comment">%alf</span>
+0052 <span class="comment">%full([ic;wc])</span>
+0053 <span class="comment">%full([sb.' s.' nS wc(1,:).' wc(2,:).' nS.*(wc(1,:).')/nalf nS.*(wc(2,:).')/nalf])</span>
+0054 
+0055 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

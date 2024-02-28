@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d2Qel</title>
+  <meta name="keywords" content="d2Qel">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d2Qel.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d2Qel
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d2Qe = d2Qel (d2Qu1,d2Qu2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 13.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 13.11.2017      
+
+ Inputs:
+ -------
+ d2Qu1,2         : A 6-by-12*12*12 matrix containing d2Qu/dq2 for each
+                   node.
+
+ Outputs:
+ --------
+ d2Qe            : A 12-by-18*18*18 matrix containing d2Qe/dq2 for each 
+                   element.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildElement.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =buildElement (linFlag,mes,kes,dqdt,d2qdt2,Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec)">buildElement</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d2Qe = d2Qel (d2Qu1,d2Qu2)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 13.11.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 13.11.2017</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Inputs:</span>
+0012 <span class="comment">% -------</span>
+0013 <span class="comment">% d2Qu1,2         : A 6-by-12*12*12 matrix containing d2Qu/dq2 for each</span>
+0014 <span class="comment">%                   node.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Outputs:</span>
+0017 <span class="comment">% --------</span>
+0018 <span class="comment">% d2Qe            : A 12-by-18*18*18 matrix containing d2Qe/dq2 for each</span>
+0019 <span class="comment">%                   element.</span>
+0020 
+0021 d2Qe = zeros(12,18*18*18);
+0022 
+0023 <span class="comment">% Ref node - ref node.</span>
+0024 <span class="keyword">for</span> ii = 1:6
+0025    ic324 = 324*(ii-1);      <span class="comment">% Ref node DOFs.</span>
+0026    ic144 = 144*(ii-1);
+0027    <span class="keyword">for</span> jj = 1:6
+0028       jc18 = 18*(jj-1);     <span class="comment">% Ref node DOFs.</span>
+0029       jc12 = 12*(jj-1);
+0030       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(d2Qu1(:,ic144+jc12+[1:12]), <span class="keyword">...</span>
+0031                                       d2Qu2(:,ic144+jc12+[1:12]));
+0032    <span class="keyword">end</span>
+0033 <span class="keyword">end</span>
+0034 
+0035 <span class="comment">% Ref node - q1.</span>
+0036 <span class="keyword">for</span> ii = 1:6
+0037    ic324 = 324*(ii-1);      <span class="comment">% Ref node DOFs.</span>
+0038    ic144 = 144*(ii-1);
+0039    <span class="keyword">for</span> jj = 1:6
+0040       jc18 = 18*(jj+6-1);   <span class="comment">% q1 DOFs.</span>
+0041       jc12 = 12*(jj+6-1);
+0042       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(d2Qu1(:,ic144+jc12+[1:12]), <span class="keyword">...</span>
+0043                                       zeros(6,12));
+0044    <span class="keyword">end</span>
+0045 <span class="keyword">end</span>
+0046 
+0047 <span class="comment">% Ref node - q2.</span>
+0048 <span class="keyword">for</span> ii = 1:6
+0049    ic324 = 324*(ii-1);      <span class="comment">% Ref node DOFs.</span>
+0050    ic144 = 144*(ii-1);
+0051    <span class="keyword">for</span> jj = 1:6
+0052       jc18 = 18*(jj+12-1);  <span class="comment">% q2 DOFs.</span>
+0053       jc12 = 12*(jj+6-1);
+0054       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(zeros(6,12), <span class="keyword">...</span>
+0055                                       d2Qu2(:,ic144+jc12+[1:12]));
+0056    <span class="keyword">end</span>
+0057 <span class="keyword">end</span>
+0058 
+0059 <span class="comment">% q1 - Ref node.</span>
+0060 <span class="keyword">for</span> ii = 1:6
+0061    ic324 = 324*(ii+6-1);    <span class="comment">% q1 DOFs.</span>
+0062    ic144 = 144*(ii+6-1);
+0063    <span class="keyword">for</span> jj = 1:6
+0064       jc18 = 18*(jj-1);     <span class="comment">% Ref node DOFs.</span>
+0065       jc12 = 12*(jj-1);
+0066       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(d2Qu1(:,ic144+jc12+[1:12]), <span class="keyword">...</span>
+0067                                       zeros(6,12));
+0068    <span class="keyword">end</span>
+0069 <span class="keyword">end</span>
+0070 
+0071 <span class="comment">% q1 - q1.</span>
+0072 <span class="keyword">for</span> ii = 1:6
+0073    ic324 = 324*(ii+6-1);    <span class="comment">% q1 DOFs.</span>
+0074    ic144 = 144*(ii+6-1);
+0075    <span class="keyword">for</span> jj = 1:6
+0076       jc18 = 18*(jj+6-1);   <span class="comment">% q1 DOFs.</span>
+0077       jc12 = 12*(jj+6-1);
+0078       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(d2Qu1(:,ic144+jc12+[1:12]), <span class="keyword">...</span>
+0079                                       zeros(6,12));
+0080    <span class="keyword">end</span>
+0081 <span class="keyword">end</span>
+0082 
+0083 <span class="comment">% q1 - q2.  Zero.</span>
+0084 
+0085 <span class="comment">% q2 - Ref node.</span>
+0086 <span class="keyword">for</span> ii = 1:6
+0087    ic324 = 324*(ii+12-1);   <span class="comment">% q2 DOFs.</span>
+0088    ic144 = 144*(ii+6-1);
+0089    <span class="keyword">for</span> jj = 1:6
+0090       jc18 = 18*(jj-1);     <span class="comment">% Ref node DOFs.</span>
+0091       jc12 = 12*(jj-1);
+0092       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(zeros(6,12), <span class="keyword">...</span>
+0093                                       d2Qu2(:,ic144+jc12+[1:12]));
+0094    <span class="keyword">end</span>
+0095 <span class="keyword">end</span>
+0096 
+0097 <span class="comment">% q2 - q1.  Zero.</span>
+0098 
+0099 <span class="comment">% q2 - q2.</span>
+0100 <span class="keyword">for</span> ii = 1:6
+0101    ic324 = 324*(ii+12-1);   <span class="comment">% q2 DOFs.</span>
+0102    ic144 = 144*(ii+6-1);
+0103    <span class="keyword">for</span> jj = 1:6
+0104       jc18 = 18*(jj+12-1);  <span class="comment">% q2 DOFs.</span>
+0105       jc12 = 12*(jj+6-1);
+0106       d2Qe(:,ic324+jc18+[1:18]) = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>(zeros(6,12), <span class="keyword">...</span>
+0107                                       d2Qu2(:,ic144+jc12+[1:12]));
+0108    <span class="keyword">end</span>
+0109 <span class="keyword">end</span>
+0110 
+0111 d2Qe = sparse(d2Qe);
+0112 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of FADamping</title>
+  <meta name="keywords" content="FADamping">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Control</a> &gt; FADamping.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Control&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>FADamping
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,B,C,D] = FADamping (x,u,p,KFTab) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This function builds a fore-aft tower damping control loop.  This
+ is nominally based on an accelerometer measurement in the nacelle,
+ but for computational reasons (avoiding inverting the mass matrix)
+ this implementation takes the velocity directly from the
+ structural model.
+
+   States:              y vector:             u vector:
+   vmF    1             bF       1            vF      1
+   ivmF   2                                   betm    2
+   vdF    3
+
+ The input betm is used only as a scheduling variable.  It is named 
+ as if it is the blade pitch, but it doesn't need to be.  It just
+ needs to be defined consistently with the scheduling table KFTab.
+ An alternative scheduling variable would be the windspeed.
+
+ Version:        Changes:
+ --------        -------------
+ 02.02.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 02.02.2019      Derivatives verified with complex step.  (Using the
+                 form of gains1 that is suitable for complex step.)
+
+ Inputs:
+ -------
+ x               : 1: vmF   (m/s)     Measured nacelle FA velocity.
+                   2: ivmF  (m)       Integral of vmF.
+                   3: vdF   (m/s)     Bandpass filtered velocity.
+ u               : 1: vF    (m/s)     Nacelle FA velocity.
+                   2: betm  (rad)     blade pitch angle.
+ p               : 1: aF    (rad/s)   Frequency in rad/s.
+                   2: zetaF (-)       Damping ratio.
+                   3: azF   (rad/s)   Numerator frequency of phase shift.
+                   4: apF   (rad/s)   Denominator frequency of phase shift.
+ KFTab           : Table of KF(beta), scheduled gains.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a>	Utilize Matlab/Octave spline interpolation capability.  "tab" is then</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,B,C,D] = FADamping (x,u,p,KFTab)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This function builds a fore-aft tower damping control loop.  This</span>
+0004 <span class="comment">% is nominally based on an accelerometer measurement in the nacelle,</span>
+0005 <span class="comment">% but for computational reasons (avoiding inverting the mass matrix)</span>
+0006 <span class="comment">% this implementation takes the velocity directly from the</span>
+0007 <span class="comment">% structural model.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   States:              y vector:             u vector:</span>
+0010 <span class="comment">%   vmF    1             bF       1            vF      1</span>
+0011 <span class="comment">%   ivmF   2                                   betm    2</span>
+0012 <span class="comment">%   vdF    3</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% The input betm is used only as a scheduling variable.  It is named</span>
+0015 <span class="comment">% as if it is the blade pitch, but it doesn't need to be.  It just</span>
+0016 <span class="comment">% needs to be defined consistently with the scheduling table KFTab.</span>
+0017 <span class="comment">% An alternative scheduling variable would be the windspeed.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Changes:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 02.02.2019      Original code.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Verification:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 02.02.2019      Derivatives verified with complex step.  (Using the</span>
+0026 <span class="comment">%                 form of gains1 that is suitable for complex step.)</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Inputs:</span>
+0029 <span class="comment">% -------</span>
+0030 <span class="comment">% x               : 1: vmF   (m/s)     Measured nacelle FA velocity.</span>
+0031 <span class="comment">%                   2: ivmF  (m)       Integral of vmF.</span>
+0032 <span class="comment">%                   3: vdF   (m/s)     Bandpass filtered velocity.</span>
+0033 <span class="comment">% u               : 1: vF    (m/s)     Nacelle FA velocity.</span>
+0034 <span class="comment">%                   2: betm  (rad)     blade pitch angle.</span>
+0035 <span class="comment">% p               : 1: aF    (rad/s)   Frequency in rad/s.</span>
+0036 <span class="comment">%                   2: zetaF (-)       Damping ratio.</span>
+0037 <span class="comment">%                   3: azF   (rad/s)   Numerator frequency of phase shift.</span>
+0038 <span class="comment">%                   4: apF   (rad/s)   Denominator frequency of phase shift.</span>
+0039 <span class="comment">% KFTab           : Table of KF(beta), scheduled gains.</span>
+0040 
+0041 Nx = 3;
+0042 Nu = 2;
+0043 Ny = 1;
+0044 
+0045 vmF   = x(1);
+0046 ivmF  = x(2);
+0047 vdF   = x(3);
+0048 vF    = u(1);
+0049 betm  = u(2);
+0050 aF    = p(1);
+0051 zetaF = p(2);
+0052 azF   = p(3);
+0053 apF   = p(4);
+0054 
+0055 [KF,dKF] = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (betm,KFTab);
+0056 
+0057 A  = sparse(Nx,Nx);
+0058 B  = sparse(Nx,Nu);
+0059 C  = sparse(Ny,Nx);
+0060 D  = sparse(Ny,Nu);
+0061 
+0062 tza = 2*zetaF*aF;
+0063 apaz = apF/azF;
+0064 a2 = aF^2;
+0065 
+0066 dxdt = [-2*zetaF*aF*vmF - (aF^2)*ivmF + 2*zetaF*aF*vF; <span class="keyword">...</span>
+0067         vmF;                                           <span class="keyword">...</span>
+0068         (-tza*apaz + apF)*vmF - apaz*a2*ivmF - apF*vdF + tza*apaz*vF];
+0069 yout = KF*vdF;
+0070 
+0071 <span class="comment">% divmF/dt = vmF.</span>
+0072 A(2,1) = 1;
+0073 
+0074 <span class="comment">% dvmF/dt = -2*zetaF*aF*vmF - (aF^2)*ivmF + 2*zetaF*aF*vF.</span>
+0075 A(1,1) = -tza;
+0076 A(1,2) = -a2;
+0077 B(1,1) =  tza;
+0078 
+0079 <span class="comment">% dvdF/dt = (-tza*apaz + ap)*vmF - apaz*a2*ivmF - ap*vdF</span>
+0080 <span class="comment">%         + tza*apaz*vF.</span>
+0081 A(3,1) = -tza*apaz + apF;
+0082 A(3,2) = -apaz*a2;
+0083 A(3,3) = -apF;
+0084 B(3,1) =  tza*apaz;
+0085 
+0086 <span class="comment">% beta = KF*vdF, since +beta means -Ft, and we want Ft to go down</span>
+0087 <span class="comment">% if vF is positive (moving downwind).</span>
+0088 C(1,3) = KF;
+0089 D(1,2) = dKF*vdF;
+0090 
+0091 <span class="comment">% db/dt = KF*dvdF/dt.</span>
+0092 <span class="comment">%C(2,:) = A(3,:)*KF;</span>
+0093 <span class="comment">%D(2,1) = B(3,1)*KF;</span>
+0094 <span class="comment">%D(2,2) = dKF*dxdt(3);</span>
+0095 
+0096 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

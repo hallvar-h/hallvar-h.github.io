@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of qFromx</title>
+  <meta name="keywords" content="qFromx">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; qFromx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>qFromx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the full nodal DOF vector and its rate of change based on
+ the state input.
+
+   States:           y vector:
+   eta       N       q         1:Ndj
+   deta/dt   N       dqdt  Ndj+1:2*Ndj
+
+ Version:        Changes:
+ --------        -------------
+ 16.02.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 16.02.2018      Checked some sample cases.  Checked that constraint
+                 equations are satisfied to high precision.
+
+ Inputs:
+ -------
+ x               : States, eta, deta/dt.
+ P               : Undeformed nodal positions.
+ shape           : There are two options for the shape matrix.  One,
+                   it can be the body modes, an Nret-by-Nmod matrix.
+                   Two, it can be a global state-space mode shape
+                   matrix, 2*Nret-by-Nmod.  Use speye(Nret) if there
+                   is no modal reduction.
+ ret,slv         : List of retained and slave DOFs.
+ qg              : Initial estimate of qs.
+
+ Outputs:
+ --------
+ q,dqdt          : Nodal DOFs.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a>	function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="initialDOFVelocity.html" class="code" title="function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)">initialDOFVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the full nodal DOF vector and its rate of change based on</span>
+0004 <span class="comment">% the state input.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:</span>
+0007 <span class="comment">%   eta       N       q         1:Ndj</span>
+0008 <span class="comment">%   deta/dt   N       dqdt  Ndj+1:2*Ndj</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 16.02.2018      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 16.02.2018      Checked some sample cases.  Checked that constraint</span>
+0017 <span class="comment">%                 equations are satisfied to high precision.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Inputs:</span>
+0020 <span class="comment">% -------</span>
+0021 <span class="comment">% x               : States, eta, deta/dt.</span>
+0022 <span class="comment">% P               : Undeformed nodal positions.</span>
+0023 <span class="comment">% shape           : There are two options for the shape matrix.  One,</span>
+0024 <span class="comment">%                   it can be the body modes, an Nret-by-Nmod matrix.</span>
+0025 <span class="comment">%                   Two, it can be a global state-space mode shape</span>
+0026 <span class="comment">%                   matrix, 2*Nret-by-Nmod.  Use speye(Nret) if there</span>
+0027 <span class="comment">%                   is no modal reduction.</span>
+0028 <span class="comment">% ret,slv         : List of retained and slave DOFs.</span>
+0029 <span class="comment">% qg              : Initial estimate of qs.</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">% Outputs:</span>
+0032 <span class="comment">% --------</span>
+0033 <span class="comment">% q,dqdt          : Nodal DOFs.</span>
+0034 
+0035 <span class="comment">%'qFromx'</span>
+0036 
+0037 N    = size(shape,2);
+0038 Nsh  = size(shape,1);
+0039 Nret = size(ret,1);
+0040 Nslv = size(slv,1);
+0041 Ndj  = Nret + Nslv;
+0042 
+0043 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0044 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0045 
+0046 q    = zeros(Ndj,1);
+0047 dqdt = zeros(Ndj,1);
+0048 
+0049 <span class="keyword">if</span> (Nsh == Nret)
+0050    <span class="comment">% shape applies independently to position and velocity components</span>
+0051    <span class="comment">% of x, to give retained q, dqdt DOFs.</span>
+0052    q(ret) = shape*x(1:N);
+0053    dqdt(ret) = shape*x(N+[1:N]);
+0054 <span class="keyword">elseif</span> (Nsh == 2*Nret)
+0055    <span class="comment">% shape multiplies x to give retained [q;dqdt] DOFs.</span>
+0056    qdq = shape*x;
+0057    q(ret) = qdq(1:Nret);
+0058    dqdt(ret) = qdq(Nret+1:2*Nret);
+0059 <span class="keyword">end</span>
+0060 qs = qg;
+0061 
+0062 <span class="comment">% Let the constraint equations be written C(q) = 0, with first variation</span>
+0063 <span class="comment">% L(q) dq = 0.  The task is to find qs such that C(q) = 0 is satisfied.</span>
+0064 <span class="comment">% This can be accomplished by Newton's method, -L(q0) dq = C(q0).</span>
+0065 <span class="comment">% [Should add some robustness via the Press et al. algorithm.]</span>
+0066 bta   = 1;
+0067 cnv   = eps^(0.75);  <span class="comment">% Has to be below complex step precision, otherwise</span>
+0068 Ns    = 100;         <span class="comment">% no iteration occurs in the complex step case...</span>
+0069 conv  = 0;           <span class="comment">% [Perhaps fixed with iter &lt;= 1 criterion.]</span>
+0070 iter  = 0;
+0071 Niter = 0;
+0072 litmax = 20;
+0073 Rval  = 1;
+0074 lam = 1;
+0075 <span class="keyword">while</span> ((iter &lt;= 1) || ((real(Rval) &gt; cnv) &amp;&amp; (iter &lt;= Ns)))
+0076    iter   = iter + 1;
+0077 
+0078    <span class="comment">% Compute the tangent function at the latest point.</span>
+0079    q(slv) = qs;
+0080    [Lambda,L,C,jnkret,jnkslv] = <a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a> (q,P,Tb_h,idofs,idofm);
+0081    <span class="keyword">if</span> (iter == 1)
+0082       Rval = max(abs(C));
+0083    <span class="keyword">end</span>
+0084    Ls     = L(:,slv);
+0085    dqs    = -Ls\C;
+0086    lflg = 0;
+0087    liter = 0;
+0088    <span class="keyword">if</span> (lam &lt;= 0.5)
+0089       lam = 2*lam;
+0090    <span class="keyword">else</span>
+0091       lam = 1;
+0092    <span class="keyword">end</span>
+0093    <span class="keyword">while</span> ((lflg == 0) &amp;&amp; (liter &lt; litmax))
+0094       liter = liter + 1;
+0095       qs1 = qs + bta*lam*dqs;
+0096       q1 = q;
+0097       q1(slv) = qs1;
+0098       [Lambda,L,C,jnkret,jnkslv] = <a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a> (q1,P,Tb_h,idofs,idofm);
+0099 <span class="comment">%     R1 = max(abs(real(C)));  % Does not work with complex step.</span>
+0100       R1 = max(abs(C));        <span class="comment">% Works with complex step.</span>
+0101       <span class="keyword">if</span> (real(R1) &lt; real(Rval))
+0102          <span class="comment">% OK!  Prepare for the next iteration.</span>
+0103          lflg = 1;
+0104          Rval = R1;
+0105          qs = qs1;
+0106       <span class="keyword">else</span>
+0107          <span class="comment">% Backtrack.</span>
+0108          lam = 0.5*lam;
+0109          <span class="keyword">if</span> (liter == litmax)
+0110             [iter R1 Rval]
+0111             printf(<span class="string">'Warning, qFromx proceeding without lambda convergence.\n'</span>);
+0112             fflush(stdout);
+0113             lflg = 1;
+0114             Rval = R1;
+0115             qs = qs1;
+0116          <span class="keyword">end</span>
+0117       <span class="keyword">end</span>
+0118    <span class="keyword">end</span>
+0119 <span class="keyword">end</span>
+0120 
+0121 <span class="comment">% Assemble dq/dt slave DOFs.</span>
+0122 mLsL = Lambda(Nret+[1:Nslv],:);
+0123 dqdt(slv) = mLsL*dqdt(ret);
+0124 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

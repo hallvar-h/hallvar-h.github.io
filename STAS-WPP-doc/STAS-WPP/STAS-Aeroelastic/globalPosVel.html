@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of globalPosVel</title>
+  <meta name="keywords" content="globalPosVel">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; globalPosVel.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>globalPosVel
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xng,vng,Dy] = globalPosVel (s,idofs,qq,PP,dqqdt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Linearized global positions and velocities for all the nodes in the
+ structure.
+
+   States:           y vector:         u vector:
+                     q
+                     dq/dt
+
+ Version:        Changes:
+ --------        -------------
+ 25.01.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.01.2018      Checked complex step gradients using xng,vng outputs.
+
+ Inputs:
+ -------
+ qq,dqq/dt       : Unconstrained, un-reduced nodal DOFs.
+ PP              : Undeformed pos,rot of nodes.
+
+ Outputs:
+ --------
+ xng,vng         : Nodal positions and velocities at the input conditions.
+ Dy              : State matrix.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a>	</li>
+<li><a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xng,vng,Dy] = globalPosVel (s,idofs,qq,PP,dqqdt)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Linearized global positions and velocities for all the nodes in the</span>
+0004 <span class="comment">% structure.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:         u vector:</span>
+0007 <span class="comment">%                     q</span>
+0008 <span class="comment">%                     dq/dt</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 25.01.2018      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 25.01.2018      Checked complex step gradients using xng,vng outputs.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% qq,dqq/dt       : Unconstrained, un-reduced nodal DOFs.</span>
+0021 <span class="comment">% PP              : Undeformed pos,rot of nodes.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% xng,vng         : Nodal positions and velocities at the input conditions.</span>
+0026 <span class="comment">% Dy              : State matrix.</span>
+0027 
+0028 Ndof = size(qq,1);
+0029 Nn = Ndof/6;
+0030 
+0031 Dy = spalloc (3*Nn+Ndof,2*Ndof,round(0.05*Ndof*Ndof));
+0032 xng = zeros(3*Nn,1);
+0033 vng = zeros(Ndof,1);
+0034 
+0035 ix = 0;
+0036 <span class="keyword">for</span> ibod = 1:7
+0037 
+0038    <span class="keyword">if</span> (ibod == 1)
+0039       idref = idofs(1);
+0040       Nnod  = s.foundation.Nnod;
+0041    <span class="keyword">elseif</span> (ibod == 2)
+0042       idref = idofs(2);
+0043       Nnod  = s.tower.Nnod;
+0044    <span class="keyword">elseif</span> (ibod == 3)
+0045       idref = idofs(3);
+0046       Nnod  = s.nacelle.Nnod;
+0047    <span class="keyword">elseif</span> (ibod == 4)
+0048       idref = idofs(4);
+0049       Nnod   = s.driveshaft.Nnod;
+0050    <span class="keyword">elseif</span> (ibod == 5)
+0051       idref = idofs(6);
+0052       Nnod   = s.blade(1).Nnod;
+0053    <span class="keyword">elseif</span> (ibod == 6)
+0054       idref = idofs(7);
+0055       Nnod   = s.blade(2).Nnod;
+0056    <span class="keyword">elseif</span> (ibod == 7)
+0057       idref = idofs(8);
+0058       Nnod   = s.blade(3).Nnod;
+0059    <span class="keyword">end</span>
+0060 
+0061    <span class="keyword">for</span> inod = 1:Nnod
+0062 
+0063       rdof = idref;
+0064       mdof = idref + 6*(inod-1);
+0065 
+0066       qB    = qq(rdof+[1:6]);
+0067       PB    = PP(rdof+[1:6]);
+0068       dqBdt = dqqdt(rdof+[1:6]);
+0069 
+0070       <span class="keyword">if</span> (mdof == rdof)
+0071          qn    = zeros(6,1);
+0072          Pn    = zeros(6,1);
+0073          dqndt = zeros(6,1);
+0074          Pn(4:6) = PP(rdof+6+[4:6]);  <span class="comment">% Consistent with other functions.</span>
+0075       <span class="keyword">else</span>
+0076          qn    = qq(mdof+[1:6]);
+0077          Pn    = PP(mdof+[1:6]);
+0078          dqndt = dqqdt(mdof+[1:6]);
+0079       <span class="keyword">end</span>
+0080 
+0081       [xn,ddy] = <a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a> (qB,PB,qn,Pn);
+0082       xng(ix+[1:3]) = xn;
+0083       Dy(ix+[1:3],rdof+[1:6]) = ddy(:,1:6);
+0084       <span class="keyword">if</span> (mdof ~= rdof)
+0085          Dy(ix+[1:3],mdof+[1:6]) = ddy(:,7:12);
+0086       <span class="keyword">end</span>
+0087 
+0088       [vn,ddy] = <a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,dqndt,dqBdt);
+0089       vng(mdof+[1:6]) = vn;
+0090       Dy(3*Nn+mdof+[1:6],rdof+[1:6])      = ddy(:,1:6);
+0091       Dy(3*Nn+mdof+[1:6],Ndof+rdof+[1:6]) = ddy(:,13:18);
+0092 
+0093       <span class="keyword">if</span> (mdof ~= rdof)
+0094          Dy(3*Nn+mdof+[1:6],mdof+[1:6])      = ddy(:,7:12);
+0095          Dy(3*Nn+mdof+[1:6],Ndof+mdof+[1:6]) = ddy(:,19:24);
+0096       <span class="keyword">end</span>
+0097 
+0098       ix = ix + 3;
+0099 
+0100    <span class="keyword">end</span>
+0101 
+0102 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

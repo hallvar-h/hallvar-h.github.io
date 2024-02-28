@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of jointTorque</title>
+  <meta name="keywords" content="jointTorque">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; jointTorque.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>jointTorque
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Mm,Dy] = jointTorque (qm,Pm,Tjm,Mj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Apply an actuator torque at a joint, and the reaction torque at
+ the adjacent master node.
+
+   States:           y vector:         u vector:
+                     qm
+                     Mj
+
+ Version:        Changes:
+ --------        -------------
+ 27.02.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 27.02.2018      
+
+ Inputs:
+ ------- 
+ qm,Pm           : Master node deformations and undeformed
+                   positions.
+ Tjm             : Transform from joint to master node coordinates,
+                   including the joint rotation.
+ Mj              : Joint moment in body reference coordinates.
+
+ Outputs:
+ --------
+ Mm              : Joint moment reaction at master node.
+ Dy              : Linearization.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Mm,Dy] = jointTorque (qm,Pm,Tjm,Mj)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Apply an actuator torque at a joint, and the reaction torque at</span>
+0004 <span class="comment">% the adjacent master node.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:         u vector:</span>
+0007 <span class="comment">%                     qm</span>
+0008 <span class="comment">%                     Mj</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 27.02.2018      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 27.02.2018</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% qm,Pm           : Master node deformations and undeformed</span>
+0021 <span class="comment">%                   positions.</span>
+0022 <span class="comment">% Tjm             : Transform from joint to master node coordinates,</span>
+0023 <span class="comment">%                   including the joint rotation.</span>
+0024 <span class="comment">% Mj              : Joint moment in body reference coordinates.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">% Mm              : Joint moment reaction at master node.</span>
+0029 <span class="comment">% Dy              : Linearization.</span>
+0030 
+0031 Dy = zeros(3,9);
+0032 
+0033 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qm(4:6));
+0034 Tm0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pm(4:6));
+0035 
+0036 T = Tm0B*Tmm0*Tjm;
+0037 Mm = T*Mj;
+0038 
+0039 Dy(:,7:9) = T;
+0040 
+0041 <span class="keyword">for</span> jj = 1:3
+0042    jc3 = 3*(jj-1);
+0043    Dy(:,jj+3) = Tm0B*dTmm0(:,jc3+[1:3])*Tjm*Mj;
+0044 <span class="keyword">end</span>
+0045 
+0046 <span class="comment">% Assumed that the joint is aligned such that the joint moment</span>
+0047 <span class="comment">% does not vary with the joint angle, hence we don't need to</span>
+0048 <span class="comment">% consider derivatives of Tjm.</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

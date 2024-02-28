@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of cluster</title>
+  <meta name="keywords" content="cluster">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; cluster.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>cluster
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [d,ind] = cluster (x,nn) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Find the nearest neighbors.
+
+ Version:        Changes:
+ --------        -------------
+ 30.06.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 30.06.2020      Tested on simple cases.
+
+ Inputs:
+ -------
+ x               : Positions, Ndim-by-Np.
+ nn              : Number of neighbors to return.
+
+ Outputs:
+ --------
+ d               : Matrix of distances, nn-by-Np.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="TCD42Lin.html" class="code" title="">TCD42Lin</a>	y vector:        u vector:</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [d,ind] = cluster (x,nn)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Find the nearest neighbors.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Version:        Changes:</span>
+0006 <span class="comment">% --------        -------------</span>
+0007 <span class="comment">% 30.06.2020      Original code.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Verification:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 30.06.2020      Tested on simple cases.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Inputs:</span>
+0014 <span class="comment">% -------</span>
+0015 <span class="comment">% x               : Positions, Ndim-by-Np.</span>
+0016 <span class="comment">% nn              : Number of neighbors to return.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Outputs:</span>
+0019 <span class="comment">% --------</span>
+0020 <span class="comment">% d               : Matrix of distances, nn-by-Np.</span>
+0021 
+0022 <span class="comment">% This is an inefficient algorithm when it comes to storage and</span>
+0023 <span class="comment">% operations, but it is efficient to program, and it is vectorized</span>
+0024 <span class="comment">% in a way that is intended for small dimensions but potentially</span>
+0025 <span class="comment">% large numbers of points.</span>
+0026 
+0027 Ndim = size(x,1);
+0028 Np = size(x,2);
+0029 
+0030 dx = zeros(Np,Np);
+0031 <span class="keyword">for</span> idim = 1:Ndim
+0032    dx = dx + (x(idim,:).' - x(idim,:)).^2;
+0033 <span class="keyword">end</span>
+0034 dx = sqrt(dx);
+0035 [s,k] = sort(dx);
+0036 d = s(1:nn,:);
+0037 ind = k(1:nn,:);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of assembleElements</title>
+  <meta name="keywords" content="assembleElements">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; assembleElements.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>assembleElements
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] =assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Assemble the structural matrices.
+
+ Version:        Changes:
+ --------        -------------
+ 15.01.2020      Original code, a reformulation of 
+                 assembleElementsLin/NL.  Added gravitational
+                 vector.
+
+ Version:        Verification:
+ --------        -------------
+ 15.01.2020      Returns the same results as assembleElementsLin,
+                 discounting gravity.
+
+ Inputs:
+ -------
+ linFlag         : = 1 for linearization.
+ s               : Wind turbine data structure.
+ idofs           : DOFs references of slave nodes.
+ qq,dqqdt,d2qqdt2: Displacements, velocities, accelerations.
+ Pn              : Undeformed nodal positions.
+ grav            : Gravitational acceleration vector.
+
+ Outputs:
+ --------
+ M,G,H,K         : Assembled mass and gyroscopic matrix, centrifugal
+                   and stiffness vectors.
+ C               : Damping matrix.
+ dM...dK         : dM/dq*d2q/dt2 etc.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a>	</li>
+<li><a href="buildElement.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =buildElement (linFlag,mes,kes,dqdt,d2qdt2,Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec)">buildElement</a>	</li>
+<li><a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+<li><a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a>	</li>
+<li><a href="dampingC.html" class="code" title="function [C,K] = dampingC (linFlag,ces,dqdt,dmu,d2mu)">dampingC</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] = </a><span class="keyword">...</span>
+0002                assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Assemble the structural matrices.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 15.01.2020      Original code, a reformulation of</span>
+0009 <span class="comment">%                 assembleElementsLin/NL.  Added gravitational</span>
+0010 <span class="comment">%                 vector.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 15.01.2020      Returns the same results as assembleElementsLin,</span>
+0015 <span class="comment">%                 discounting gravity.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% linFlag         : = 1 for linearization.</span>
+0020 <span class="comment">% s               : Wind turbine data structure.</span>
+0021 <span class="comment">% idofs           : DOFs references of slave nodes.</span>
+0022 <span class="comment">% qq,dqqdt,d2qqdt2: Displacements, velocities, accelerations.</span>
+0023 <span class="comment">% Pn              : Undeformed nodal positions.</span>
+0024 <span class="comment">% grav            : Gravitational acceleration vector.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">% M,G,H,K         : Assembled mass and gyroscopic matrix, centrifugal</span>
+0029 <span class="comment">%                   and stiffness vectors.</span>
+0030 <span class="comment">% C               : Damping matrix.</span>
+0031 <span class="comment">% dM...dK         : dM/dq*d2q/dt2 etc.</span>
+0032 
+0033 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0034 
+0035 Ndof = size(qq,1);  <span class="comment">% May include joint angles etc appended to DOFs.</span>
+0036                     <span class="comment">% These extra DOFs will remain zero in the matrices.</span>
+0037 
+0038 <span class="comment">% Could make these full to trade memory for computation time, but</span>
+0039 <span class="comment">% the gains seemed negligible.</span>
+0040 M   = sparse(Ndof,Ndof);  
+0041 G   = sparse(Ndof,Ndof);
+0042 H   = zeros(Ndof,1);
+0043 K   = zeros(Ndof,1);
+0044 C   = sparse(Ndof,Ndof);
+0045 
+0046 dM  = sparse(Ndof,Ndof);
+0047 dMg = sparse(Ndof,Ndof);
+0048 dG  = sparse(Ndof,Ndof);
+0049 dGd = sparse(Ndof,Ndof);
+0050 dH  = sparse(Ndof,Ndof);
+0051 dHd = sparse(Ndof,Ndof);
+0052 dC  = sparse(Ndof,Ndof);
+0053 dK  = sparse(Ndof,Ndof);
+0054 
+0055 <span class="keyword">for</span> ibod = 1:7
+0056 
+0057    <span class="keyword">if</span> (ibod == 1)
+0058       idref = idofs(1);
+0059       Nel   = s.foundation.Nel;
+0060       conns = s.foundation.conn;
+0061       mes   = s.foundation.me_s;
+0062       kes   = s.foundation.ke_s;
+0063    <span class="keyword">elseif</span> (ibod == 2)
+0064       idref = idofs(2);
+0065       Nel   = s.tower.Nel;
+0066       conns = s.tower.conn;
+0067       mes   = s.tower.me_s;
+0068       kes   = s.tower.ke_s;
+0069    <span class="keyword">elseif</span> (ibod == 3)
+0070       idref = idofs(3);
+0071       Nel   = s.nacelle.Nel;
+0072       conns = s.nacelle.conn;
+0073       mes   = s.nacelle.me_s;
+0074       kes   = s.nacelle.ke_s;
+0075    <span class="keyword">elseif</span> (ibod == 4)
+0076       idref = idofs(4);
+0077       Nel   = s.driveshaft.Nel;
+0078       conns = s.driveshaft.conn;
+0079       mes   = s.driveshaft.me_s;
+0080       kes   = s.driveshaft.ke_s;
+0081    <span class="keyword">elseif</span> (ibod == 5)
+0082       idref = idofs(6);
+0083       Nel   = s.blade(1).Nel;
+0084       conns = s.blade(1).conn;
+0085       mes   = s.blade(1).me_s;
+0086       kes   = s.blade(1).ke_s;
+0087    <span class="keyword">elseif</span> (ibod == 6)
+0088       idref = idofs(7);
+0089       Nel   = s.blade(2).Nel;
+0090       conns = s.blade(2).conn;
+0091       mes   = s.blade(2).me_s;
+0092       kes   = s.blade(2).ke_s;
+0093    <span class="keyword">elseif</span> (ibod == 7)
+0094       idref = idofs(8);
+0095       Nel   = s.blade(3).Nel;
+0096       conns = s.blade(3).conn;
+0097       mes   = s.blade(3).me_s;
+0098       kes   = s.blade(3).ke_s;
+0099    <span class="keyword">end</span>
+0100 
+0101    <span class="keyword">for</span> iel = 1:Nel
+0102 
+0103       ic12 = 12*(iel-1);
+0104 
+0105       conn  = conns(:,iel);
+0106       rdof  = idref + 6*(conn(1)-1);
+0107       n1dof = idref + 6*(conn(2)-1);
+0108       n2dof = idref + 6*(conn(3)-1);
+0109 
+0110       qB  = qq(rdof+[1:6]);
+0111       qn1 = qq(n1dof+[1:6]);
+0112       qn2 = qq(n2dof+[1:6]);
+0113       PB  = Pn(rdof+[1:6]);
+0114       Pn1 = Pn(n1dof+[1:6]);
+0115       Pn2 = Pn(n2dof+[1:6]);
+0116 
+0117       dqdt = dqqdt([rdof+[1:6] n1dof+[1:6] n2dof+[1:6]]);
+0118       d2qdt2 = d2qqdt2([rdof+[1:6] n1dof+[1:6] n2dof+[1:6]]);
+0119       gvec = [grav;zeros(15,1)];
+0120 
+0121       <span class="keyword">if</span> (n1dof == rdof)
+0122 
+0123          qn1 = zeros(6,1);
+0124          dqdt(7:12) = zeros(6,1);
+0125          d2qdt2(7:12) = zeros(6,1);
+0126          Pn1(1:3) = zeros(3,1);
+0127 
+0128          <span class="comment">% For purposes of computing Qu's, give the reference node the</span>
+0129          <span class="comment">% same undeformed orientation as the second node.</span>
+0130          Pn1(4:6) = Pn(n1dof+6+[4:6]);  
+0131 
+0132       <span class="keyword">end</span>
+0133 
+0134       <span class="keyword">if</span> (n2dof == rdof)
+0135          qn2 = zeros(6,1);
+0136          dqdt(13:18) = zeros(6,1);
+0137          d2qdt2(13:18) = zeros(6,1);
+0138          Pn2(1:3) = zeros(3,1);
+0139          Pn2(4:6) = Pn(n2dof+6+[4:6]);
+0140       <span class="keyword">end</span>
+0141 
+0142       <span class="keyword">if</span> (iel &gt; 1)
+0143          <span class="keyword">if</span> (conns(3,iel-1) == conn(2))
+0144             <span class="comment">% Avoid recomputing these nodal matrices where practical.</span>
+0145             Qu1   = Qu2;
+0146             dQu1  = dQu2;
+0147             d2Qu1 = d2Qu2;
+0148             Qu2   =   <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn2,qB,Pn2,PB);
+0149             dQu2  =   <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn2,qB,Pn2,PB);
+0150             <span class="keyword">if</span> (linFlag == 1)
+0151                d2Qu2 = <a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a> (qn2,qB,Pn2,PB);
+0152             <span class="keyword">end</span>
+0153          <span class="keyword">else</span>
+0154             Qu1   =   <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn1,qB,Pn1,PB);
+0155             Qu2   =   <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn2,qB,Pn2,PB);
+0156             dQu1  =   <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn1,qB,Pn1,PB);
+0157             dQu2  =   <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn2,qB,Pn2,PB);
+0158             <span class="keyword">if</span> (linFlag == 1)
+0159                d2Qu1 = <a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a> (qn1,qB,Pn1,PB);
+0160                d2Qu2 = <a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a> (qn2,qB,Pn2,PB);
+0161             <span class="keyword">end</span>
+0162          <span class="keyword">end</span>
+0163       <span class="keyword">else</span>
+0164          Qu1   =   <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn1,qB,Pn1,PB);
+0165          Qu2   =   <a href="Qunod.html" class="code" title="function Q = Qunod (qn,qB,Pn,PB)">Qunod</a> (qn2,qB,Pn2,PB);
+0166          dQu1  =   <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn1,qB,Pn1,PB);
+0167          dQu2  =   <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn2,qB,Pn2,PB);
+0168          <span class="keyword">if</span> (linFlag == 1)
+0169             d2Qu1 = <a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a> (qn1,qB,Pn1,PB);
+0170             d2Qu2 = <a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a> (qn2,qB,Pn2,PB);
+0171          <span class="keyword">end</span>
+0172       <span class="keyword">end</span>
+0173 
+0174       <span class="keyword">if</span> (linFlag ~= 1)
+0175          d2Qu1 = sparse(6,12*12*12);
+0176          d2Qu2 = sparse(6,12*12*12);
+0177       <span class="keyword">end</span>
+0178 
+0179       [mu,dmu,d2mu,TsB,dTsB,d2TsB] = <span class="keyword">...</span>
+0180                    <a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a> (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);
+0181 
+0182       [mm,dmm,dmmg,gg,dgg,dggd,hv,dhv,dhvd,kv,dkv] =              <span class="keyword">...</span>
+0183               <a href="buildElement.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =buildElement (linFlag,mes,kes,dqdt,d2qdt2,Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec)">buildElement</a> (linFlag,mes(:,ic12+[1:12]),      <span class="keyword">...</span>
+0184                             kes(:,ic12+[1:12]),              <span class="keyword">...</span>
+0185                             dqdt,d2qdt2,                     <span class="keyword">...</span>
+0186                             Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,   <span class="keyword">...</span>
+0187                             mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec);
+0188 
+0189       [cc,dcc] = <a href="dampingC.html" class="code" title="function [C,K] = dampingC (linFlag,ces,dqdt,dmu,d2mu)">dampingC</a> (linFlag,s.adamp*mes(:,ic12+[1:12])  <span class="keyword">...</span>
+0190                +           s.bdamp*kes(:,ic12+[1:12]),         <span class="keyword">...</span>
+0191                            dqdt,dmu,d2mu);
+0192 
+0193       M(rdof+[1:6],rdof+[1:6])   = M(rdof+[1:6],rdof+[1:6])   + mm(1:6,1:6);
+0194       G(rdof+[1:6],rdof+[1:6])   = G(rdof+[1:6],rdof+[1:6])   + gg(1:6,1:6);
+0195       H(rdof+[1:6])              = H(rdof+[1:6])              + hv(1:6);
+0196       C(rdof+[1:6],rdof+[1:6])   = C(rdof+[1:6],rdof+[1:6])   + cc(1:6,1:6);
+0197       K(rdof+[1:6])              = K(rdof+[1:6])              + kv(1:6);
+0198 
+0199       <span class="keyword">if</span> (linFlag == 1)
+0200          dM(rdof+[1:6],rdof+[1:6])  = dM(rdof+[1:6],rdof+[1:6])  + dmm(1:6,1:6);
+0201          dMg(rdof+[1:6],rdof+[1:6]) = dMg(rdof+[1:6],rdof+[1:6]) + dmmg(1:6,1:6);
+0202          dG(rdof+[1:6],rdof+[1:6])  = dG(rdof+[1:6],rdof+[1:6])  + dgg(1:6,1:6);
+0203          dGd(rdof+[1:6],rdof+[1:6]) = dGd(rdof+[1:6],rdof+[1:6]) + dggd(1:6,1:6);
+0204          dH(rdof+[1:6],rdof+[1:6])  = dH(rdof+[1:6],rdof+[1:6])  + dhv(1:6,1:6);
+0205          dHd(rdof+[1:6],rdof+[1:6]) = dHd(rdof+[1:6],rdof+[1:6]) + dhvd(1:6,1:6);
+0206          dC(rdof+[1:6],rdof+[1:6])  = dC(rdof+[1:6],rdof+[1:6])  + dcc(1:6,1:6);
+0207          dK(rdof+[1:6],rdof+[1:6])  = dK(rdof+[1:6],rdof+[1:6])  + dkv(1:6,1:6);
+0208       <span class="keyword">end</span>
+0209 
+0210       <span class="keyword">if</span> (n1dof ~= rdof)
+0211 
+0212          <span class="comment">% If node 1 is the reference node, then these nodal DOFs represent the</span>
+0213          <span class="comment">% pose of the body in the global coordinate system, which is different</span>
+0214          <span class="comment">% than the other nodal DOFs, representing the displacement and</span>
+0215          <span class="comment">% transformation matrix T_n^n0 with respect to the undeformed shape.</span>
+0216          <span class="comment">% That means that the n1dof entries do not exist, and should not be</span>
+0217          <span class="comment">% assigned.  Otherwise, assign them here.</span>
+0218 
+0219          H(n1dof+[1:6]) = H(n1dof+[1:6]) + hv(7:12);
+0220          K(n1dof+[1:6]) = K(n1dof+[1:6]) + kv(7:12);
+0221 
+0222          M(rdof+[1:6],n1dof+[1:6])   = M(rdof+[1:6],n1dof+[1:6])   + mm(1:6,7:12);
+0223          G(rdof+[1:6],n1dof+[1:6])   = G(rdof+[1:6],n1dof+[1:6])   + gg(1:6,7:12);
+0224          C(rdof+[1:6],n1dof+[1:6])   = C(rdof+[1:6],n1dof+[1:6])   + cc(1:6,7:12);
+0225          M(n1dof+[1:6],rdof+[1:6])   = M(n1dof+[1:6],rdof+[1:6])   + mm(7:12,1:6);
+0226          G(n1dof+[1:6],rdof+[1:6])   = G(n1dof+[1:6],rdof+[1:6])   + gg(7:12,1:6);
+0227          C(n1dof+[1:6],rdof+[1:6])   = C(n1dof+[1:6],rdof+[1:6])   + cc(7:12,1:6);
+0228          M(n1dof+[1:6],n1dof+[1:6])  = M(n1dof+[1:6],n1dof+[1:6])  + mm(7:12,7:12);
+0229          G(n1dof+[1:6],n1dof+[1:6])  = G(n1dof+[1:6],n1dof+[1:6])  + gg(7:12,7:12);
+0230          C(n1dof+[1:6],n1dof+[1:6])  = C(n1dof+[1:6],n1dof+[1:6])  + cc(7:12,7:12);
+0231 
+0232          <span class="keyword">if</span> (linFlag == 1)
+0233             dM(rdof+[1:6],n1dof+[1:6])  = dM(rdof+[1:6],n1dof+[1:6])  + dmm(1:6,7:12);
+0234             dMg(rdof+[1:6],n1dof+[1:6]) = dMg(rdof+[1:6],n1dof+[1:6]) + dmmg(1:6,7:12);
+0235             dG(rdof+[1:6],n1dof+[1:6])  = dG(rdof+[1:6],n1dof+[1:6])  + dgg(1:6,7:12);
+0236             dGd(rdof+[1:6],n1dof+[1:6]) = dGd(rdof+[1:6],n1dof+[1:6]) + dggd(1:6,7:12);
+0237             dH(rdof+[1:6],n1dof+[1:6])  = dH(rdof+[1:6],n1dof+[1:6])  + dhv(1:6,7:12);
+0238             dHd(rdof+[1:6],n1dof+[1:6]) = dHd(rdof+[1:6],n1dof+[1:6]) + dhvd(1:6,7:12);
+0239             dC(rdof+[1:6],n1dof+[1:6])  = dC(rdof+[1:6],n1dof+[1:6])  + dcc(1:6,7:12);
+0240             dK(rdof+[1:6],n1dof+[1:6])  = dK(rdof+[1:6],n1dof+[1:6])  + dkv(1:6,7:12);
+0241             dM(n1dof+[1:6],rdof+[1:6])  = dM(n1dof+[1:6],rdof+[1:6])  + dmm(7:12,1:6);
+0242             dMg(n1dof+[1:6],rdof+[1:6]) = dMg(n1dof+[1:6],rdof+[1:6]) + dmmg(7:12,1:6);
+0243             dG(n1dof+[1:6],rdof+[1:6])  = dG(n1dof+[1:6],rdof+[1:6])  + dgg(7:12,1:6);
+0244             dGd(n1dof+[1:6],rdof+[1:6]) = dGd(n1dof+[1:6],rdof+[1:6]) + dggd(7:12,1:6);
+0245             dH(n1dof+[1:6],rdof+[1:6])  = dH(n1dof+[1:6],rdof+[1:6])  + dhv(7:12,1:6);
+0246             dHd(n1dof+[1:6],rdof+[1:6]) = dHd(n1dof+[1:6],rdof+[1:6]) + dhvd(7:12,1:6);
+0247             dC(n1dof+[1:6],rdof+[1:6])  = dC(n1dof+[1:6],rdof+[1:6])  + dcc(7:12,1:6);
+0248             dK(n1dof+[1:6],rdof+[1:6])  = dK(n1dof+[1:6],rdof+[1:6])  + dkv(7:12,1:6);
+0249             dM(n1dof+[1:6],n1dof+[1:6]) = dM(n1dof+[1:6],n1dof+[1:6]) + dmm(7:12,7:12);
+0250             dMg(n1dof+[1:6],n1dof+[1:6])= dMg(n1dof+[1:6],n1dof+[1:6])+ dmmg(7:12,7:12);
+0251             dG(n1dof+[1:6],n1dof+[1:6]) = dG(n1dof+[1:6],n1dof+[1:6]) + dgg(7:12,7:12);
+0252             dGd(n1dof+[1:6],n1dof+[1:6])= dGd(n1dof+[1:6],n1dof+[1:6])+ dggd(7:12,7:12);
+0253             dH(n1dof+[1:6],n1dof+[1:6]) = dH(n1dof+[1:6],n1dof+[1:6]) + dhv(7:12,7:12);
+0254             dHd(n1dof+[1:6],n1dof+[1:6])= dHd(n1dof+[1:6],n1dof+[1:6])+ dhvd(7:12,7:12);
+0255             dC(n1dof+[1:6],n1dof+[1:6]) = dC(n1dof+[1:6],n1dof+[1:6]) + dcc(7:12,7:12);
+0256             dK(n1dof+[1:6],n1dof+[1:6]) = dK(n1dof+[1:6],n1dof+[1:6]) + dkv(7:12,7:12);
+0257          <span class="keyword">end</span>
+0258 
+0259       <span class="keyword">end</span>
+0260 
+0261       <span class="keyword">if</span> (n2dof ~= rdof)
+0262 
+0263          H(n2dof+[1:6]) = H(n2dof+[1:6]) + hv(13:18);
+0264          K(n2dof+[1:6]) = K(n2dof+[1:6]) + kv(13:18);
+0265 
+0266          M(rdof+[1:6],n2dof+[1:6])   = M(rdof+[1:6],n2dof+[1:6])   + mm(1:6,13:18);
+0267          G(rdof+[1:6],n2dof+[1:6])   = G(rdof+[1:6],n2dof+[1:6])   + gg(1:6,13:18);
+0268          C(rdof+[1:6],n2dof+[1:6])   = C(rdof+[1:6],n2dof+[1:6])   + cc(1:6,13:18);
+0269          M(n2dof+[1:6],rdof+[1:6])   = M(n2dof+[1:6],rdof+[1:6])   + mm(13:18,1:6);
+0270          G(n2dof+[1:6],rdof+[1:6])   = G(n2dof+[1:6],rdof+[1:6])   + gg(13:18,1:6);
+0271          C(n2dof+[1:6],rdof+[1:6])   = C(n2dof+[1:6],rdof+[1:6])   + cc(13:18,1:6);
+0272          M(n2dof+[1:6],n2dof+[1:6])  = M(n2dof+[1:6],n2dof+[1:6])  + mm(13:18,13:18);
+0273          G(n2dof+[1:6],n2dof+[1:6])  = G(n2dof+[1:6],n2dof+[1:6])  + gg(13:18,13:18);
+0274          C(n2dof+[1:6],n2dof+[1:6])  = C(n2dof+[1:6],n2dof+[1:6])  + cc(13:18,13:18);
+0275 
+0276          <span class="keyword">if</span> (linFlag == 1)
+0277             dM(rdof+[1:6],n2dof+[1:6])  = dM(rdof+[1:6],n2dof+[1:6])  + dmm(1:6,13:18);
+0278             dMg(rdof+[1:6],n2dof+[1:6]) = dMg(rdof+[1:6],n2dof+[1:6]) + dmmg(1:6,13:18);
+0279             dG(rdof+[1:6],n2dof+[1:6])  = dG(rdof+[1:6],n2dof+[1:6])  + dgg(1:6,13:18);
+0280             dGd(rdof+[1:6],n2dof+[1:6]) = dGd(rdof+[1:6],n2dof+[1:6]) + dggd(1:6,13:18);
+0281             dH(rdof+[1:6],n2dof+[1:6])  = dH(rdof+[1:6],n2dof+[1:6])  + dhv(1:6,13:18);
+0282             dHd(rdof+[1:6],n2dof+[1:6]) = dHd(rdof+[1:6],n2dof+[1:6]) + dhvd(1:6,13:18);
+0283             dC(rdof+[1:6],n2dof+[1:6])  = dC(rdof+[1:6],n2dof+[1:6])  + dcc(1:6,13:18);
+0284             dK(rdof+[1:6],n2dof+[1:6])  = dK(rdof+[1:6],n2dof+[1:6])  + dkv(1:6,13:18);
+0285             dM(n2dof+[1:6],rdof+[1:6])  = dM(n2dof+[1:6],rdof+[1:6])  + dmm(13:18,1:6);
+0286             dMg(n2dof+[1:6],rdof+[1:6]) = dMg(n2dof+[1:6],rdof+[1:6]) + dmmg(13:18,1:6);
+0287             dG(n2dof+[1:6],rdof+[1:6])  = dG(n2dof+[1:6],rdof+[1:6])  + dgg(13:18,1:6);
+0288             dGd(n2dof+[1:6],rdof+[1:6]) = dGd(n2dof+[1:6],rdof+[1:6]) + dggd(13:18,1:6);
+0289             dH(n2dof+[1:6],rdof+[1:6])  = dH(n2dof+[1:6],rdof+[1:6])  + dhv(13:18,1:6);
+0290             dHd(n2dof+[1:6],rdof+[1:6]) = dHd(n2dof+[1:6],rdof+[1:6]) + dhvd(13:18,1:6);
+0291             dC(n2dof+[1:6],rdof+[1:6])  = dC(n2dof+[1:6],rdof+[1:6])  + dcc(13:18,1:6);
+0292             dK(n2dof+[1:6],rdof+[1:6])  = dK(n2dof+[1:6],rdof+[1:6])  + dkv(13:18,1:6);
+0293             dM(n2dof+[1:6],n2dof+[1:6]) = dM(n2dof+[1:6],n2dof+[1:6]) + dmm(13:18,13:18);
+0294             dMg(n2dof+[1:6],n2dof+[1:6])= dMg(n2dof+[1:6],n2dof+[1:6])+ dmmg(13:18,13:18);
+0295             dG(n2dof+[1:6],n2dof+[1:6]) = dG(n2dof+[1:6],n2dof+[1:6]) + dgg(13:18,13:18);
+0296             dGd(n2dof+[1:6],n2dof+[1:6])= dGd(n2dof+[1:6],n2dof+[1:6])+ dggd(13:18,13:18);
+0297             dH(n2dof+[1:6],n2dof+[1:6]) = dH(n2dof+[1:6],n2dof+[1:6]) + dhv(13:18,13:18);
+0298             dHd(n2dof+[1:6],n2dof+[1:6])= dHd(n2dof+[1:6],n2dof+[1:6])+ dhvd(13:18,13:18);
+0299             dC(n2dof+[1:6],n2dof+[1:6]) = dC(n2dof+[1:6],n2dof+[1:6]) + dcc(13:18,13:18);
+0300             dK(n2dof+[1:6],n2dof+[1:6]) = dK(n2dof+[1:6],n2dof+[1:6]) + dkv(13:18,13:18);
+0301          <span class="keyword">end</span>
+0302 
+0303       <span class="keyword">end</span>
+0304 
+0305       <span class="keyword">if</span> ((n1dof ~= rdof) &amp;&amp; (n2dof ~= rdof))
+0306 
+0307          M(n1dof+[1:6],n2dof+[1:6])   = M(n1dof+[1:6],n2dof+[1:6])   + mm(7:12,13:18);
+0308          G(n1dof+[1:6],n2dof+[1:6])   = G(n1dof+[1:6],n2dof+[1:6])   + gg(7:12,13:18);
+0309          C(n1dof+[1:6],n2dof+[1:6])   = C(n1dof+[1:6],n2dof+[1:6])   + cc(7:12,13:18);
+0310          M(n2dof+[1:6],n1dof+[1:6])   = M(n2dof+[1:6],n1dof+[1:6])   + mm(13:18,7:12);
+0311          G(n2dof+[1:6],n1dof+[1:6])   = G(n2dof+[1:6],n1dof+[1:6])   + gg(13:18,7:12);
+0312          C(n2dof+[1:6],n1dof+[1:6])   = C(n2dof+[1:6],n1dof+[1:6])   + cc(13:18,7:12);
+0313 
+0314          <span class="keyword">if</span> (linFlag == 1)
+0315             dM(n1dof+[1:6],n2dof+[1:6])  = dM(n1dof+[1:6],n2dof+[1:6])  + dmm(7:12,13:18);
+0316             dMg(n1dof+[1:6],n2dof+[1:6]) = dMg(n1dof+[1:6],n2dof+[1:6]) + dmmg(7:12,13:18);
+0317             dG(n1dof+[1:6],n2dof+[1:6])  = dG(n1dof+[1:6],n2dof+[1:6])  + dgg(7:12,13:18);
+0318             dGd(n1dof+[1:6],n2dof+[1:6]) = dGd(n1dof+[1:6],n2dof+[1:6]) + dggd(7:12,13:18);
+0319             dH(n1dof+[1:6],n2dof+[1:6])  = dH(n1dof+[1:6],n2dof+[1:6])  + dhv(7:12,13:18);
+0320             dHd(n1dof+[1:6],n2dof+[1:6]) = dHd(n1dof+[1:6],n2dof+[1:6]) + dhvd(7:12,13:18);
+0321             dC(n1dof+[1:6],n2dof+[1:6])  = dC(n1dof+[1:6],n2dof+[1:6])  + dcc(7:12,13:18);
+0322             dK(n1dof+[1:6],n2dof+[1:6])  = dK(n1dof+[1:6],n2dof+[1:6])  + dkv(7:12,13:18);
+0323             dM(n2dof+[1:6],n1dof+[1:6])  = dM(n2dof+[1:6],n1dof+[1:6])  + dmm(13:18,7:12);
+0324             dMg(n2dof+[1:6],n1dof+[1:6]) = dMg(n2dof+[1:6],n1dof+[1:6]) + dmmg(13:18,7:12);
+0325             dG(n2dof+[1:6],n1dof+[1:6])  = dG(n2dof+[1:6],n1dof+[1:6])  + dgg(13:18,7:12);
+0326             dGd(n2dof+[1:6],n1dof+[1:6]) = dGd(n2dof+[1:6],n1dof+[1:6]) + dggd(13:18,7:12);
+0327             dH(n2dof+[1:6],n1dof+[1:6])  = dH(n2dof+[1:6],n1dof+[1:6])  + dhv(13:18,7:12);
+0328             dHd(n2dof+[1:6],n1dof+[1:6]) = dHd(n2dof+[1:6],n1dof+[1:6]) + dhvd(13:18,7:12);
+0329             dC(n2dof+[1:6],n1dof+[1:6])  = dC(n2dof+[1:6],n1dof+[1:6])  + dcc(13:18,7:12);
+0330             dK(n2dof+[1:6],n1dof+[1:6])  = dK(n2dof+[1:6],n1dof+[1:6])  + dkv(13:18,7:12);
+0331          <span class="keyword">end</span>
+0332 
+0333       <span class="keyword">end</span>
+0334 
+0335    <span class="keyword">end</span>
+0336 
+0337 <span class="keyword">end</span>
+0338 
+0339 M   = sparse(M);  
+0340 G   = sparse(G);
+0341 C   = sparse(C);
+0342 
+0343 <span class="keyword">if</span> (linFlag == 1)
+0344    dM  = sparse(dM);
+0345    dMg = sparse(dMg);
+0346    dG  = sparse(dG);
+0347    dGd = sparse(dGd);
+0348    dH  = sparse(dH);
+0349    dHd = sparse(dHd);
+0350    dC  = sparse(dC);
+0351    dK  = sparse(dK);
+0352 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

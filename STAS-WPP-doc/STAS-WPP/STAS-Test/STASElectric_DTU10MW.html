@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of STASElectric_DTU10MW</title>
+  <meta name="keywords" content="STASElectric_DTU10MW">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; STASElectric_DTU10MW.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>STASElectric_DTU10MW
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function params = STASElectric_DTU10MW () </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 03.12.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 03.12.2018      
+
+ params          : --------------------- PMSG ------------------------
+                   1:    np    (-)     Number of poles.
+                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   6-9:  Lg    (H)     Nonlinear phase inductances.
+                   10:   Rg    (Ohms)  Phase resistance.
+                   11:   lamr  (Wb)    d-component flux linkage per phase.
+                   ------- 11 --------- DC link ----------------------
+                   1:    Cdc   (F)     DC link capacitance.
+                   2:    etac  (-)     Converter efficiency.
+                   ------- 13 ------- Transformer --------------------
+                   1:    a     (-)     Np/Ns turns ratio.
+                   2-5:  It    (A)     RMS phase currents for nonlinear inductance.
+                   6-9:  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.
+                   10:   Rt    (Ohms)  Phase resistance.
+                   ------- 23 --- Gen. current control ---------------
+                   1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   5-8:  Lg    (H)     Nonlinear phase inductances.
+                   9:    lamr  (Wb)    d-component flux linkage per phase.
+                   10:   KP    (1/s)   Proportional gain.
+                   11:   KI    (1/s^2) Integral gain.
+                   12:   KF    (-)     Feed-forward gain on flux linkage.
+                   13:   ag    (rad/s) Generator current filter frequency.
+                   14:   aw    (rad/s) Generator electric speed filter frequency.
+                   ------- 37 ------------ PLL -----------------------
+                   1:    av    (rad/s) Filter on voltage measurement.
+                   2:    KPe   (rad/s) Proportional gain.
+                   3:    KIe   (rad/s2) Integral gain.
+                   4:    weh   (rad/s) Reference frequency.
+                   ------- 41 -- Reactive power control --------------
+                   1:    ap    (rad/s) ip measurement filter.
+                   2:    ais   (rad/s) is measurement filter.
+                   3:    avs   (rad/s) vs measurement filter.
+                   4:    adc   (rad/s) Vdc measurement filter.
+                   5:    KpDC  (A/V)   Proportional gain on ipd control.
+                   6:    KiDC  (A/Vs)  Integral gain on ipd control.
+                   7:    KpQ   (1/V)   Proportional gain on ipq control.
+                   8:    KiQ   (1/Vs)  Integral gain on ipq control.
+                   9:    Kppd  (1/s)   Proportional gain on vpd control.
+                  10:    Kipd  (1/s^2) Integral gain on vpd control.
+                  11:    Kppq  (1/s)   Proportional gain on vpq control.
+                  12:    Kipq  (1/s^2) Integral gain on vpq control.
+                  13:    KFp   (-)     Feedforward gain on vms in vp control.
+                  14-17: It    (A)     RMS phase currents for nonlinear inductance.
+                  18-21: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.
+                   ------- 62 ------- Miscellaneous ------------------
+                   1:    Pnll  (W)     No-load losses.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function params = STASElectric_DTU10MW ()</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 03.12.2018      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 03.12.2018</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% params          : --------------------- PMSG ------------------------</span>
+0012 <span class="comment">%                   1:    np    (-)     Number of poles.</span>
+0013 <span class="comment">%                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0014 <span class="comment">%                   6-9:  Lg    (H)     Nonlinear phase inductances.</span>
+0015 <span class="comment">%                   10:   Rg    (Ohms)  Phase resistance.</span>
+0016 <span class="comment">%                   11:   lamr  (Wb)    d-component flux linkage per phase.</span>
+0017 <span class="comment">%                   ------- 11 --------- DC link ----------------------</span>
+0018 <span class="comment">%                   1:    Cdc   (F)     DC link capacitance.</span>
+0019 <span class="comment">%                   2:    etac  (-)     Converter efficiency.</span>
+0020 <span class="comment">%                   ------- 13 ------- Transformer --------------------</span>
+0021 <span class="comment">%                   1:    a     (-)     Np/Ns turns ratio.</span>
+0022 <span class="comment">%                   2-5:  It    (A)     RMS phase currents for nonlinear inductance.</span>
+0023 <span class="comment">%                   6-9:  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.</span>
+0024 <span class="comment">%                   10:   Rt    (Ohms)  Phase resistance.</span>
+0025 <span class="comment">%                   ------- 23 --- Gen. current control ---------------</span>
+0026 <span class="comment">%                   1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0027 <span class="comment">%                   5-8:  Lg    (H)     Nonlinear phase inductances.</span>
+0028 <span class="comment">%                   9:    lamr  (Wb)    d-component flux linkage per phase.</span>
+0029 <span class="comment">%                   10:   KP    (1/s)   Proportional gain.</span>
+0030 <span class="comment">%                   11:   KI    (1/s^2) Integral gain.</span>
+0031 <span class="comment">%                   12:   KF    (-)     Feed-forward gain on flux linkage.</span>
+0032 <span class="comment">%                   13:   ag    (rad/s) Generator current filter frequency.</span>
+0033 <span class="comment">%                   14:   aw    (rad/s) Generator electric speed filter frequency.</span>
+0034 <span class="comment">%                   ------- 37 ------------ PLL -----------------------</span>
+0035 <span class="comment">%                   1:    av    (rad/s) Filter on voltage measurement.</span>
+0036 <span class="comment">%                   2:    KPe   (rad/s) Proportional gain.</span>
+0037 <span class="comment">%                   3:    KIe   (rad/s2) Integral gain.</span>
+0038 <span class="comment">%                   4:    weh   (rad/s) Reference frequency.</span>
+0039 <span class="comment">%                   ------- 41 -- Reactive power control --------------</span>
+0040 <span class="comment">%                   1:    ap    (rad/s) ip measurement filter.</span>
+0041 <span class="comment">%                   2:    ais   (rad/s) is measurement filter.</span>
+0042 <span class="comment">%                   3:    avs   (rad/s) vs measurement filter.</span>
+0043 <span class="comment">%                   4:    adc   (rad/s) Vdc measurement filter.</span>
+0044 <span class="comment">%                   5:    KpDC  (A/V)   Proportional gain on ipd control.</span>
+0045 <span class="comment">%                   6:    KiDC  (A/Vs)  Integral gain on ipd control.</span>
+0046 <span class="comment">%                   7:    KpQ   (1/V)   Proportional gain on ipq control.</span>
+0047 <span class="comment">%                   8:    KiQ   (1/Vs)  Integral gain on ipq control.</span>
+0048 <span class="comment">%                   9:    Kppd  (1/s)   Proportional gain on vpd control.</span>
+0049 <span class="comment">%                  10:    Kipd  (1/s^2) Integral gain on vpd control.</span>
+0050 <span class="comment">%                  11:    Kppq  (1/s)   Proportional gain on vpq control.</span>
+0051 <span class="comment">%                  12:    Kipq  (1/s^2) Integral gain on vpq control.</span>
+0052 <span class="comment">%                  13:    KFp   (-)     Feedforward gain on vms in vp control.</span>
+0053 <span class="comment">%                  14-17: It    (A)     RMS phase currents for nonlinear inductance.</span>
+0054 <span class="comment">%                  18-21: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.</span>
+0055 <span class="comment">%                   ------- 62 ------- Miscellaneous ------------------</span>
+0056 <span class="comment">%                   1:    Pnll  (W)     No-load losses.</span>
+0057 
+0058 params = zeros(63,1);
+0059 
+0060 load(<span class="string">'-ascii'</span>,<span class="string">'LTMnorms.txt'</span>);
+0061 length = LTMnorms(1);
+0062 time   = LTMnorms(2);
+0063 mass   = LTMnorms(3);
+0064 force  = mass*length/(time^2);
+0065 power  = mass*(length^2)/(time^3);
+0066 voltage = sqrt(power);
+0067 current = power/voltage;
+0068 resistance = voltage/current;
+0069 <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> = voltage*time/current;
+0070 capacitance = current*time/voltage;
+0071 flux   = voltage*time;
+0072 
+0073 twopi = 2*pi;
+0074 
+0075 <span class="comment">% ---------------------------------- PMSG --------------------------------------</span>
+0076 np    = 198;                   <span class="comment">% np    (-)     Number of poles.</span>
+0077 Ig0   = 2968.4;                <span class="comment">% (From gendes.m)</span>
+0078 Lg0   = 0.00529;               <span class="comment">% (From gendes.m)</span>
+0079 Ig    = [0 1 2 3]*Ig0;         <span class="comment">% Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0080 Lg    = [1 1 1 1]*Lg0;         <span class="comment">% Lg    (H)     Nonlinear phase inductances.</span>
+0081 Rg    = 0.0366;                <span class="comment">% Rg    (Ohms)  Phase resistance.</span>
+0082 lamr  = 25.906;                <span class="comment">% lamr  (Wb)    d-component flux linkage per phase.</span>
+0083 <span class="comment">% --------------------------------- DC Link ------------------------------------</span>
+0084 Cdc   = 0.00437;               <span class="comment">% Cdc   (F)     DC link capacitance.</span>
+0085 etac  = 0.9925;                <span class="comment">% etac  (-)     Converter efficiency.</span>
+0086 <span class="comment">% ------------------------------- Transformer ----------------------------------</span>
+0087 a     = 1/8.75;                <span class="comment">% a     (-)     Np/Ns turns ratio.</span>
+0088 It0   = Ig0;                   <span class="comment">% (Only a reference value for scheduling inductances.)</span>
+0089 Lt0   = 0.0001528;             <span class="comment">% (From gendes.m)</span>
+0090 It    = [0 1 2 3]*It0;         <span class="comment">% It    (A)     RMS phase currents for nonlinear inductance.</span>
+0091 Lt    = [1 1 1 1]*Lt0;         <span class="comment">% Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.</span>
+0092 Rt    = 0.003;                 <span class="comment">% Rt    (Ohms)  Phase resistance.</span>
+0093 <span class="comment">% --------------------------- Gen. current control -----------------------------</span>
+0094 Ige   = Ig;                    <span class="comment">% Ig    (A)     Estimated RMS phase currents for nonlinear inductance.</span>
+0095 Lge   = Lg;                    <span class="comment">% Lg    (H)     Estimated nonlinear phase inductances.</span>
+0096 lamre = lamr;                  <span class="comment">% lamr  (Wb)    Estimated d-component flux linkage per phase.</span>
+0097 KP    = 50;                    <span class="comment">% KP    (1/s)   Proportional gain.</span>
+0098 KI    = 400;                   <span class="comment">% KI    (1/s^2) Integral gain.</span>
+0099 KF    = 0;                     <span class="comment">% KF    (-)     Feed-forward gain on flux linkage.</span>
+0100 ag    = 20*twopi;              <span class="comment">% ag    (rad/s) Generator current filter frequency.</span>
+0101 aw    = 20*twopi;              <span class="comment">% aw    (rad/s) Generator electric speed filter frequency.</span>
+0102 <span class="comment">% ----------------------------------- PLL --------------------------------------</span>
+0103 av    = 20*twopi;              <span class="comment">% av    (rad/s) Filter on voltage measurement.</span>
+0104 KPe   = 100;                   <span class="comment">% KPe   (rad/s) Proportional gain.</span>
+0105 KIe   = 1;                     <span class="comment">% KIe   (rad/s2) Integral gain (should be zero, but then A is singular).</span>
+0106 weh   = 50*twopi;              <span class="comment">% weh   (rad/s) Reference network frequency.</span>
+0107 <span class="comment">% -------------------------- Reactive power control ----------------------------</span>
+0108 ap    = 20*twopi;              <span class="comment">% ap    (rad/s) ip measurement filter.</span>
+0109 ais   = 20*twopi;              <span class="comment">% ais   (rad/s) is measurement filter.</span>
+0110 avs   = 20*twopi;              <span class="comment">% avs   (rad/s) vs measurement filter.</span>
+0111 adc   = 20*twopi;              <span class="comment">% adc   (rad/s) Vdc measurement filter.</span>
+0112 KpDC  = -0.5;                  <span class="comment">% KpDC  (A/V)   Proportional gain on ipd control.</span>
+0113 KiDC  = -0.1;                  <span class="comment">% KiDC  (A/Vs)  Integral gain on ipd control.</span>
+0114 KpQ   = -0.00002;              <span class="comment">% KpQ   (1/V)   Proportional gain on ipq control.</span>
+0115 KiQ   = -0.006;                <span class="comment">% KiQ   (1/Vs)  Integral gain on ipq control.</span>
+0116 Kppd  = 600;                   <span class="comment">% Kppd  (1/s)   Proportional gain on vpd control.</span>
+0117 Kipd  = 1000;                  <span class="comment">% Kipd  (1/s^2) Integral gain on vpd control.</span>
+0118 Kppq  = 600;                   <span class="comment">% Kppq  (1/s)   Proportional gain on vpq control.</span>
+0119 Kipq  = 1000;                  <span class="comment">% Kipq  (1/s^2) Integral gain on vpq control.</span>
+0120 KFp   = 0;                     <span class="comment">% KFp   (-)     Feedforward gain on vms in vp control.</span>
+0121 Ite   = It;                    <span class="comment">% It    (A)     Estimated RMS phase currents for nonlinear inductance.</span>
+0122 Lte   = Lt;                    <span class="comment">% Lt    (H)     Estimated Lp + (a^2)Ls nonlinear phase inductances.</span>
+0123 <span class="comment">% ------------------------------ Miscellaneous --------------------------------</span>
+0124 Pnnl  = 7.33e4;                <span class="comment">% Pnll  (W)     No-load (constant) losses.</span>
+0125 
+0126 <span class="comment">% ---------------------------------- PMSG --------------------------------------</span>
+0127 params(1)     = np;
+0128 params(2:5)   = Ig      / current;
+0129 params(6:9)   = Lg      / <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>;
+0130 params(10)    = Rg      / resistance;
+0131 params(11)    = lamr    / flux;
+0132 <span class="comment">% --------------------------------- DC Link ------------------------------------</span>
+0133 params(12)    = Cdc     / capacitance;
+0134 params(13)    = etac;       
+0135 <span class="comment">% ------------------------------- Transformer ----------------------------------</span>
+0136 params(14)    = a;
+0137 params(15:18) = It      / current;
+0138 params(19:22) = Lt      / <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>;
+0139 params(23)    = Rt      / resistance;
+0140 <span class="comment">% --------------------------- Gen. current control -----------------------------</span>
+0141 params(24:27) = Ige     / current;
+0142 params(28:31) = Lge     / <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>;
+0143 params(32)    = lamre   / flux;
+0144 params(33)    = KP      * time;
+0145 params(34)    = KI      * time^2;
+0146 params(35)    = KF;
+0147 params(36)    = ag      * time;
+0148 params(37)    = aw      * time;
+0149 <span class="comment">% ----------------------------------- PLL --------------------------------------</span>
+0150 params(38)    = av      * time;
+0151 params(39)    = KPe     * time;
+0152 params(40)    = KIe     * time^2;
+0153 params(41)    = weh     * time;
+0154 <span class="comment">% -------------------------- Reactive power control ----------------------------</span>
+0155 params(42)    = ap      * time;
+0156 params(43)    = ais     * time;
+0157 params(44)    = avs     * time;
+0158 params(45)    = adc     * time;
+0159 params(46)    = KpDC    / (current/voltage);
+0160 params(47)    = KiDC    / (current/(voltage*time));
+0161 params(48)    = KpQ     * voltage;
+0162 params(49)    = KiQ     * voltage*time;
+0163 params(50)    = Kppd    * time;
+0164 params(51)    = Kipd    * time^2;
+0165 params(52)    = Kppq    * time;
+0166 params(53)    = Kipq    * time^2;
+0167 params(54)    = KFp;
+0168 params(55:58) = Ite     / current;
+0169 params(59:62) = Lte     / <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>;
+0170 <span class="comment">% ------------------------------ Miscellaneous ---------------------------------</span>
+0171 params(63)    = Pnnl    / power;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d2Fdth2</title>
+  <meta name="keywords" content="d2Fdth2">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d2Fdth2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d2Fdth2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 06.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 06.11.2017      Verified by finite difference and complex step.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="d3Tdth3.html" class="code" title="function d3T = d3Tdth3 (th,T,dT,d2T)">d3Tdth3</a>	</li>
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 06.11.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 06.11.2017      Verified by finite difference and complex step.</span>
+0010 <span class="comment">%</span>
+0011 
+0012 d2F = zeros(3,3*3*6*6);  <span class="comment">% Initial derivative wrt th, higher derivs wrt Phi,th.</span>
+0013 
+0014 [Tnn0,dTnn0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (th);
+0015 d2Tnn0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (th,Tnn0,dTnn0);
+0016 d3Tnn0 = <a href="d3Tdth3.html" class="code" title="function d3T = d3Tdth3 (th,T,dT,d2T)">d3Tdth3</a> (th,Tnn0,dTnn0,d2Tnn0);
+0017 [TBB0,dTBB0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (TTh);
+0018 d2TBB0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (TTh,TBB0,dTBB0);
+0019 
+0020 <span class="comment">% d2Fi/(dPhij dPhik)</span>
+0021 <span class="keyword">for</span> jj = 1:3
+0022 
+0023    jc54 = 54*(jj-1);
+0024    jc9  =  9*(jj-1);
+0025    jc3  =  3*(jj-1);
+0026 
+0027    <span class="keyword">for</span> kk = 1:3
+0028 
+0029       kc9 = 9*(kk-1);
+0030       kc3 = 3*(kk-1);
+0031 
+0032       <span class="keyword">for</span> ii = 1:3
+0033 
+0034          ic3 = 3*(ii-1);
+0035 
+0036          term1 = d2TBB0(:,jc9+kc3+[1:3])*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0037                * ((TBB0*Tn0B*Tnn0).');
+0038          term2 = dTBB0(:,jc3+[1:3])*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0039                * ((dTBB0(:,kc3+[1:3])*Tn0B*Tnn0).');
+0040          term3 = dTBB0(:,kc3+[1:3])*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0041                * ((dTBB0(:,jc3+[1:3])*Tn0B*Tnn0).');
+0042          term4 = TBB0*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0043                * ((d2TBB0(:,jc9+kc3+[1:3])*Tn0B*Tnn0).');
+0044 
+0045          d2F(:,jc54+kc9+ic3+[1:3]) = <span class="keyword">...</span>
+0046                TB0g*(term1 + term2 + term3 + term4)*(TB0g.');
+0047 
+0048       <span class="keyword">end</span>
+0049 
+0050    <span class="keyword">end</span>
+0051 
+0052 <span class="keyword">end</span>
+0053 
+0054 <span class="comment">% d2Fi/(dPhij dthk)</span>
+0055 <span class="keyword">for</span> jj = 1:3
+0056 
+0057    jc54 = 54*(jj-1);
+0058    jc9  =  9*(jj-1);
+0059    jc3  =  3*(jj-1);
+0060 
+0061    <span class="keyword">for</span> kk = 1:3
+0062 
+0063       kc9a = 9*(kk+3-1);
+0064       kc9 = 9*(kk-1);
+0065       kc3 = 3*(kk-1);
+0066 
+0067       <span class="keyword">for</span> ii = 1:3
+0068 
+0069          ic3 = 3*(ii-1);
+0070 
+0071          term1 = dTBB0(:,jc3+[1:3])*Tn0B*d2Tnn0(:,kc9+ic3+[1:3]) <span class="keyword">...</span>
+0072                * ((TBB0*Tn0B*Tnn0).');
+0073          term2 = dTBB0(:,jc3+[1:3])*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0074                * ((TBB0*Tn0B*dTnn0(:,kc3+[1:3])).');
+0075          term3 = TBB0*Tn0B*d2Tnn0(:,kc9+ic3+[1:3]) <span class="keyword">...</span>
+0076                * ((dTBB0(:,jc3+[1:3])*Tn0B*Tnn0).');
+0077          term4 = TBB0*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0078                * ((dTBB0(:,jc3+[1:3])*Tn0B*dTnn0(:,kc3+[1:3])).');
+0079 
+0080          d2F(:,jc54+kc9a+ic3+[1:3]) = <span class="keyword">...</span>
+0081                TB0g*(term1 + term2 + term3 + term4)*(TB0g.');
+0082 
+0083       <span class="keyword">end</span>
+0084 
+0085    <span class="keyword">end</span>
+0086 
+0087 <span class="keyword">end</span>
+0088 
+0089 <span class="comment">% d2Fi/(dthj dPhik)</span>
+0090 <span class="keyword">for</span> jj = 1:3
+0091 
+0092    jc54a = 54*(jj+3-1);
+0093    jc9a  =  9*(jj+3-1);
+0094 
+0095    <span class="keyword">for</span> kk = 1:3
+0096 
+0097       kc9  =  9*(kk-1);
+0098       kc54 = 54*(kk-1);
+0099 
+0100       <span class="keyword">for</span> ii = 1:3
+0101 
+0102          ic3 = 3*(ii-1);
+0103 
+0104          d2F(:,jc54a+kc9+ic3+[1:3]) = d2F(:,kc54+jc9a+ic3+[1:3]);
+0105 
+0106       <span class="keyword">end</span>
+0107 
+0108    <span class="keyword">end</span>
+0109 
+0110 <span class="keyword">end</span>
+0111 
+0112 
+0113 <span class="comment">% d2Fi/(dthj dthk)</span>
+0114 <span class="keyword">for</span> jj = 1:3
+0115 
+0116    jc54a = 54*(jj+3-1);
+0117    jc27  = 27*(jj-1);
+0118    jc9   =  9*(jj-1);
+0119    jc3   =  3*(jj-1);
+0120 
+0121    <span class="keyword">for</span> kk = 1:3
+0122 
+0123       kc9a = 9*(kk+3-1);
+0124       kc9 = 9*(kk-1);
+0125       kc3 = 3*(kk-1);
+0126 
+0127       <span class="keyword">for</span> ii = 1:3
+0128 
+0129          ic3 = 3*(ii-1);
+0130 
+0131          term1 = TBB0*Tn0B*d3Tnn0(:,jc27+kc9+ic3+[1:3]) <span class="keyword">...</span>
+0132                * ((TBB0*Tn0B*Tnn0).');
+0133          term2 = TBB0*Tn0B*d2Tnn0(:,jc9+ic3+[1:3]) <span class="keyword">...</span>
+0134                * ((TBB0*Tn0B*dTnn0(:,kc3+[1:3])).');
+0135          term3 = TBB0*Tn0B*d2Tnn0(:,kc9+ic3+[1:3]) <span class="keyword">...</span>
+0136                * ((TBB0*Tn0B*dTnn0(:,jc3+[1:3])).');
+0137          term4 = TBB0*Tn0B*dTnn0(:,ic3+[1:3]) <span class="keyword">...</span>
+0138                * ((TBB0*Tn0B*d2Tnn0(:,jc9+kc3+[1:3])).');
+0139 
+0140          d2F(:,jc54a+kc9a+ic3+[1:3]) = <span class="keyword">...</span>
+0141                TB0g*(term1 + term2 + term3 + term4)*(TB0g.');
+0142 
+0143       <span class="keyword">end</span>
+0144 
+0145    <span class="keyword">end</span>
+0146 
+0147 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of derivConstraints</title>
+  <meta name="keywords" content="derivConstraints">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; derivConstraints.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>derivConstraints
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dL = derivConstraints (qB,PB,Tbh,idofs,idofm) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The implementation of constraints in the equations of motion includes
+ a term representing the centripetal constraint forces.  This term has
+ the form Fc = Lambda^(-1)*M*Gamma, where Gamma includes a term
+ -Ls^(-1)*dqk/dt*dL/dqk*dq/dt.  This function computes dL/dqk for the
+ relevant variables.
+
+ Version:        Changes:
+ --------        -------------
+ 28.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 28.11.2017      Derivatives of L verified using complex step, with
+                 constraints.m.
+
+ Inputs:
+ -------
+ qB              : Nodal DOFs augmented with yaw, azimuth, front bearing
+                   axial offset, and three blade pitch DOFs.
+ PB              : Nodal offsets and initial body orientation.
+ Tbh             : Blade-to-hub coordinate transform.
+ idofs,idofm     : Joint DOF references.
+
+ Outputs:
+ --------
+ dL              : dL/dq.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="constraintGamma.html" class="code" title="function [G,dLdq] = constraintGamma (q,dqdt,P,L,Lambda,Tbh,ret,slv,idofs,idofm)">constraintGamma</a>	</li>
+<li><a href="dGammadq.html" class="code" title="function [dG,dGd] = dGammadq (csflag,q,P,dqdt,ret,slv,dofs,idofs,idofm,Tbh,L,dLdq,Lambda,Gamma,v)">dGammadq</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dL = derivConstraints (qB,PB,Tbh,idofs,idofm)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The implementation of constraints in the equations of motion includes</span>
+0004 <span class="comment">% a term representing the centripetal constraint forces.  This term has</span>
+0005 <span class="comment">% the form Fc = Lambda^(-1)*M*Gamma, where Gamma includes a term</span>
+0006 <span class="comment">% -Ls^(-1)*dqk/dt*dL/dqk*dq/dt.  This function computes dL/dqk for the</span>
+0007 <span class="comment">% relevant variables.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Changes:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 28.11.2017      Original code.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 28.11.2017      Derivatives of L verified using complex step, with</span>
+0016 <span class="comment">%                 constraints.m.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% qB              : Nodal DOFs augmented with yaw, azimuth, front bearing</span>
+0021 <span class="comment">%                   axial offset, and three blade pitch DOFs.</span>
+0022 <span class="comment">% PB              : Nodal offsets and initial body orientation.</span>
+0023 <span class="comment">% Tbh             : Blade-to-hub coordinate transform.</span>
+0024 <span class="comment">% idofs,idofm     : Joint DOF references.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">% dL              : dL/dq.</span>
+0029 <span class="comment">%</span>
+0030 
+0031 Ndj  = size(qB,1);
+0032 Ndof = Ndj - 6;  <span class="comment">% Let Ndof = 6*Nnod in the unconstrained structure.</span>
+0033 
+0034 dL = spalloc (39,72*Ndj,5*Ndj);
+0035 
+0036 ijnt = Ndof + [1:6];
+0037 
+0038 yaw0 = PB(ijnt(1));
+0039 azi0 = PB(ijnt(2));
+0040 fbx0 = PB(ijnt(3));
+0041 bt10 = PB(ijnt(4));
+0042 bt20 = PB(ijnt(5));
+0043 bt30 = PB(ijnt(6));
+0044 
+0045 cy0  = cos(yaw0);
+0046 sy0  = sin(yaw0);
+0047 ca0  = cos(azi0);
+0048 sa0  = sin(azi0);
+0049 cb10 = cos(bt10);
+0050 sb10 = sin(bt10);
+0051 cb20 = cos(bt20);
+0052 sb20 = sin(bt20);
+0053 cb30 = cos(bt30);
+0054 sb30 = sin(bt30);
+0055 
+0056 yaw  = qB(ijnt(1));
+0057 azi  = qB(ijnt(2));
+0058 fbx  = qB(ijnt(3));
+0059 bt1  = qB(ijnt(4));
+0060 bt2  = qB(ijnt(5));
+0061 bt3  = qB(ijnt(6));
+0062 
+0063 cy   = cos(yaw + yaw0);
+0064 sy   = sin(yaw + yaw0);
+0065 ca   = cos(azi + azi0);
+0066 sa   = sin(azi + azi0);
+0067 cb1  = cos(bt1 + bt10);
+0068 sb1  = sin(bt1 + bt10);
+0069 cb2  = cos(bt2 + bt20);
+0070 sb2  = sin(bt2 + bt20);
+0071 cb3  = cos(bt3 + bt30);
+0072 sb3  = sin(bt3 + bt30);
+0073 
+0074 <span class="comment">% Column refs in the dL matrix, for each L submatrix.</span>
+0075 ThFref  = Ndj* [0:2].';
+0076 dmtref  = Ndj* [3:5].';
+0077 thmtref = Ndj* [6:8].';
+0078 ThTref  = Ndj* [9:11].';
+0079 dmyref  = Ndj*[12:14].';
+0080 thmyref = Ndj*[15:17].';
+0081 ThYref  = Ndj*[18:20].';
+0082 dmdref  = Ndj*[21:23].';
+0083 thmdref = Ndj*[24:26].';
+0084 ThDref  = Ndj*[27:29].';
+0085 dmsref  = Ndj*[30:32].';
+0086 thmsref = Ndj*[33:35].';
+0087 dssref  = Ndj*[36:38].';
+0088 dm1ref  = Ndj*[39:41].';
+0089 thm1ref = Ndj*[42:44].';
+0090 ThB1ref = Ndj*[45:47].';
+0091 dm2ref  = Ndj*[48:50].';
+0092 thm2ref = Ndj*[51:53].';
+0093 ThB2ref = Ndj*[54:56].';
+0094 dm3ref  = Ndj*[57:59].';
+0095 thm3ref = Ndj*[60:62].';
+0096 ThB3ref = Ndj*[63:65].';
+0097 chiref  = Ndj*66;
+0098 psiref  = Ndj*67;
+0099 epsref  = Ndj*68;
+0100 bet1ref = Ndj*69;
+0101 bet2ref = Ndj*70;
+0102 bet3ref = Ndj*71;
+0103 
+0104 <span class="comment">% ================= Foundation-tower joint ===================</span>
+0105 <span class="comment">% Derivatives are taken with respect to 12 DOFs: thF, dm, thm, and thT,</span>
+0106 <span class="comment">% 3 each.</span>
+0107 TF0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(1)+[4:6]));
+0108 [TFF0,dTFF0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(1)+[4:6]));
+0109 d2TFF0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(1)+[4:6]),TFF0,dTFF0);
+0110 Tm0F         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(2)+[4:6]));
+0111 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(2)+[4:6]));
+0112 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(2)+[4:6]),Tmm0,dTmm0);
+0113 TTm          = [0 0 1;1 0 0;0 1 0];
+0114 TT0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(2)+[4:6]));
+0115 [TTT0,dTTT0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(2)+[4:6]));
+0116 d2TTT0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(2)+[4:6]),TTT0,dTTT0);
+0117 TTg_T        = TT0g*TTT0;
+0118 TTg_F        = TF0g*TFF0*Tm0F*Tmm0*TTm;  <span class="comment">% Necessary for complex step.</span>
+0119 TgT          = TTg_T.';
+0120 TgF          = Tm0F*Tmm0*TTm*TgT;
+0121 Tm0g         = TF0g*TFF0*Tm0F;
+0122 Tgm          = TTm*TgT;
+0123 
+0124 ir = 0;  <span class="comment">% Displacement constraints.</span>
+0125 
+0126 <span class="keyword">for</span> jj = 1:3
+0127 
+0128    jc9 = 9*(jj-1);
+0129    jc3 = 3*(jj-1);
+0130 
+0131    <span class="comment">% ---ThF---</span>
+0132    jref = ThFref(jj);
+0133    dL(ir+[1:3],jref+idofm(2)+[1:3]) = TF0g*dTFF0(:,jc3+[1:3]);
+0134 
+0135    <span class="keyword">for</span> kdof = 1:3
+0136       kd3 = 3*(kdof-1);
+0137       dL(ir+[1:3],jref+idofs(1)+3+kdof) = TF0g*d2TFF0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0138                                  * (PB(idofm(2)+[1:3]) + qB(idofm(2)+[1:3]));
+0139    <span class="keyword">end</span>
+0140 
+0141    <span class="comment">% ---dm---</span>
+0142    jref = dmtref(jj);
+0143    <span class="keyword">for</span> kdof = 1:3
+0144       kd3 = 3*(kdof-1);
+0145       dL(ir+[1:3],jref+idofs(1)+3+kdof) = TF0g*dTFF0(:,kd3+jj);
+0146    <span class="keyword">end</span>
+0147 
+0148 <span class="keyword">end</span>
+0149 
+0150 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0151 
+0152 <span class="keyword">for</span> jj = 1:3
+0153 
+0154    jc9 = 9*(jj-1);
+0155    jc3 = 3*(jj-1);
+0156 
+0157    <span class="comment">% ---ThF---</span>
+0158    jref = ThFref(jj);
+0159    <span class="keyword">for</span> kdof = 1:3
+0160       kd3 = 3*(kdof-1);      
+0161 
+0162       dS = TF0g*d2TFF0(:,jc9+kd3+[1:3])*TgF;
+0163       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0164       dL(ir+[1:3],jref+idofs(1)+3+kdof) = v;
+0165 
+0166       dS = TF0g*dTFF0(:,jc3+[1:3])*Tm0F*dTmm0(:,kd3+[1:3])*Tgm;
+0167       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0168       dL(ir+[1:3],jref+idofm(2)+3+kdof) = v;
+0169 
+0170       dS = TF0g*dTFF0(:,jc3+[1:3])*Tm0F*Tmm0*TTm*((TT0g*dTTT0(:,kd3+[1:3])).');
+0171       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0172       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0173 
+0174    <span class="keyword">end</span>
+0175 
+0176    <span class="comment">% ---thm---</span>
+0177    jref = thmtref(jj);
+0178    <span class="keyword">for</span> kdof = 1:3
+0179       kd3 = 3*(kdof-1);      
+0180 
+0181       dS = TF0g*dTFF0(:,kd3+[1:3])*Tm0F*dTmm0(:,jc3+[1:3])*TTm*TgT;
+0182       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0183       dL(ir+[1:3],jref+idofs(1)+3+kdof) = v;
+0184 
+0185       dS = Tm0g*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0186       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0187       dL(ir+[1:3],jref+idofm(2)+3+kdof) = v;
+0188 
+0189       dS = Tm0g*dTmm0(:,jc3+[1:3])*TTm*((TT0g*dTTT0(:,kd3+[1:3])).');
+0190       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0191       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0192 
+0193    <span class="keyword">end</span>
+0194 
+0195    <span class="comment">% ---ThT---</span>
+0196    jref = ThTref(jj);
+0197    <span class="keyword">for</span> kdof = 1:3
+0198       kd3 = 3*(kdof-1);
+0199 
+0200       dS = TF0g*dTFF0(:,kd3+[1:3])*Tm0F*Tmm0*TTm*((TT0g*dTTT0(:,jc3+[1:3])).');
+0201       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0202       dL(ir+[1:3],jref+idofs(1)+3+kdof) = v;
+0203 
+0204       dS = Tm0g*dTmm0(:,kd3+[1:3])*TTm*((TT0g*dTTT0(:,jc3+[1:3])).');
+0205       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0206       dL(ir+[1:3],jref+idofm(2)+3+kdof) = v;
+0207 
+0208       dS = TTg_F*((TT0g*d2TTT0(:,jc9+kd3+[1:3])).');
+0209       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0210       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0211 
+0212    <span class="keyword">end</span>
+0213 
+0214 <span class="keyword">end</span>
+0215 
+0216 <span class="comment">% ================= Tower-nacelle joint ===================</span>
+0217 <span class="comment">% Derivatives are taken with respect to 13 DOFs: ThT, dm, thm, Thy,</span>
+0218 <span class="comment">% 3 each, plus chi (yaw angle, scalar).</span>
+0219 Tm0T         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(3)+[4:6]));
+0220 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(3)+[4:6]));
+0221 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(3)+[4:6]),Tmm0,dTmm0);
+0222 Tym          = [0 0 1;1 0 0;0 1 0]*[cy -sy 0;sy cy 0;0 0 1];
+0223 dTym         = [0 0 1;1 0 0;0 1 0]*[-sy -cy 0;cy -sy 0;0 0 0];
+0224 d2Tym        = [0 0 1;1 0 0;0 1 0]*[-cy sy 0;-sy -cy 0;0 0 0];
+0225 Ty0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(3)+[4:6]));
+0226 [Tyy0,dTyy0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(3)+[4:6]));
+0227 d2Tyy0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(3)+[4:6]),Tyy0,dTyy0);
+0228 Tyg_Y        = Ty0g*Tyy0;
+0229 Tyg_T        = TT0g*TTT0*Tm0T*Tmm0*Tym;  <span class="comment">% Necessary for complex step.</span>
+0230 Tgy          = Tyg_Y.';
+0231 Tm0g         = TT0g*TTT0*Tm0T;
+0232 Tgm          = Tym*Tgy;
+0233 Tmg          = TT0g*TTT0*Tm0T*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0234 
+0235 ir = ir + 3;  <span class="comment">% Displacement constraints.</span>
+0236 
+0237 <span class="keyword">for</span> jj = 1:3
+0238 
+0239    jc9 = 9*(jj-1);
+0240    jc3 = 3*(jj-1);
+0241 
+0242    <span class="comment">% ---ThT---</span>
+0243    jref = ThTref(jj);
+0244    dL(ir+[1:3],jref+idofm(3)+[1:3]) = TT0g*dTTT0(:,jc3+[1:3]);
+0245    <span class="keyword">for</span> kdof = 1:3
+0246       kd3 = 3*(kdof-1);
+0247       dL(ir+[1:3],jref+idofs(2)+3+kdof) = TT0g*d2TTT0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0248                                * (PB(idofm(3)+[1:3]) + qB(idofm(3)+[1:3]));
+0249    <span class="keyword">end</span>
+0250 
+0251    <span class="comment">% ---dm---</span>
+0252    jref = dmyref(jj);
+0253    <span class="keyword">for</span> kdof = 1:3
+0254       kd3 = 3*(kdof-1);
+0255       dL(ir+[1:3],jref+idofs(2)+3+kdof) = TT0g*dTTT0(:,kd3+jj);
+0256    <span class="keyword">end</span>
+0257 
+0258 <span class="keyword">end</span>
+0259 
+0260 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0261 
+0262 <span class="keyword">for</span> jj = 1:3
+0263 
+0264    jc9 = 9*(jj-1);
+0265    jc3 = 3*(jj-1);
+0266 
+0267    <span class="comment">% ---ThT---</span>
+0268    jref = ThTref(jj);
+0269    <span class="keyword">for</span> kdof = 1:3
+0270       kd3 = 3*(kdof-1);
+0271 
+0272       dS = TT0g*d2TTT0(:,jc9+kd3+[1:3])*Tm0T*Tmm0*Tgm;
+0273       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0274       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0275 
+0276       dS = TT0g*dTTT0(:,jc3+[1:3])*Tm0T*dTmm0(:,kd3+[1:3])*Tgm;
+0277       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0278       dL(ir+[1:3],jref+idofm(3)+3+kdof) = v;
+0279 
+0280       dS = TT0g*dTTT0(:,jc3+[1:3])*Tm0T*Tmm0*Tym*((Ty0g*dTyy0(:,kd3+[1:3])).');
+0281       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0282       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0283 
+0284    <span class="keyword">end</span>
+0285    dS = TT0g*dTTT0(:,jc3+[1:3])*Tm0T*Tmm0*dTym*Tgy;
+0286    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0287    dL(ir+[1:3],jref+ijnt(1)) = v;
+0288 
+0289    <span class="comment">% ---thm---</span>
+0290    jref = thmyref(jj);
+0291    <span class="keyword">for</span> kdof = 1:3
+0292       kd3 = 3*(kdof-1);
+0293 
+0294       dS = TT0g*dTTT0(:,kd3+[1:3])*Tm0T*dTmm0(:,jc3+[1:3])*Tym*Tgy;
+0295       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0296       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0297 
+0298       dS = Tm0g*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0299       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0300       dL(ir+[1:3],jref+idofm(3)+3+kdof) = v;
+0301 
+0302       dS = Tm0g*dTmm0(:,jc3+[1:3])*Tym*((Ty0g*dTyy0(:,kd3+[1:3])).');
+0303       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0304       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0305 
+0306    <span class="keyword">end</span>
+0307    dS = TT0g*TTT0*Tm0T*dTmm0(:,jc3+[1:3])*dTym*Tgy;
+0308    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0309    dL(ir+[1:3],jref+ijnt(1)) = v;
+0310 
+0311    <span class="comment">% ---Thy---</span>
+0312    jref = ThYref(jj);
+0313    <span class="keyword">for</span> kdof = 1:3
+0314       kd3 = 3*(kdof-1);
+0315 
+0316       dS = TT0g*dTTT0(:,kd3+[1:3])*Tm0T*Tmm0*Tym*((Ty0g*dTyy0(:,jc3+[1:3])).');
+0317       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0318       dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0319 
+0320       dS = Tm0g*dTmm0(:,kd3+[1:3])*Tym*((Ty0g*dTyy0(:,jc3+[1:3])).');
+0321       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0322       dL(ir+[1:3],jref+idofm(3)+3+kdof) = v;
+0323 
+0324       dS = Tyg_T*((Ty0g*d2Tyy0(:,jc9+kd3+[1:3])).');
+0325       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0326       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0327 
+0328    <span class="keyword">end</span>
+0329    dS = TT0g*TTT0*Tm0T*Tmm0*dTym*((Ty0g*dTyy0(:,jc3+[1:3])).');
+0330    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0331    dL(ir+[1:3],jref+ijnt(1)) = v;
+0332 
+0333 
+0334 <span class="keyword">end</span>
+0335 
+0336 <span class="comment">% ---chi---</span>
+0337 jref = chiref;
+0338 
+0339 <span class="keyword">for</span> kdof = 1:3
+0340    kd3 = 3*(kdof-1);
+0341 
+0342    dS = TT0g*dTTT0(:,kd3+[1:3])*Tm0T*Tmm0*dTym*Tgy;
+0343    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0344    dL(ir+[1:3],jref+idofs(2)+3+kdof) = v;
+0345 
+0346    dS = Tm0g*dTmm0(:,kd3+[1:3])*dTym*Tgy;
+0347    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0348    dL(ir+[1:3],jref+idofm(3)+3+kdof) = v;
+0349 
+0350    dS = Tmg*dTym*((Ty0g*dTyy0(:,kd3+[1:3])).');
+0351    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0352    dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0353 
+0354 <span class="keyword">end</span>
+0355 dS = Tmg*d2Tym*Tgy;
+0356 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0357 dL(ir+[1:3],jref+ijnt(1)) = v;
+0358 
+0359 <span class="comment">% ================= Rear bearing ===================</span>
+0360 <span class="comment">% Derivatives are taken with respect to 13 DOFs: Thy, dm, thm, Thd,</span>
+0361 <span class="comment">% 3 each, plus psi (azimuth angle, scalar).</span>
+0362 Tm0y         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(4)+[4:6]));
+0363 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(4)+[4:6]));
+0364 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(4)+[4:6]),Tmm0,dTmm0);
+0365 Tdm          = [0 0 -1;-1 0 0;0 1 0]*[ca -sa 0;sa ca 0;0 0 1];
+0366 dTdm         = [0 0 -1;-1 0 0;0 1 0]*[-sa -ca 0;ca -sa 0;0 0 0];
+0367 d2Tdm        = [0 0 -1;-1 0 0;0 1 0]*[-ca sa 0;-sa -ca 0;0 0 0];
+0368 Td0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(4)+[4:6]));
+0369 [Tdd0,dTdd0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(4)+[4:6]));
+0370 d2Tdd0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(4)+[4:6]),Tdd0,dTdd0);
+0371 Tdg_D        = Td0g*Tdd0;
+0372 Tdg_Y        = Ty0g*Tyy0*Tm0y*Tmm0*Tdm;  <span class="comment">% Necessary for complex step.</span>
+0373 Tgd          = Tdg_D.';
+0374 Tm0g         = Ty0g*Tyy0*Tm0y;
+0375 Tgm          = Tdm*Tgd;
+0376 Tmg          = Ty0g*Tyy0*Tm0y*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0377 
+0378 ir = ir + 3;  <span class="comment">% Displacement constraints.</span>
+0379 
+0380 <span class="keyword">for</span> jj = 1:3
+0381 
+0382    jc9 = 9*(jj-1);
+0383    jc3 = 3*(jj-1);
+0384 
+0385    <span class="comment">% ---Thy---</span>
+0386    jref = ThYref(jj);
+0387    dL(ir+[1:3],jref+idofm(4)+[1:3]) = Ty0g*dTyy0(:,jc3+[1:3]);
+0388    <span class="keyword">for</span> kdof = 1:3
+0389       kd3 = 3*(kdof-1);
+0390       dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*d2Tyy0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0391                                  * (PB(idofm(4)+[1:3]) + qB(idofm(4)+[1:3]));
+0392    <span class="keyword">end</span>
+0393 
+0394    <span class="comment">% ---dm---</span>
+0395    jref = dmdref(jj);
+0396    <span class="keyword">for</span> kdof = 1:3
+0397       kd3 = 3*(kdof-1);
+0398       dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*dTyy0(:,kd3+jj);
+0399    <span class="keyword">end</span>
+0400 
+0401 <span class="keyword">end</span>
+0402 
+0403 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0404 
+0405 <span class="keyword">for</span> jj = 1:3
+0406 
+0407    jc9 = 9*(jj-1);
+0408    jc3 = 3*(jj-1);
+0409 
+0410    <span class="comment">% ---Thy---</span>
+0411    jref = ThYref(jj);
+0412    <span class="keyword">for</span> kdof = 1:3
+0413       kd3 = 3*(kdof-1);
+0414 
+0415       dS = Ty0g*d2Tyy0(:,jc9+kd3+[1:3])*Tm0y*Tmm0*Tgm;
+0416       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0417       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0418 
+0419       dS = Ty0g*dTyy0(:,jc3+[1:3])*Tm0y*dTmm0(:,kd3+[1:3])*Tgm;
+0420       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0421       dL(ir+[1:3],jref+idofm(4)+3+kdof) = v;
+0422 
+0423       dS = Ty0g*dTyy0(:,jc3+[1:3])*Tm0y*Tmm0*Tdm*((Td0g*dTdd0(:,kd3+[1:3])).');
+0424       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0425       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0426 
+0427    <span class="keyword">end</span>
+0428    dS = Ty0g*dTyy0(:,jc3+[1:3])*Tm0y*Tmm0*dTdm*Tgd;
+0429    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0430    dL(ir+[1:3],jref+ijnt(2)) = v;
+0431 
+0432    <span class="comment">% ---thm---</span>
+0433    jref = thmdref(jj);
+0434    <span class="keyword">for</span> kdof = 1:3
+0435       kd3 = 3*(kdof-1);
+0436 
+0437       dS = Ty0g*dTyy0(:,kd3+[1:3])*Tm0y*dTmm0(:,jc3+[1:3])*Tdm*Tgd;
+0438       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0439       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0440 
+0441       dS = Ty0g*Tyy0*Tm0y*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0442       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0443       dL(ir+[1:3],jref+idofm(4)+3+kdof) = v;
+0444 
+0445       dS = Ty0g*Tyy0*Tm0y*dTmm0(:,jc3+[1:3])*Tdm*((Td0g*dTdd0(:,kd3+[1:3])).');
+0446       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0447       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0448 
+0449    <span class="keyword">end</span>
+0450    dS = Ty0g*Tyy0*Tm0y*dTmm0(:,jc3+[1:3])*dTdm*Tgd;
+0451    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0452    dL(ir+[1:3],jref+ijnt(2)) = v;
+0453 
+0454    <span class="comment">% ---Thd---</span>
+0455    jref = ThDref(jj);
+0456    <span class="keyword">for</span> kdof = 1:3
+0457       kd3 = 3*(kdof-1);
+0458 
+0459       dS = Ty0g*dTyy0(:,kd3+[1:3])*Tm0y*Tmm0*Tdm*((Td0g*dTdd0(:,jc3+[1:3])).');
+0460       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0461       dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0462 
+0463       dS = Tm0g*dTmm0(:,kd3+[1:3])*Tdm*((Td0g*dTdd0(:,jc3+[1:3])).');
+0464       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0465       dL(ir+[1:3],jref+idofm(4)+3+kdof) = v;
+0466 
+0467       dS = Tdg_Y*((Td0g*d2Tdd0(:,jc9+kd3+[1:3])).');
+0468       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0469       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0470 
+0471    <span class="keyword">end</span>
+0472    dS = Tmg*dTdm*((Td0g*dTdd0(:,jc3+[1:3])).');
+0473    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0474    dL(ir+[1:3],jref+ijnt(2)) = v;
+0475 
+0476 <span class="keyword">end</span>
+0477 
+0478 <span class="comment">% ---psi---</span>
+0479 jref = psiref;
+0480 <span class="keyword">for</span> kdof = 1:3
+0481    kd3 = 3*(kdof-1);
+0482 
+0483    dS = Ty0g*dTyy0(:,kd3+[1:3])*Tm0y*Tmm0*dTdm*Tgd;
+0484    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0485    dL(ir+[1:3],jref+idofs(3)+3+kdof) = v;
+0486 
+0487    dS = Tm0g*dTmm0(:,kd3+[1:3])*dTdm*Tgd;
+0488    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0489    dL(ir+[1:3],jref+idofm(4)+3+kdof) = v;
+0490 
+0491    dS = Tmg*dTdm*((Td0g*dTdd0(:,kd3+[1:3])).');
+0492    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0493    dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0494 
+0495 <span class="keyword">end</span>
+0496 dS = Tmg*d2Tdm*Tgd;
+0497 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0498 dL(ir+[1:3],jref+ijnt(2)) = v;
+0499 
+0500 <span class="comment">% ================= Front bearing ===================</span>
+0501 <span class="comment">% Derivatives are taken with respect to 16 DOFs: Thy, dm, thm, Thd,</span>
+0502 <span class="comment">% ds, 3 each, and eps, scalar.</span>
+0503 Tm0y         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(5)+[4:6]));
+0504 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(5)+[4:6]));
+0505 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(5)+[4:6]),Tmm0,dTmm0);
+0506 
+0507 ir = ir + 3;  <span class="comment">% Only displacement constraints, in this case.</span>
+0508 
+0509 <span class="keyword">for</span> jj = 1:3
+0510 
+0511    jc9 = 9*(jj-1);
+0512    jc3 = 3*(jj-1);
+0513 
+0514    <span class="comment">% ---Thy---</span>
+0515    jref = ThYref(jj);
+0516    dL(ir+[1:3],jref+idofm(5)+[1:3]) = Ty0g*dTyy0(:,jc3+[1:3]);
+0517    dL(ir+[1:3],jref+ijnt(3)) = Ty0g*dTyy0(:,jc3+[1:3])*Tm0y*Tmm0*[1;0;0];
+0518    <span class="keyword">for</span> kdof = 1:3
+0519       kd3 = 3*(kdof-1);
+0520       dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*d2Tyy0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0521           *(PB(idofm(5)+[1:3]) + qB(idofm(5)+[1:3]) + Tm0y*Tmm0*[fbx;0;0]);
+0522       dL(ir+[1:3],jref+idofm(5)+3+kdof) = Ty0g*dTyy0(:,jc3+[1:3]) <span class="keyword">...</span>
+0523                                         * Tm0y*dTmm0(:,kd3+[1:3])*[fbx;0;0];
+0524    <span class="keyword">end</span>
+0525 
+0526    <span class="comment">% ---dm---</span>
+0527    jref = dmsref(jj);
+0528    <span class="keyword">for</span> kdof = 1:3
+0529       kd3 = 3*(kdof-1);
+0530       dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*dTyy0(:,kd3+jj);
+0531    <span class="keyword">end</span>
+0532 
+0533    <span class="comment">% ---thm---</span>
+0534    jref = thmsref(jj);
+0535    dL(ir+[1:3],jref+ijnt(3)) = Tyg_Y*Tm0y*dTmm0(:,jc3+[1:3])*[1;0;0];
+0536    <span class="keyword">for</span> kdof = 1:3
+0537       kd3 = 3*(kdof-1);
+0538       dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*dTyy0(:,kd3+[1:3]) <span class="keyword">...</span>
+0539                                         * Tm0y*dTmm0(:,jc3+[1:3])*[fbx;0;0];
+0540       dL(ir+[1:3],jref+idofm(5)+3+kdof) = Tyg_Y*Tm0y*d2Tmm0(:,jc9+kd3+[1:3])*[fbx;0;0];
+0541    <span class="keyword">end</span>
+0542 
+0543    <span class="comment">% ---Thd---</span>
+0544    jref = ThDref(jj);
+0545    dL(ir+[1:3],jref+idofs(5)+[1:3]) = -Td0g*dTdd0(:,jc3+[1:3]);
+0546    <span class="keyword">for</span> kdof = 1:3
+0547       kd3 = 3*(kdof-1);
+0548       dL(ir+[1:3],jref+idofs(4)+3+kdof) = -Td0g*d2Tdd0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0549                                * (PB(idofs(5)+[1:3]) + qB(idofs(5)+[1:3]));
+0550    <span class="keyword">end</span>
+0551 
+0552    <span class="comment">% ---ds---</span>
+0553    jref = dssref(jj);
+0554    <span class="keyword">for</span> kdof = 1:3
+0555       kd3 = 3*(kdof-1);
+0556       dL(ir+[1:3],jref+idofs(4)+3+kdof) = -Td0g*dTdd0(:,kd3+jj);
+0557    <span class="keyword">end</span>
+0558 
+0559 <span class="keyword">end</span>
+0560 
+0561 <span class="comment">% ---eps---</span>
+0562 jref = epsref;
+0563 <span class="keyword">for</span> kdof = 1:3
+0564    kd3 = 3*(kdof-1);
+0565    dL(ir+[1:3],jref+idofs(3)+3+kdof) = Ty0g*dTyy0(:,kd3+[1:3])*Tm0y*Tmm0*[1;0;0];
+0566    dL(ir+[1:3],jref+idofm(5)+3+kdof) = Tyg_Y*Tm0y*dTmm0(:,kd3+[1:3])*[1;0;0];
+0567 <span class="keyword">end</span>
+0568 
+0569 <span class="comment">% ================= Blade 1 ===================</span>
+0570 <span class="comment">% Derivatives are taken with respect to 13 DOFs: Thd, dm, thm, Thp,</span>
+0571 <span class="comment">% 3 each, and beta, scalar.</span>
+0572 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(6)+[4:6]));
+0573 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(6)+[4:6]));
+0574 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(6)+[4:6]),Tmm0,dTmm0);
+0575 Tpm          = Tbh*[1 0 0;0 cb1 sb1;0 -sb1 cb1];
+0576 dTpm         = Tbh*[0 0 0;0 -sb1 cb1;0 -cb1 -sb1];
+0577 d2Tpm        = Tbh*[0 0 0;0 -cb1 -sb1;0 sb1 -cb1];
+0578 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(6)+[4:6]));
+0579 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(6)+[4:6]));
+0580 d2Tpp0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(6)+[4:6]),Tpp0,dTpp0);
+0581 Tpg_P        = Tp0g*Tpp0;
+0582 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0583 Tgp          = Tpg_P.';
+0584 Tm0g         = Td0g*Tdd0*Tm0d;
+0585 Tgm          = Tpm*Tgp;
+0586 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0587 
+0588 ir = ir + 3;  <span class="comment">% Displacement constraints.</span>
+0589 
+0590 <span class="keyword">for</span> jj = 1:3
+0591 
+0592    jc9 = 9*(jj-1);
+0593    jc3 = 3*(jj-1);
+0594 
+0595    <span class="comment">% ---Thd---</span>
+0596    jref = ThDref(jj);
+0597    dL(ir+[1:3],jref+idofm(6)+[1:3]) = Td0g*dTdd0(:,jc3+[1:3]);
+0598    <span class="keyword">for</span> kdof = 1:3
+0599       kd3 = 3*(kdof-1);
+0600       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*d2Tdd0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0601                                * (PB(idofm(6)+[1:3]) + qB(idofm(6)+[1:3]));
+0602    <span class="keyword">end</span>
+0603 
+0604    <span class="comment">% ---dm---</span>
+0605    jref = dm1ref(jj);
+0606    <span class="keyword">for</span> kdof = 1:3
+0607       kd3 = 3*(kdof-1);
+0608       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*dTdd0(:,kd3+jj);
+0609    <span class="keyword">end</span>
+0610 
+0611 <span class="keyword">end</span>
+0612 
+0613 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0614 
+0615 <span class="keyword">for</span> jj = 1:3
+0616 
+0617    jc9 = 9*(jj-1);
+0618    jc3 = 3*(jj-1);
+0619 
+0620    <span class="comment">% ---Thd---</span>
+0621    jref = ThDref(jj);
+0622    <span class="keyword">for</span> kdof = 1:3
+0623       kd3 = 3*(kdof-1);
+0624 
+0625       dS = Td0g*d2Tdd0(:,jc9+kd3+[1:3])*Tm0d*Tmm0*Tgm;
+0626       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0627       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0628 
+0629       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*dTmm0(:,kd3+[1:3])*Tgm;
+0630       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0631       dL(ir+[1:3],jref+idofm(6)+3+kdof) = v;
+0632 
+0633       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0634       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0635       dL(ir+[1:3],jref+idofs(6)+3+kdof) = v;
+0636 
+0637    <span class="keyword">end</span>
+0638    dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0639    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0640    dL(ir+[1:3],jref+ijnt(4)) = v;
+0641 
+0642    <span class="comment">% ---thm---</span>
+0643    jref = thm1ref(jj);
+0644    <span class="keyword">for</span> kdof = 1:3
+0645       kd3 = 3*(kdof-1);
+0646 
+0647       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*dTmm0(:,jc3+[1:3])*Tgm;
+0648       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0649       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0650 
+0651       dS = Tm0g*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0652       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0653       dL(ir+[1:3],jref+idofm(6)+3+kdof) = v;
+0654 
+0655       dS = Tm0g*dTmm0(:,jc3+[1:3])*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0656       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0657       dL(ir+[1:3],jref+idofs(6)+3+kdof) = v;
+0658 
+0659    <span class="keyword">end</span>
+0660    dS = Tm0g*dTmm0(:,jc3+[1:3])*dTpm*Tgp;
+0661    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0662    dL(ir+[1:3],jref+ijnt(4)) = v;
+0663 
+0664    <span class="comment">% ---ThB1---</span>
+0665    jref = ThB1ref(jj);
+0666    <span class="keyword">for</span> kdof = 1:3
+0667       kd3 = 3*(kdof-1);
+0668 
+0669       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0670       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0671       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0672 
+0673       dS = Tm0g*dTmm0(:,kd3+[1:3])*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0674       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0675       dL(ir+[1:3],jref+idofm(6)+3+kdof) = v;
+0676 
+0677       dS = Tmg*Tpm*((Tp0g*d2Tpp0(:,jc9+kd3+[1:3])).');
+0678       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0679       dL(ir+[1:3],jref+idofs(6)+3+kdof) = v;
+0680 
+0681    <span class="keyword">end</span>
+0682    dS = Tmg*dTpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0683    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0684    dL(ir+[1:3],jref+ijnt(4)) = v;
+0685 
+0686 <span class="keyword">end</span>
+0687 
+0688 <span class="comment">% ---beta1---</span>
+0689 jref = bet1ref;
+0690 <span class="keyword">for</span> kdof = 1:3
+0691    kd3 = 3*(kdof-1);
+0692 
+0693    dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0694    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0695    dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0696 
+0697    dS = Tm0g*dTmm0(:,kd3+[1:3])*dTpm*Tgp;
+0698    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0699    dL(ir+[1:3],jref+idofm(6)+3+kdof) = v;
+0700 
+0701    dS = Tmg*dTpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0702    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0703    dL(ir+[1:3],jref+idofs(6)+3+kdof) = v;
+0704 
+0705 <span class="keyword">end</span>
+0706 dS = Tmg*d2Tpm*Tgp;
+0707 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0708 dL(ir+[1:3],jref+ijnt(4)) = v;
+0709 
+0710 <span class="comment">% ================= Blade 2 ===================</span>
+0711 <span class="comment">% Derivatives are taken with respect to 13 DOFs: Thd, dm, thm, Thp,</span>
+0712 <span class="comment">% 3 each, and beta, scalar.</span>
+0713 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(7)+[4:6]));
+0714 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(7)+[4:6]));
+0715 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(7)+[4:6]),Tmm0,dTmm0);
+0716 Tpm          = Tbh*[1 0 0;0 cb2 sb2;0 -sb2 cb2];
+0717 dTpm         = Tbh*[0 0 0;0 -sb2 cb2;0 -cb2 -sb2];
+0718 d2Tpm        = Tbh*[0 0 0;0 -cb2 -sb2;0 sb2 -cb2];
+0719 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(7)+[4:6]));
+0720 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(7)+[4:6]));
+0721 d2Tpp0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(7)+[4:6]),Tpp0,dTpp0);
+0722 Tpg_P        = Tp0g*Tpp0;
+0723 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0724 Tgp          = Tpg_P.';
+0725 Tm0g         = Td0g*Tdd0*Tm0d;
+0726 Tgm          = Tpm*Tgp;
+0727 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0728 
+0729 ir = ir + 3;  <span class="comment">% Displacement constraints.</span>
+0730 
+0731 <span class="keyword">for</span> jj = 1:3
+0732 
+0733    jc9 = 9*(jj-1);
+0734    jc3 = 3*(jj-1);
+0735 
+0736    <span class="comment">% ---Thd---</span>
+0737    jref = ThDref(jj);
+0738    dL(ir+[1:3],jref+idofm(7)+[1:3]) = Td0g*dTdd0(:,jc3+[1:3]);
+0739    <span class="keyword">for</span> kdof = 1:3
+0740       kd3 = 3*(kdof-1);
+0741       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*d2Tdd0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0742                                * (PB(idofm(7)+[1:3]) + qB(idofm(7)+[1:3]));
+0743    <span class="keyword">end</span>
+0744 
+0745    <span class="comment">% ---dm---</span>
+0746    jref = dm2ref(jj);
+0747    <span class="keyword">for</span> kdof = 1:3
+0748       kd3 = 3*(kdof-1);
+0749       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*dTdd0(:,kd3+jj);
+0750    <span class="keyword">end</span>
+0751 
+0752 <span class="keyword">end</span>
+0753 
+0754 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0755 
+0756 <span class="keyword">for</span> jj = 1:3
+0757 
+0758    jc9 = 9*(jj-1);
+0759    jc3 = 3*(jj-1);
+0760 
+0761    <span class="comment">% ---Thd---</span>
+0762    jref = ThDref(jj);
+0763    <span class="keyword">for</span> kdof = 1:3
+0764       kd3 = 3*(kdof-1);
+0765 
+0766       dS = Td0g*d2Tdd0(:,jc9+kd3+[1:3])*Tm0d*Tmm0*Tgm;
+0767       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0768       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0769 
+0770       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*dTmm0(:,kd3+[1:3])*Tgm;
+0771       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0772       dL(ir+[1:3],jref+idofm(7)+3+kdof) = v;
+0773 
+0774       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0775       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0776       dL(ir+[1:3],jref+idofs(7)+3+kdof) = v;
+0777 
+0778    <span class="keyword">end</span>
+0779    dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0780    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0781    dL(ir+[1:3],jref+ijnt(5)) = v;
+0782 
+0783    <span class="comment">% ---thm---</span>
+0784    jref = thm2ref(jj);
+0785    <span class="keyword">for</span> kdof = 1:3
+0786       kd3 = 3*(kdof-1);
+0787 
+0788       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*dTmm0(:,jc3+[1:3])*Tgm;
+0789       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0790       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0791 
+0792       dS = Tm0g*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0793       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0794       dL(ir+[1:3],jref+idofm(7)+3+kdof) = v;
+0795 
+0796       dS = Tm0g*dTmm0(:,jc3+[1:3])*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0797       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0798       dL(ir+[1:3],jref+idofs(7)+3+kdof) = v;
+0799 
+0800    <span class="keyword">end</span>
+0801    dS = Tm0g*dTmm0(:,jc3+[1:3])*dTpm*Tgp;
+0802    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0803    dL(ir+[1:3],jref+ijnt(5)) = v;
+0804 
+0805    <span class="comment">% ---ThB2---</span>
+0806    jref = ThB2ref(jj);
+0807    <span class="keyword">for</span> kdof = 1:3
+0808       kd3 = 3*(kdof-1);
+0809 
+0810       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0811       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0812       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0813 
+0814       dS = Tm0g*dTmm0(:,kd3+[1:3])*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0815       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0816       dL(ir+[1:3],jref+idofm(7)+3+kdof) = v;
+0817 
+0818       dS = Tmg*Tpm*((Tp0g*d2Tpp0(:,jc9+kd3+[1:3])).');
+0819       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0820       dL(ir+[1:3],jref+idofs(7)+3+kdof) = v;
+0821 
+0822    <span class="keyword">end</span>
+0823    dS = Tmg*dTpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0824    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0825    dL(ir+[1:3],jref+ijnt(5)) = v;
+0826 
+0827 <span class="keyword">end</span>
+0828 
+0829 <span class="comment">% ---beta2---</span>
+0830 jref = bet2ref;
+0831 <span class="keyword">for</span> kdof = 1:3
+0832    kd3 = 3*(kdof-1);
+0833 
+0834    dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0835    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0836    dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0837 
+0838    dS = Tm0g*dTmm0(:,kd3+[1:3])*dTpm*Tgp;
+0839    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0840    dL(ir+[1:3],jref+idofm(7)+3+kdof) = v;
+0841 
+0842    dS = Tmg*dTpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0843    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0844    dL(ir+[1:3],jref+idofs(7)+3+kdof) = v;
+0845 
+0846 <span class="keyword">end</span>
+0847 dS = Tmg*d2Tpm*Tgp;
+0848 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0849 dL(ir+[1:3],jref+ijnt(5)) = v;
+0850 
+0851 <span class="comment">% ================= Blade 3 ===================</span>
+0852 <span class="comment">% Derivatives are taken with respect to 13 DOFs: Thd, dm, thm, Thp,</span>
+0853 <span class="comment">% 3 each, and beta, scalar.</span>
+0854 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(8)+[4:6]));
+0855 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(8)+[4:6]));
+0856 d2Tmm0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofm(8)+[4:6]),Tmm0,dTmm0);
+0857 Tpm          = Tbh*[1 0 0;0 cb3 sb3;0 -sb3 cb3];
+0858 dTpm         = Tbh*[0 0 0;0 -sb3 cb3;0 -cb3 -sb3];
+0859 d2Tpm        = Tbh*[0 0 0;0 -cb3 -sb3;0 sb3 -cb3];
+0860 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(8)+[4:6]));
+0861 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(8)+[4:6]));
+0862 d2Tpp0       = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>    (qB(idofs(8)+[4:6]),Tpp0,dTpp0);
+0863 Tpg_P        = Tp0g*Tpp0;
+0864 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0865 Tgp          = Tpg_P.';
+0866 Tm0g         = Td0g*Tdd0*Tm0d;
+0867 Tgm          = Tpm*Tgp;
+0868 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0869 
+0870 ir = ir + 3;  <span class="comment">% Displacement constraints.</span>
+0871 
+0872 <span class="keyword">for</span> jj = 1:3
+0873 
+0874    jc9 = 9*(jj-1);
+0875    jc3 = 3*(jj-1);
+0876 
+0877    <span class="comment">% ---Thd---</span>
+0878    jref = ThDref(jj);
+0879    dL(ir+[1:3],jref+idofm(8)+[1:3]) = Td0g*dTdd0(:,jc3+[1:3]);
+0880    <span class="keyword">for</span> kdof = 1:3
+0881       kd3 = 3*(kdof-1);
+0882       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*d2Tdd0(:,jc9+kd3+[1:3]) <span class="keyword">...</span>
+0883                                * (PB(idofm(8)+[1:3]) + qB(idofm(8)+[1:3]));
+0884    <span class="keyword">end</span>
+0885 
+0886    <span class="comment">% ---dm---</span>
+0887    jref = dm3ref(jj);
+0888    <span class="keyword">for</span> kdof = 1:3
+0889       kd3 = 3*(kdof-1);
+0890       dL(ir+[1:3],jref+idofs(4)+3+kdof) = Td0g*dTdd0(:,kd3+jj);
+0891    <span class="keyword">end</span>
+0892 
+0893 <span class="keyword">end</span>
+0894 
+0895 ir = ir + 3;  <span class="comment">% Rotation constraints.</span>
+0896 
+0897 <span class="keyword">for</span> jj = 1:3
+0898 
+0899    jc9 = 9*(jj-1);
+0900    jc3 = 3*(jj-1);
+0901 
+0902    <span class="comment">% ---Thd---</span>
+0903    jref = ThDref(jj);
+0904    <span class="keyword">for</span> kdof = 1:3
+0905       kd3 = 3*(kdof-1);
+0906 
+0907       dS = Td0g*d2Tdd0(:,jc9+kd3+[1:3])*Tm0d*Tmm0*Tgm;
+0908       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0909       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0910 
+0911       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*dTmm0(:,kd3+[1:3])*Tgm;
+0912       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0913       dL(ir+[1:3],jref+idofm(8)+3+kdof) = v;
+0914 
+0915       dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0916       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0917       dL(ir+[1:3],jref+idofs(8)+3+kdof) = v;
+0918 
+0919    <span class="keyword">end</span>
+0920    dS = Td0g*dTdd0(:,jc3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0921    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0922    dL(ir+[1:3],jref+ijnt(6)) = v;
+0923 
+0924    <span class="comment">% ---thm---</span>
+0925    jref = thm3ref(jj);
+0926    <span class="keyword">for</span> kdof = 1:3
+0927       kd3 = 3*(kdof-1);
+0928 
+0929       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*dTmm0(:,jc3+[1:3])*Tgm;
+0930       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0931       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0932 
+0933       dS = Tm0g*d2Tmm0(:,jc9+kd3+[1:3])*Tgm;
+0934       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0935       dL(ir+[1:3],jref+idofm(8)+3+kdof) = v;
+0936 
+0937       dS = Tm0g*dTmm0(:,jc3+[1:3])*Tpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0938       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0939       dL(ir+[1:3],jref+idofs(8)+3+kdof) = v;
+0940 
+0941    <span class="keyword">end</span>
+0942    dS = Tm0g*dTmm0(:,jc3+[1:3])*dTpm*Tgp;
+0943    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0944    dL(ir+[1:3],jref+ijnt(6)) = v;
+0945 
+0946    <span class="comment">% ---ThB3---</span>
+0947    jref = ThB3ref(jj);
+0948    <span class="keyword">for</span> kdof = 1:3
+0949       kd3 = 3*(kdof-1);
+0950 
+0951       dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0952       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0953       dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0954 
+0955       dS = Tm0g*dTmm0(:,kd3+[1:3])*Tpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0956       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0957       dL(ir+[1:3],jref+idofm(8)+3+kdof) = v;
+0958 
+0959       dS = Tmg*Tpm*((Tp0g*d2Tpp0(:,jc9+kd3+[1:3])).');
+0960       v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0961       dL(ir+[1:3],jref+idofs(8)+3+kdof) = v;
+0962 
+0963    <span class="keyword">end</span>
+0964    dS = Tmg*dTpm*((Tp0g*dTpp0(:,jc3+[1:3])).');
+0965    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0966    dL(ir+[1:3],jref+ijnt(6)) = v;
+0967 
+0968 <span class="keyword">end</span>
+0969 
+0970 <span class="comment">% ---beta3---</span>
+0971 jref = bet3ref;
+0972 <span class="keyword">for</span> kdof = 1:3
+0973    kd3 = 3*(kdof-1);
+0974 
+0975    dS = Td0g*dTdd0(:,kd3+[1:3])*Tm0d*Tmm0*dTpm*Tgp;
+0976    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0977    dL(ir+[1:3],jref+idofs(4)+3+kdof) = v;
+0978 
+0979    dS = Tm0g*dTmm0(:,kd3+[1:3])*dTpm*Tgp;
+0980    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0981    dL(ir+[1:3],jref+idofm(8)+3+kdof) = v;
+0982 
+0983    dS = Tmg*dTpm*((Tp0g*dTpp0(:,kd3+[1:3])).');
+0984    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0985    dL(ir+[1:3],jref+idofs(8)+3+kdof) = v;
+0986 
+0987 <span class="keyword">end</span>
+0988 dS = Tmg*d2Tpm*Tgp;
+0989 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (dS);
+0990 dL(ir+[1:3],jref+ijnt(6)) = v;
+0991 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

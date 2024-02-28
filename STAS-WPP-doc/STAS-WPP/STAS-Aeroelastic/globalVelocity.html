@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of globalVelocity</title>
+  <meta name="keywords" content="globalVelocity">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; globalVelocity.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>globalVelocity
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Computes the nodal velocity [v;w] and the Dy matrix entries for linear
+ perturbations.
+
+   States:           y vector:         u vector:
+                     qB
+                     qn
+                     dqBdt
+                     dqndt
+                     [vg,wg]
+
+ Version:        Changes:
+ --------        -------------
+ 20.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 20.12.2017      Verified using complex step via vg0 output.
+
+ Inputs:
+ -------
+ qn              : DOFs associated with the node.
+ qB              : DOFs associated with the body reference node.
+ Pn              : Undeformed pos,rot of the node wrt body reference.
+ PB              : Undeformed pos,rot of the body reference.
+ dqndt,dqBdt     : Rates of change of qn, qB.
+
+ Outputs:
+ --------
+ vg0             : Nodal velocities at the input conditions.
+ Dy              : dv/dq and dv/dqdot, 6-by-24 for each node.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qgnod.html" class="code" title="function Q = Qgnod (qn,qB,Pn,PB)">Qgnod</a>	</li>
+<li><a href="dQgdq.html" class="code" title="function dQ = dQgdq (qn,qB,Pn,PB)">dQgdq</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="aeroPower.html" class="code" title="function [Pow,y,Du] = aeroPower (qpsi,dqpsidt,Fpsi,P,idofs,blxdof,dret,Nbnod)">aeroPower</a>	</li>
+<li><a href="genSpeed.html" class="code" title="function [Wg,Dy] = genSpeed (qgen,dqgen,Pgen)">genSpeed</a>	</li>
+<li><a href="globalPosVel.html" class="code" title="function [xng,vng,Dy] = globalPosVel (s,idofs,qq,PP,dqqdt)">globalPosVel</a>	</li>
+<li><a href="soilPower.html" class="code" title="function [y,Du] = soilPower (s,qf,dqfdt,P)">soilPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/appliedPower.html" class="code" title="function [Pow,y,Du,TBg] = appliedPower (s,qq,dqqdt,F,PP,idofs)">appliedPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Computes the nodal velocity [v;w] and the Dy matrix entries for linear</span>
+0004 <span class="comment">% perturbations.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:         u vector:</span>
+0007 <span class="comment">%                     qB</span>
+0008 <span class="comment">%                     qn</span>
+0009 <span class="comment">%                     dqBdt</span>
+0010 <span class="comment">%                     dqndt</span>
+0011 <span class="comment">%                     [vg,wg]</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Changes:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 20.12.2017      Original code.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version:        Verification:</span>
+0018 <span class="comment">% --------        -------------</span>
+0019 <span class="comment">% 20.12.2017      Verified using complex step via vg0 output.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% qn              : DOFs associated with the node.</span>
+0024 <span class="comment">% qB              : DOFs associated with the body reference node.</span>
+0025 <span class="comment">% Pn              : Undeformed pos,rot of the node wrt body reference.</span>
+0026 <span class="comment">% PB              : Undeformed pos,rot of the body reference.</span>
+0027 <span class="comment">% dqndt,dqBdt     : Rates of change of qn, qB.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">% vg0             : Nodal velocities at the input conditions.</span>
+0032 <span class="comment">% Dy              : dv/dq and dv/dqdot, 6-by-24 for each node.</span>
+0033 
+0034 Nnod = size (qn,1)/6;
+0035 
+0036 vg0 = zeros(6*Nnod,1);
+0037 Dy  = zeros(6,24*Nnod);
+0038 
+0039 <span class="keyword">for</span> inod = 1:Nnod
+0040 
+0041    jc24 = 24*(inod-1);
+0042    jc12 = 12*(inod-1);
+0043    jc6 = 6*(inod-1);
+0044    Qg  = <a href="Qgnod.html" class="code" title="function Q = Qgnod (qn,qB,Pn,PB)">Qgnod</a> (qn,qB,Pn,PB);
+0045 
+0046    dQg = <a href="dQgdq.html" class="code" title="function dQ = dQgdq (qn,qB,Pn,PB)">dQgdq</a> (qn,qB,Pn,PB);
+0047 
+0048    vg0 = Qg*[dqBdt(jc6+[1:6]);dqndt(jc6+[1:6])];
+0049 
+0050    Dy(:,jc24+[13:24]) = Qg;
+0051    <span class="keyword">for</span> idof = 1:6
+0052       kc12 = 12*(idof-1);
+0053       Dy(:,jc24+idof) = dQg(:,kc12+[1:12])*[dqBdt(jc6+[1:6]);dqndt(jc6+[1:6])];
+0054    <span class="keyword">end</span>
+0055    <span class="keyword">for</span> idof = 1:6
+0056       kc12 = 12*(idof+6-1);
+0057       Dy(:,jc24+6+idof) = dQg(:,kc12+[1:12])*[dqBdt(jc6+[1:6]);dqndt(jc6+[1:6])];
+0058    <span class="keyword">end</span>
+0059 
+0060 <span class="keyword">end</span>
+0061 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

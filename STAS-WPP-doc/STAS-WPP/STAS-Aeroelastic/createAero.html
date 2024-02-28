@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of createAero</title>
+  <meta name="keywords" content="createAero">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; createAero.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>createAero
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function a = createAero (Nfoils,Neb) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Creates a data structure holding the inputs needed for the
+ aerodynamic loads analysis.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function a = createAero (Nfoils,Neb)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Creates a data structure holding the inputs needed for the</span>
+0004 <span class="comment">% aerodynamic loads analysis.</span>
+0005 <span class="comment">%</span>
+0006 
+0007    Nb       = 3;                      <span class="comment">% Hard-coded number of blades.</span>
+0008 
+0009    a.Nb     = Nb;
+0010    a.Neb    = Neb;                    <span class="comment">% Number of aero elements per blade.</span>
+0011 
+0012    <span class="comment">%----------------- Element section properties -----------------</span>
+0013    a.xia    = zeros(Nb*Neb,1);        <span class="comment">% Aerodynamic twist, rad.</span>
+0014    a.chord  = zeros(Nb*Neb,1);        <span class="comment">% Chord length.</span>
+0015    a.xpc    = zeros(Nb*Neb,1);        <span class="comment">% Position of the pitch axis aft of the</span>
+0016                                       <span class="comment">% leading edge, in fractions of the chord</span>
+0017                                       <span class="comment">% length.</span>
+0018    a.acent  = zeros(Nb*Neb,1);        <span class="comment">%   ...           aero center    ...</span>
+0019    a.Lel    = zeros(Nb*Neb,1);        <span class="comment">% Length of each aero element, for aero</span>
+0020                                       <span class="comment">% load calculation.  Caution, use the</span>
+0021                                       <span class="comment">% projected length for momentum balance.</span>
+0022    a.foilwt = sparse(Nfoils,Nb*Neb);  <span class="comment">% Weight of each airfoil type.</span>
+0023    a.aoas   = [];
+0024    a.kfoils = [];
+0025 
+0026    <span class="comment">% The zero-lift aoa is used for dynamic stall.  This has to be</span>
+0027    <span class="comment">% computed after getting the airfoil coefficient weights.  For</span>
+0028    <span class="comment">% &quot;weird&quot; inboard sections that don't quite behave like airfoils,</span>
+0029    <span class="comment">% this should be where the projection of the primary lift curve</span>
+0030    <span class="comment">% slope intersects the zero-lift axis.</span>
+0031    a.aoaz   = zeros(Nb*Neb,1); 
+0032 
+0033    a.Pa_B   = zeros(6*Nb*Neb,1);      <span class="comment">% Undeformed coordinates of aero elements,</span>
+0034                                       <span class="comment">% pitch CS.</span>
+0035    a.Ta_s   = zeros(3,3*Nb*Neb);      <span class="comment">% Transform from aero to (aero) section</span>
+0036                                       <span class="comment">% coordinates.</span>
+0037 
+0038 
+0039    <span class="comment">%----------------------- Air properties -----------------------</span>
+0040    a.dens   = 0;                      <span class="comment">% Air density.</span>
+0041    a.visc   = 0;                      <span class="comment">% Air viscosity.</span>
+0042    a.z0     = 0;                      <span class="comment">% Surface roughness length for wind shear.</span>
+0043    
+0044    <span class="comment">% Set to positive integers if icp contains the control points</span>
+0045    <span class="comment">% for a spline representation of the aerodynamic states. Set</span>
+0046    <span class="comment">% to negative integers if icp contains the blade body modes</span>
+0047    <span class="comment">% for a modal-slave representation of the aerodynamic states.</span>
+0048    <span class="comment">% In the latter case, the selection of modes has to be verified</span>
+0049    <span class="comment">% as the turbine design is altered.</span>
+0050    a.icp    = [];
+0051 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

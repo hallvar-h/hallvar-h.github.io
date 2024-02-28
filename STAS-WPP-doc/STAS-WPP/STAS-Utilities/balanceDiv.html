@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of balanceDiv</title>
+  <meta name="keywords" content="balanceDiv">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; balanceDiv.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>balanceDiv
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Am1B = balanceDiv (A,B) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute a balanced solution to A\B, handy when A is not well
+ conditioned.
+
+ To compute an inverse, enter B = eye(size(A)).
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="RiccatiQS.html" class="code" title="function [Pdot,dRic] = RiccatiQS (linFlag,Pin,A,B,Q,R)">RiccatiQS</a>	</li>
+<li><a href="parfac.html" class="code" title="">parfac</a>	</li>
+<li><a href="reducedTFModel.html" class="code" title="function [Ar,Bur,Cr,Dur] = reducedTFModel (mflag,A,B,C,D,fs,acc)">reducedTFModel</a>	CAUTION, NOT ADAPTED FOR COMPLEX STEP DERIVATIVES.</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Am1B = balanceDiv (A,B)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute a balanced solution to A\B, handy when A is not well</span>
+0004 <span class="comment">% conditioned.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% To compute an inverse, enter B = eye(size(A)).</span>
+0007 <span class="comment">%</span>
+0008 
+0009 Nx = size(A,1);
+0010 
+0011 [Diag,Perm,Anorm] = balance(A,<span class="string">'noperm'</span>);
+0012 ii = [1:Nx];
+0013 jj = ii;
+0014 DD = sparse(ii,jj,Diag,Nx,Nx);
+0015 iDD = inv(DD);
+0016 
+0017 <span class="comment">%cond(Anorm)</span>
+0018 
+0019 Am1B = DD*(Anorm\(iDD*B));
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

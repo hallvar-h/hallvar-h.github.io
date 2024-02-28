@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of runWind</title>
+  <meta name="keywords" content="runWind">
+  <meta name="description" content="Generate turbulence spectra, including the effects of periodic">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wind</a> &gt; runWind.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wind&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>runWind
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Generate turbulence spectra, including the effects of periodic</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Generate turbulence spectra, including the effects of periodic
+ wind shear and tower shadow.
+
+ Missing functionality: (See previous STAS Wind versions.)
+ - Tower-blade cross-spectra.
+ - Real/Imaginary spectra for complex-step gradients.
+ - The spectral scaling method for Vinf, W.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a>	</li>
+<li><a href="periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Generate turbulence spectra, including the effects of periodic</span>
+0002 <span class="comment">% wind shear and tower shadow.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Missing functionality: (See previous STAS Wind versions.)</span>
+0005 <span class="comment">% - Tower-blade cross-spectra.</span>
+0006 <span class="comment">% - Real/Imaginary spectra for complex-step gradients.</span>
+0007 <span class="comment">% - The spectral scaling method for Vinf, W.</span>
+0008 
+0009 clear;
+0010 
+0011 nm = <span class="string">'DTU10MW'</span>;
+0012 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0013 load <span class="string">'xpsi_P060_V100.txt'</span>;
+0014 load <span class="string">'ypsi_P060_V100.txt'</span>;
+0015 xpsi = xpsi_P060_V100;
+0016 ypsi = ypsi_P060_V100;
+0017 
+0018 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0019  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0020  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0021  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0022 
+0023 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0024 
+0025 <span class="comment">%-------------------------------------------------------------------</span>
+0026 <span class="comment">% Inputs:</span>
+0027 
+0028 MBCflag = 1;
+0029 
+0030 Vmag = 10.;
+0031 yaw = 0*pi/180;
+0032 Vinf = [Vmag*cos(yaw);Vmag*sin(yaw);0];
+0033 betas = [0;0;0];
+0034 psi0 = 0;
+0035 
+0036 <span class="comment">%TI    = 0.14*(0.75*Vmag + 5.6)./Vmag; % IEC 61400-1 NTM.</span>
+0037 <span class="comment">%                                      % Class B, Iref = 0.14.</span>
+0038 
+0039 sigV = 1.;   <span class="comment">% Unit variance.</span>
+0040 TI = sigV/Vmag;
+0041 
+0042 <span class="comment">%Lu    = (180/length); % Based on surface roughness length of</span>
+0043 <span class="comment">%                      % about 0.01 m.  0.0001: 235, 0.001: 200,</span>
+0044 <span class="comment">%                      % 0.01: 175, 0.1: 150.  Intended to</span>
+0045 <span class="comment">%                      % represent a turbine deep in a plant.</span>
+0046 
+0047 Lu = 2000;
+0048 
+0049 nnf = 2^9;  <span class="comment">% Number of analysis frequencies, 1/4 the total frequencies.</span>
+0050 df = 0.001;
+0051 
+0052 <span class="comment">%-------------------------------------------------------------------</span>
+0053 
+0054 Pin = <a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0055 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0056 [q0,P,Ts0B,TB0g] =                                                     <span class="keyword">...</span>
+0057       <a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a> (Pin,yaw,s.nacelle.delta,0,s.driveshaft.phi, <span class="keyword">...</span>
+0058                           betas,0,idofs,idofm,inods,inodm);
+0059 Ndj = size(q0,1);
+0060 
+0061 <span class="comment">%-------------------------------------------------------------------</span>
+0062 <span class="comment">% Specify the wind shear as a function of height.</span>
+0063 <span class="comment">% Elevation, vector pairs.</span>
+0064 Nws = 50;
+0065 z1 = P(idofs(2)+3) - 10;
+0066 z2 = P(idofs(4)+3) + 120;
+0067 zref = P(idofs(4)+3) - z1;
+0068 h0 = 0.01;
+0069 dz = (z2 - z1 - h0)/(Nws - 1);
+0070 zs = h0 + dz*[0:Nws-1].';
+0071 WS = (Vinf.').*log(zs/h0)/log(zref/h0);
+0072 <span class="comment">%-------------------------------------------------------------------</span>
+0073 
+0074 ppx = pchip (zs+z1,WS(:,1));
+0075 ppy = pchip (zs+z1,WS(:,2));
+0076 ppz = pchip (zs+z1,WS(:,3));
+0077 
+0078 Nf = 4*nnf;
+0079 dt = 1/(4*nnf*df);
+0080 
+0081 [b1,b2,b3] = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Ndj.html" class="code" title="function [b1,b2,b3] = MBCindices_Ndj (Ndj,idofs)">MBCindices_Ndj</a> (Ndj,idofs);
+0082 [TpsiB_Ndj,TBpsi_Ndj] = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Ndj,b1,b2,b3,psi0);
+0083 q = TpsiB_Ndj*ypsi(1:Ndj);
+0084 dqdt = TpsiB_Ndj*ypsi(Ndj+[1:Ndj]);
+0085 
+0086 QSflag = 2;
+0087 Sij = <a href="buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a> (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P);
+0088 
+0089 Npsi = 2^11;
+0090 psis = (2*pi/Npsi)*[0:Npsi-1].';
+0091 
+0092 [Vavg,vg] = <a href="periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a> (s,a,q,P,psis,ppx,ppy,ppz);
+0093 
+0094 <span class="comment">% vg is reported as a function of the azimuth angle psi.  I need</span>
+0095 <span class="comment">% this in terms of time, psi/W.</span>
+0096 Omega = ypsi(Ndj+idofs(4)+6);
+0097 
+0098 ts = psis/Omega;
+0099 dt = ts(2) - ts(1);
+0100 P1 = Omega/(2*pi);    <span class="comment">% 1P = df = Omega/(2*pi) = 1/(Npsi*dt).</span>
+0101 
+0102 <span class="comment">% Also the MBC transform.</span>
+0103 Nel = size(vg,2)/3;
+0104 
+0105 <span class="keyword">if</span> (MBCflag == 1)
+0106    TBpsi = zeros (Npsi,9);
+0107    third = 1/3;
+0108    cp  = cos (psis);
+0109    sp  = sin (psis);
+0110    cp2 = cos (psis + 2*pi/3);
+0111    sp2 = sin (psis + 2*pi/3);
+0112    cp3 = cos (psis + 4*pi/3);
+0113    sp3 = sin (psis + 4*pi/3);
+0114    TBpsi(:,1) = third;
+0115    TBpsi(:,2) = 2*third*cp;
+0116    TBpsi(:,3) = 2*third*sp;
+0117    TBpsi(:,4) = third;
+0118    TBpsi(:,5) = 2*third*cp2;
+0119    TBpsi(:,6) = 2*third*sp2;
+0120    TBpsi(:,7) = third;
+0121    TBpsi(:,8) = 2*third*cp3;
+0122    TBpsi(:,9) = 2*third*sp3;
+0123    ibl = [[1:Nel];Nel+[1:Nel];2*Nel+[1:Nel]];
+0124    <span class="keyword">for</span> iel = 1:Nel  <span class="comment">% Note, really iel = icol, indexing the component.</span>
+0125       ir3 = 3*(iel-1);
+0126       dat = vg(:,ibl(:,iel)) + Vavg(ibl(:,iel)).';  <span class="comment">% Need to include mean.</span>
+0127       vv = zeros(Npsi,3);
+0128       vv(:,1) = TBpsi(:,1).*dat(:,1) + TBpsi(:,4).*dat(:,2) <span class="keyword">...</span>
+0129               + TBpsi(:,7).*dat(:,3);
+0130       vv(:,2) = TBpsi(:,2).*dat(:,1) + TBpsi(:,5).*dat(:,2) <span class="keyword">...</span>
+0131               + TBpsi(:,8).*dat(:,3);
+0132       vv(:,3) = TBpsi(:,3).*dat(:,1) + TBpsi(:,6).*dat(:,2) <span class="keyword">...</span>
+0133               + TBpsi(:,9).*dat(:,3);
+0134       Vavg(ibl(:,iel)) = mean(vv).';
+0135       vg(:,ibl(1,iel)) = vv(:,1) - Vavg(ibl(1,iel));
+0136       vg(:,ibl(2,iel)) = vv(:,2) - Vavg(ibl(2,iel));
+0137       vg(:,ibl(3,iel)) = vv(:,3) - Vavg(ibl(3,iel));
+0138    <span class="keyword">end</span>
+0139 <span class="keyword">end</span>
+0140 
+0141 vgf = fft(vg)/Npsi;
+0142 Nv = size(vg,2);
+0143 
+0144 Sper = zeros (Npsi,Nv^2);
+0145 <span class="keyword">for</span> iv = 1:Nv
+0146 
+0147    icol = Nv*(iv-1);
+0148    Sper(:,icol+[1:Nv]) = vgf.*conj(vgf(:,iv))/df;
+0149 
+0150 <span class="keyword">end</span>
+0151 
+0152 <span class="comment">% Store the spectra according to the actual frequencies, not multiples</span>
+0153 <span class="comment">% of the rotor frequency.</span>
+0154 ipf = round(([0:Npsi/2-1].')*P1/df);
+0155 jpf = ipf&lt;(Nf/2-1);
+0156 ipfr = ipf(jpf) + 1;
+0157 
+0158 Sijp = sparse(Nf,Nv^2);
+0159 Sijp(ipfr,:) = Sper(jpf,:);
+0160 
+0161 temp = vgf;
+0162 vgf = sparse(Nf,Nv);
+0163 vgf(ipfr,:) = temp(jpf,:);
+0164 
+0165 jpsi = [-Npsi/2:-1].';
+0166 ipf = round(jpsi*P1/df);
+0167 jpf = ipf&gt;(-Nf/2);
+0168 ipfr = ipf(jpf);
+0169 Sijp(Nf+ipfr+1,:) = Sper(Npsi+jpsi(jpf)+1,:);
+0170 vgf(Nf+ipfr+1,:) = temp(Npsi+jpsi(jpf)+1,:);
+0171 
+0172 cvg = vgf;
+0173 
+0174 save (<span class="string">'-float-binary'</span>,<span class="string">'Sij.bin'</span>,<span class="string">'Sij'</span>);
+0175 save (<span class="string">'-float-binary'</span>,<span class="string">'Sijp.bin'</span>,<span class="string">'Sijp'</span>);
+0176 save (<span class="string">'-float-binary'</span>,<span class="string">'cvg.bin'</span>,<span class="string">'cvg'</span>);
+0177 save (<span class="string">'-float-binary'</span>,<span class="string">'Vavg.bin'</span>,<span class="string">'Vavg'</span>);
+0178 
+0179 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

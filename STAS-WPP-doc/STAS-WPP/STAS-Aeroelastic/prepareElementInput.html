@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of prepareElementInput</title>
+  <meta name="keywords" content="prepareElementInput">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; prepareElementInput.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>prepareElementInput
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2mudq2.html" class="code" title="function d2mu = d2mudq2 (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB)">d2mudq2</a>	</li>
+<li><a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a>	</li>
+<li><a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a>	</li>
+<li><a href="secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="assembleElements.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] =assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav)">assembleElements</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [mu,dmu,d2mu,TsB,dTsB,d2TsB] = </a><span class="keyword">...</span>
+0002                   prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);
+0003 
+0004 [xe,TsB] = <a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0005 dTsB = <a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB);
+0006 mu = <a href="getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a> (qn1,qn2,Pn1,Pn2,TsB);
+0007 dmu = <a href="dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a> (qn1,qn2,Pn1,Pn2,TsB,dTsB);
+0008 
+0009 <span class="keyword">if</span> (linFlag == 1)
+0010    d2TsB = <a href="secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB);
+0011    d2mu = <a href="d2mudq2.html" class="code" title="function d2mu = d2mudq2 (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB)">d2mudq2</a> (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB);
+0012 <span class="keyword">else</span>
+0013    d2TsB = sparse(3,3*12*12);
+0014    d2mu = sparse(12,12*12);
+0015 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

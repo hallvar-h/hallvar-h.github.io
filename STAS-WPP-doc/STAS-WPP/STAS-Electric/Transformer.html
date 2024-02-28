@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Transformer</title>
+  <meta name="keywords" content="Transformer">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; Transformer.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>Transformer
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ A simple impedance model of a transformer, with the possibility to
+ define an effective nonlinear inductance to account for saturation,
+ particularly for overpower operation.
+
+   states:           y vector:
+   ipd,q     1,2     vpd,q     1,2    in   (converter control)
+                     vsd,q     3,4    in   (grid)
+                     we         5     in   (grid)
+                     isd,q     6,7    out
+
+ Version:        Changes:
+ --------        -------------
+ 05.09.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 05.09.2018      Derivatives verified with complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : 1,2: ip    (A)     Primary winding current
+ yin             : 1,2: vp    (V)     Primary terminal voltage
+                   3,4: vs    (V)     Secondary terminal voltage
+                    5:  we    (rad/s) Electrical frequency
+ params          :  1:  a     (-)     Np/Ns turns ratio
+                   2-5: It    (A)     RMS phase currents for nonlinear inductance
+                   6-9: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances
+                   10:  Rt    (Ohms)  Phase resistance
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="ACexport.html" class="code" title="function [dxdt,A,B] = ACexport (linFlag,x,u,p)">ACexport</a>	</li>
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% A simple impedance model of a transformer, with the possibility to</span>
+0004 <span class="comment">% define an effective nonlinear inductance to account for saturation,</span>
+0005 <span class="comment">% particularly for overpower operation.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%   states:           y vector:</span>
+0008 <span class="comment">%   ipd,q     1,2     vpd,q     1,2    in   (converter control)</span>
+0009 <span class="comment">%                     vsd,q     3,4    in   (grid)</span>
+0010 <span class="comment">%                     we         5     in   (grid)</span>
+0011 <span class="comment">%                     isd,q     6,7    out</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Changes:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 05.09.2018      Original code.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version:        Verification:</span>
+0018 <span class="comment">% --------        -------------</span>
+0019 <span class="comment">% 05.09.2018      Derivatives verified with complex step.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0024 <span class="comment">% x               : 1,2: ip    (A)     Primary winding current</span>
+0025 <span class="comment">% yin             : 1,2: vp    (V)     Primary terminal voltage</span>
+0026 <span class="comment">%                   3,4: vs    (V)     Secondary terminal voltage</span>
+0027 <span class="comment">%                    5:  we    (rad/s) Electrical frequency</span>
+0028 <span class="comment">% params          :  1:  a     (-)     Np/Ns turns ratio</span>
+0029 <span class="comment">%                   2-5: It    (A)     RMS phase currents for nonlinear inductance</span>
+0030 <span class="comment">%                   6-9: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0031 <span class="comment">%                   10:  Rt    (Ohms)  Phase resistance</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Outputs:</span>
+0034 <span class="comment">% --------</span>
+0035 <span class="comment">%</span>
+0036 
+0037 Nx = 2;
+0038 Ny = 7;
+0039 
+0040 L  = sparse(Nx,Nx);
+0041 A  = sparse(Nx,Nx);
+0042 By = sparse(Nx,Ny);
+0043 C  = sparse(Ny,Nx);
+0044 
+0045 ip = x;
+0046 
+0047 vp = yin(1:2);
+0048 vs = yin(3:4);
+0049 we = yin(5);
+0050 
+0051 a  = params(1);
+0052 It = params(2:5);
+0053 Lt = params(6:9);
+0054 Rt = params(10);
+0055 
+0056 two = 2*pi/3;
+0057 four = 4*pi/3;
+0058 sq = sqrt(2/3);
+0059 sq2 = sq/sqrt(2);
+0060 
+0061 psi = 0;  <span class="comment">% dq is independent of this.</span>
+0062 th = 0;
+0063 
+0064 ct = cos(th);
+0065 st = sin(th);
+0066 c2 = cos(th-two);
+0067 s2 = sin(th-two);
+0068 c4 = cos(th-four);
+0069 s4 = sin(th-four);
+0070 
+0071 lamr = params(2)*[ct;c2;c4];
+0072 
+0073 Tat = sq*[ct  c2  c4; <span class="keyword">...</span>
+0074          -st -s2 -s4];
+0075 Tta = sq*[ct -st; <span class="keyword">...</span>
+0076           c2 -s2; <span class="keyword">...</span>
+0077           c4 -s4];
+0078 dTtadth = sq*[-st -ct; <span class="keyword">...</span>
+0079               -s2 -c2; <span class="keyword">...</span>
+0080               -s4 -c4];
+0081 
+0082 <span class="comment">% Compute the RMS phase current and phase inductance.</span>
+0083 magI = <a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>(sqrt(ip(1)^2 + ip(2)^2),eps);
+0084 Irms = magI*sq2;
+0085 [Lph,dLph] = <a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> (It,Lt,Irms);
+0086 
+0087 Lambda  = Lph*eye(3);
+0088 dLambda = dLph*eye(3);
+0089 dLamN   = [dLambda*ip(1)*sq2/magI dLambda*ip(2)*sq2/magI];
+0090 TLT     = Tat*Lambda*Tta;
+0091 TLamDT  = Tat*Lambda*dTtadth;
+0092 WTLamDT = we*TLamDT;
+0093 RR      = Rt*eye(3);
+0094 TRT     = Tat*RR*Tta;
+0095 
+0096 dxdt = TLT\(-(TRT + WTLamDT)*ip + vp - a*vs);
+0097 yout = a*ip;
+0098 
+0099 L(:,:)    =  TLT;
+0100 
+0101 A(:,:)    = -(TRT + WTLamDT);
+0102 vec       =  Tta*dxdt + we*dTtadth*ip;
+0103 A(:,1)    =  A(:,1) - Tat*dLamN(:,1:3)*vec;
+0104 A(:,2)    =  A(:,2) - Tat*dLamN(:,4:6)*vec;
+0105 
+0106 By(:,1:2) =  eye(2);
+0107 By(:,3:4) = -a*eye(2);
+0108 By(:,5)   = -TLamDT*ip;
+0109 
+0110 C(6:7,:)  =  a*eye(2);
+0111 
+0112 A = L\A;
+0113 By = L\By;
+0114 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

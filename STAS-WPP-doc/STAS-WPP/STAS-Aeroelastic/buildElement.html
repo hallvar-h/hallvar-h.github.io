@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildElement</title>
+  <meta name="keywords" content="buildElement">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; buildElement.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildElement
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =buildElement (linFlag,mes,kes,dqdt,d2qdt2,Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Build the mass, gyroscopic, and stiffness matrices for one element.
+ These are each 18-by-18 matrices, as the motion of each element depends
+ on its two connected nodes, plus the body reference node.
+
+ In general the matrices depend on the pose of the body and its first
+ and second time derivatives.  The pose q is implicit in the Qu and TsB
+ values input.  The rate and acceleration appear explicitly in the
+ equations and must be input.  
+
+ The code is developed such that linearized matrices can be obtained
+ even around transitory dynamic states (what I'm calling &quot;tangent
+ dynamics&quot;), where the &quot;mean&quot; velocity and acceleration are not
+ necessarily zero.
+
+ Note, the term (dQh/dq) F0 that acts as part of the stiffness matrix
+ is not included here at the element level.  It must be incorporated
+ later at the structural level.  Damping is also not included here,
+ a modal implementation being preferred.
+
+ Version:        Changes:
+ --------        -------------
+ 15.01.2020      Original code, a reformulation of buildElementLin/NL.
+
+ Version:        Verification:
+ --------        -------------
+ 15.01.2020      
+
+ Inputs:
+ -------
+ linFlag         : = 1 if linearization is desired.
+ mes, kes        : Element mass and stiffness matrices.
+ dqdt            : Rate of change of DOFs.
+ d2qdt2          : Accelerations of DOFs.
+ Qu1,2           : [v;w] = Qu*q.  Qu is 6-by-12.  The latter dimension is
+                   6 body reference node and 6 nodal DOFs.
+ dQu1,2          : A 6-by-12*12 matrix containing dQu/dq for each node.
+ d2Qu1,2         : A 6-by-12*12*12 matrix of second derivatives.
+ mu,dmu,d2mu     : Elastic deformations multiplying the element stiffness
+                   matrix -- and their derivatives.
+ TsB,dTsB,d2TsB  : Section-to-body transform and its derivatives.
+ gvec            : Gravitational acceleration, same DOF basis as d2qdt2.
+
+ Outputs:
+ --------
+ M               : 18-by-18 mass matrix: qB, qn1, qn2 DOFs.
+ dM              : 18-by-18 matrix: dM/dq*d2q0/dt2.
+ G               : 18-by-18 gyroscopic matrix.
+ dG              : 18-by-18 matrix: dG/dq*dq0/dt.
+ dGd             : 18-by-18 matrix: dG/dqdot*dq0/dt.
+ H               : 18-by-1 centrifugal vector.
+ dH              : 18-by-18 matrix: dH/dq.
+ dHd             : 18-by-18 matrix: dH/dqdot.
+ K               : 18-by-1 elastic stiffness vector.
+ dK              : 18-by-18 matrix: dK/dq.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a>	</li>
+<li><a href="d2Qel.html" class="code" title="function d2Qe = d2Qel (d2Qu1,d2Qu2)">d2Qel</a>	</li>
+<li><a href="d2TmeT.html" class="code" title="function [TmT,dTmT,d2TmT] = d2TmeT (mes,TsB,dTsB,d2TsB)">d2TmeT</a>	</li>
+<li><a href="dQel.html" class="code" title="function dQe = dQel (dQu1,dQu2)">dQel</a>	</li>
+<li><a href="dTmeT.html" class="code" title="function [TmT,dTmT] = dTmeT (mes,TsB,dTsB)">dTmeT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="assembleElements.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] =assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav)">assembleElements</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =          </a><span class="keyword">...</span>
+0002          buildElement (linFlag,mes,kes,dqdt,d2qdt2,   <span class="keyword">...</span>
+0003                        Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2, <span class="keyword">...</span>
+0004                        mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec)
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Build the mass, gyroscopic, and stiffness matrices for one element.</span>
+0007 <span class="comment">% These are each 18-by-18 matrices, as the motion of each element depends</span>
+0008 <span class="comment">% on its two connected nodes, plus the body reference node.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% In general the matrices depend on the pose of the body and its first</span>
+0011 <span class="comment">% and second time derivatives.  The pose q is implicit in the Qu and TsB</span>
+0012 <span class="comment">% values input.  The rate and acceleration appear explicitly in the</span>
+0013 <span class="comment">% equations and must be input.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% The code is developed such that linearized matrices can be obtained</span>
+0016 <span class="comment">% even around transitory dynamic states (what I'm calling &quot;tangent</span>
+0017 <span class="comment">% dynamics&quot;), where the &quot;mean&quot; velocity and acceleration are not</span>
+0018 <span class="comment">% necessarily zero.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Note, the term (dQh/dq) F0 that acts as part of the stiffness matrix</span>
+0021 <span class="comment">% is not included here at the element level.  It must be incorporated</span>
+0022 <span class="comment">% later at the structural level.  Damping is also not included here,</span>
+0023 <span class="comment">% a modal implementation being preferred.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Version:        Changes:</span>
+0026 <span class="comment">% --------        -------------</span>
+0027 <span class="comment">% 15.01.2020      Original code, a reformulation of buildElementLin/NL.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Version:        Verification:</span>
+0030 <span class="comment">% --------        -------------</span>
+0031 <span class="comment">% 15.01.2020</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">% Inputs:</span>
+0034 <span class="comment">% -------</span>
+0035 <span class="comment">% linFlag         : = 1 if linearization is desired.</span>
+0036 <span class="comment">% mes, kes        : Element mass and stiffness matrices.</span>
+0037 <span class="comment">% dqdt            : Rate of change of DOFs.</span>
+0038 <span class="comment">% d2qdt2          : Accelerations of DOFs.</span>
+0039 <span class="comment">% Qu1,2           : [v;w] = Qu*q.  Qu is 6-by-12.  The latter dimension is</span>
+0040 <span class="comment">%                   6 body reference node and 6 nodal DOFs.</span>
+0041 <span class="comment">% dQu1,2          : A 6-by-12*12 matrix containing dQu/dq for each node.</span>
+0042 <span class="comment">% d2Qu1,2         : A 6-by-12*12*12 matrix of second derivatives.</span>
+0043 <span class="comment">% mu,dmu,d2mu     : Elastic deformations multiplying the element stiffness</span>
+0044 <span class="comment">%                   matrix -- and their derivatives.</span>
+0045 <span class="comment">% TsB,dTsB,d2TsB  : Section-to-body transform and its derivatives.</span>
+0046 <span class="comment">% gvec            : Gravitational acceleration, same DOF basis as d2qdt2.</span>
+0047 <span class="comment">%</span>
+0048 <span class="comment">% Outputs:</span>
+0049 <span class="comment">% --------</span>
+0050 <span class="comment">% M               : 18-by-18 mass matrix: qB, qn1, qn2 DOFs.</span>
+0051 <span class="comment">% dM              : 18-by-18 matrix: dM/dq*d2q0/dt2.</span>
+0052 <span class="comment">% G               : 18-by-18 gyroscopic matrix.</span>
+0053 <span class="comment">% dG              : 18-by-18 matrix: dG/dq*dq0/dt.</span>
+0054 <span class="comment">% dGd             : 18-by-18 matrix: dG/dqdot*dq0/dt.</span>
+0055 <span class="comment">% H               : 18-by-1 centrifugal vector.</span>
+0056 <span class="comment">% dH              : 18-by-18 matrix: dH/dq.</span>
+0057 <span class="comment">% dHd             : 18-by-18 matrix: dH/dqdot.</span>
+0058 <span class="comment">% K               : 18-by-1 elastic stiffness vector.</span>
+0059 <span class="comment">% dK              : 18-by-18 matrix: dK/dq.</span>
+0060 
+0061 <span class="comment">% 12-by-12, 12-by-12*18, 12-by-12*18*18.</span>
+0062 <span class="keyword">if</span> (linFlag == 1)
+0063    [TmT,dTmT,d2TmT] = <a href="d2TmeT.html" class="code" title="function [TmT,dTmT,d2TmT] = d2TmeT (mes,TsB,dTsB,d2TsB)">d2TmeT</a> (mes,TsB,dTsB,d2TsB);
+0064 <span class="keyword">else</span>
+0065    [TmT,dTmT] = <a href="dTmeT.html" class="code" title="function [TmT,dTmT] = dTmeT (mes,TsB,dTsB)">dTmeT</a> (mes,TsB,dTsB);
+0066 <span class="keyword">end</span>
+0067 
+0068 
+0069 <span class="comment">% Form the two nodal Qu matrices into a format that multiplies a 12-by-12</span>
+0070 <span class="comment">% element matrix.   Que is 12-by-18.</span>
+0071 <span class="comment">%               |O  |</span>
+0072 <span class="comment">%  |v1|         |Phi|</span>
+0073 <span class="comment">%  |w1| = [Que] |d1 |</span>
+0074 <span class="comment">%  |v2|         |th1|</span>
+0075 <span class="comment">%  |w2|         |d2 |</span>
+0076 <span class="comment">%               |th2|</span>
+0077 Que   = <a href="Qel.html" class="code" title="function Qe = Qel (Qu1,Qu2)">Qel</a> (Qu1,Qu2);        <span class="comment">% 12-by-18.</span>
+0078 dQue  = <a href="dQel.html" class="code" title="function dQe = dQel (dQu1,dQu2)">dQel</a> (dQu1,dQu2);     <span class="comment">% 12-by-18*18.</span>
+0079 Qp = Que.';
+0080 dQp = dQue.';
+0081 
+0082 <span class="comment">% Terms to be computed upfront.</span>
+0083 ue = Que*dqdt;
+0084 uep = ue.';
+0085 dqdtp = dqdt.';
+0086 
+0087 TmTQ = TmT*Que;
+0088 TmTu = TmT*ue;
+0089 dQTmTQ = dQp*TmTQ;
+0090 
+0091 <span class="keyword">if</span> (linFlag == 1)
+0092    d2Que = <a href="d2Qel.html" class="code" title="function d2Qe = d2Qel (d2Qu1,d2Qu2)">d2Qel</a> (d2Qu1,d2Qu2);  <span class="comment">% 12-by-18*18*18.</span>
+0093    d2Qp = d2Que.';
+0094 <span class="keyword">end</span>
+0095 
+0096 
+0097 <span class="comment">% --------------------------------------------------------------------</span>
+0098 <span class="comment">% Mass matrix.</span>
+0099 M = (Que.')*TmTQ;
+0100 
+0101 <span class="comment">% Other terms with the mass matrix.  Accelerated and verified.</span>
+0102 dM  = zeros(18,18);
+0103 dMg = zeros(18,18);
+0104 mat = zeros(18,18*18);
+0105 <span class="keyword">for</span> kk = 1:18
+0106 
+0107    kc18 = 18*(kk-1);
+0108    kc12 = 12*(kk-1);
+0109 
+0110    mat(:,kc18+[1:18]) = dQTmTQ(kc18+[1:18],:) + dQTmTQ(kc18+[1:18],:).' <span class="keyword">...</span>
+0111                       + (Que.')*dTmT(:,kc12+[1:12])*Que;
+0112    dM(:,kk)  = mat(:,kc18+[1:18])*d2qdt2;
+0113    dMg(:,kk) = mat(:,kc18+[1:18])*gvec;
+0114 
+0115 <span class="keyword">end</span>
+0116 
+0117 
+0118 <span class="comment">% --------------------------------------------------------------------</span>
+0119 <span class="comment">% Gyroscopic matrix G.  Accelerated and verified.</span>
+0120 G = zeros(18,18);
+0121 <span class="keyword">for</span> jj = 1:18
+0122 
+0123    jc18 = 18*(jj-1);
+0124    jc12 = 12*(jj-1);
+0125 
+0126    G(:,jj) = mat(:,jc18+[1:18])*dqdt;
+0127 
+0128 <span class="keyword">end</span>
+0129 
+0130 <span class="comment">% Accelerated and verified.</span>
+0131 dG = zeros(18,18);
+0132 <span class="keyword">if</span> (linFlag == 1)
+0133 
+0134    dQpdTmT = dQp*dTmT;
+0135    dQpTmTdQ = dQp*TmT*dQue;
+0136    d2QpTmTQ = d2Qp*TmT*Que;
+0137    d2QpTmTu = d2Qp*TmTu;
+0138    <span class="keyword">for</span> jj = 1:18
+0139 
+0140       jc324 = 324*(jj-1);
+0141       jc216 = 216*(jj-1);
+0142       jc18  =  18*(jj-1);
+0143       jc12  =  12*(jj-1);
+0144 
+0145       <span class="keyword">for</span> kk = 1:18
+0146 
+0147          kc18 = 18*(kk-1);
+0148          kc12 = 12*(kk-1);
+0149 
+0150          dG(:,kk) = dG(:,kk)                                              <span class="keyword">...</span>
+0151                   + (d2QpTmTu(jc324+kc18+[1:18])                          <span class="keyword">...</span>
+0152                   +  dQpdTmT(jc18+[1:18],kc12+[1:12])*ue                  <span class="keyword">...</span>
+0153                   +  dQpTmTdQ(jc18+[1:18],kc18+[1:18])*dqdt               <span class="keyword">...</span>
+0154                   +  (d2QpTmTQ(jc324+kc18+[1:18],:).')*dqdt               <span class="keyword">...</span>
+0155                   +  dQpTmTdQ(kc18+[1:18],jc18+[1:18])*dqdt               <span class="keyword">...</span>
+0156                   +  Qp*(dQpdTmT(jc18+[1:18],kc12+[1:12]).')*dqdt         <span class="keyword">...</span>
+0157                   +  dQpdTmT(kc18+[1:18],jc12+[1:12])*ue                  <span class="keyword">...</span>
+0158                   +  Qp*(dQpdTmT(kc18+[1:18],jc12+[1:12]).')*dqdt         <span class="keyword">...</span>
+0159                   +  Qp*d2TmT(:,jc216+kc12+[1:12])*ue)*dqdt(jj);
+0160 
+0161       <span class="keyword">end</span>
+0162 
+0163    <span class="keyword">end</span>
+0164 
+0165 <span class="keyword">end</span>
+0166 
+0167 <span class="comment">% Accelerated and verified.</span>
+0168 dGd = zeros(18,18);
+0169 <span class="keyword">if</span> (linFlag == 1)
+0170    <span class="keyword">for</span> jj = 1:18
+0171 
+0172       jc18 = 18*(jj-1);
+0173       jc12 = 12*(jj-1);
+0174 
+0175       dGd = dGd + mat(:,jc18+[1:18])*dqdt(jj);
+0176 
+0177    <span class="keyword">end</span>
+0178 <span class="keyword">end</span>
+0179 
+0180 <span class="comment">% --------------------------------------------------------------------</span>
+0181 <span class="comment">% Centrifugal vector H.</span>
+0182 H = zeros(18,1);
+0183 <span class="keyword">for</span> jj = 1:18
+0184 
+0185    jc18 = 18*(jj-1);
+0186    jc12 = 12*(jj-1);
+0187 
+0188    H(jj) = H(jj)                               <span class="keyword">...</span>
+0189          + dqdtp*dQp(jc18+[1:18],:)*TmTu       <span class="keyword">...</span>
+0190          + 0.5*uep*dTmT(:,jc12+[1:12])*ue;
+0191 
+0192 <span class="keyword">end</span>
+0193 
+0194 <span class="comment">% Accelerated and verified.</span>
+0195 dH = zeros(18,18);
+0196 <span class="keyword">if</span> (linFlag == 1)
+0197    <span class="keyword">for</span> ii = 1:18
+0198 
+0199       ic324 = 324*(ii-1);
+0200       ic216 = 216*(ii-1);
+0201       ic18  =  18*(ii-1);
+0202       ic12  =  12*(ii-1);
+0203 
+0204       <span class="keyword">for</span> kk = 1:18
+0205 
+0206          kc18 = 18*(kk-1);
+0207          kc12 = 12*(kk-1);
+0208 
+0209          <span class="comment">% Verified.</span>
+0210          dH(ii,kk) = dH(ii,kk)                                     <span class="keyword">...</span>
+0211                    + dqdtp*d2QpTmTu(ic324+kc18+[1:18])             <span class="keyword">...</span>
+0212                    + dqdtp*dQpTmTdQ(ic18+[1:18],kc18+[1:18])*dqdt  <span class="keyword">...</span>
+0213                    + dqdtp*dQpdTmT(ic18+[1:18],kc12+[1:12])*ue     <span class="keyword">...</span>
+0214                    + dqdtp*dQpdTmT(kc18+[1:18],ic12+[1:12])*ue     <span class="keyword">...</span>
+0215                    + 0.5*uep*d2TmT(:,ic216+kc12+[1:12])*ue;
+0216 
+0217       <span class="keyword">end</span>
+0218 
+0219    <span class="keyword">end</span>
+0220 
+0221 <span class="keyword">end</span>
+0222 
+0223 <span class="comment">% Accelerated and verified.</span>
+0224 dHd = zeros(18,18);
+0225 <span class="keyword">if</span> (linFlag == 1)
+0226    <span class="keyword">for</span> ii = 1:18
+0227 
+0228       ic18 = 18*(ii-1);
+0229 
+0230       <span class="comment">% Verified.</span>
+0231       dHd(ii,:) = dHd(ii,:) + dqdtp*mat(:,ic18+[1:18]);
+0232 
+0233    <span class="keyword">end</span>
+0234 
+0235 <span class="keyword">end</span>
+0236 
+0237 <span class="comment">% --------------------------------------------------------------------</span>
+0238 <span class="comment">% Stiffness vector K.</span>
+0239 K = zeros(18,1);
+0240 <span class="keyword">for</span> jj = 1:12
+0241    K(jj+6) = K(jj+6) + (dmu(:,jj).')*kes*mu;
+0242 <span class="keyword">end</span>
+0243 
+0244 <span class="comment">% Accelerated and verified.</span>
+0245 dK = zeros(18,18);
+0246 <span class="keyword">if</span> (linFlag == 1)
+0247    dK(7:18,7:18) = (dmu.')*kes*dmu;
+0248    kesmu = kes*mu;
+0249    <span class="keyword">for</span> ii = 1:12
+0250 
+0251       ic12 = 12*(ii-1);
+0252 
+0253       dK(7:18,ii+6) = dK(7:18,ii+6) + (d2mu(:,ic12+[1:12]).')*kesmu;
+0254 
+0255    <span class="keyword">end</span>
+0256 
+0257 <span class="keyword">end</span>
+0258 
+0259 <span class="comment">% (Note that dG is antisymmetric, which destroys the symmetry</span>
+0260 <span class="comment">% properties of the final assembled K matrix.)</span>
+0261 
+0262 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

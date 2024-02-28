@@ -1,0 +1,204 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dQhdqF</title>
+  <meta name="keywords" content="dQhdqF">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dQhdqF.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dQhdqF
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dQhF = dQhdqF (qq,PP,FF,idofs,inods) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ In the linearized equations, an effective stiffness is contributed by
+ -(dQh/dq*F0).  This returns dQh/dq*F0, mark that a negative sign will
+ be needed.
+
+ Version:        Changes:
+ --------        -------------
+ 24.11.2017      Original code.
+ 27.01.2020      Fixed an error, adding the &quot;if&quot; statement before
+                 the second idof loop.
+
+ Version:        Verification:
+ --------        -------------
+ 24.11.2017      Linearization verified by complex step.
+ 27.01.2020      Linearization verified by complex step on all DOFs.
+
+ Inputs:
+ -------
+ qq              : Nodal DOFs.  Ref node: body relative to global.  
+                   Other nodes: node relative to undeformed, body coords.
+ PP              : Undeformed nodal positions relative to body origin.
+ FF              : Nodal force vector.
+ idofs...inodm   : Reference DOFs and nodes.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dQhF = dQhdqF (qq,PP,FF,idofs,inods)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% In the linearized equations, an effective stiffness is contributed by</span>
+0004 <span class="comment">% -(dQh/dq*F0).  This returns dQh/dq*F0, mark that a negative sign will</span>
+0005 <span class="comment">% be needed.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 24.11.2017      Original code.</span>
+0010 <span class="comment">% 27.01.2020      Fixed an error, adding the &quot;if&quot; statement before</span>
+0011 <span class="comment">%                 the second idof loop.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 24.11.2017      Linearization verified by complex step.</span>
+0016 <span class="comment">% 27.01.2020      Linearization verified by complex step on all DOFs.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% qq              : Nodal DOFs.  Ref node: body relative to global.</span>
+0021 <span class="comment">%                   Other nodes: node relative to undeformed, body coords.</span>
+0022 <span class="comment">% PP              : Undeformed nodal positions relative to body origin.</span>
+0023 <span class="comment">% FF              : Nodal force vector.</span>
+0024 <span class="comment">% idofs...inodm   : Reference DOFs and nodes.</span>
+0025 <span class="comment">%</span>
+0026 
+0027 Nbod = 7;
+0028 Ndj = size(qq,1);
+0029 Ndof = Ndj - 6;
+0030 
+0031 dQhF = spalloc(Ndj,Ndj,12*Ndj);
+0032 
+0033 <span class="keyword">for</span> ibod = 1:Nbod
+0034 
+0035    <span class="keyword">if</span> (ibod == 1)
+0036       Nnod = inods(2) - inods(1);
+0037       idref = idofs(1);
+0038    <span class="keyword">elseif</span> (ibod == 2)
+0039       Nnod = inods(3) - inods(2);
+0040       idref = idofs(2);
+0041    <span class="keyword">elseif</span> (ibod == 3)
+0042       Nnod = inods(4) - inods(3);
+0043       idref = idofs(3);
+0044    <span class="keyword">elseif</span> (ibod == 4)
+0045       Nnod = inods(6) - inods(4);
+0046       idref = idofs(4);
+0047    <span class="keyword">elseif</span> (ibod == 5)
+0048       Nnod = inods(7) - inods(6);
+0049       idref = idofs(6);
+0050    <span class="keyword">elseif</span> (ibod == 6)
+0051       Nnod = inods(8) - inods(7);
+0052       idref = idofs(7);
+0053    <span class="keyword">elseif</span> (ibod == 7)
+0054       Nnod = inods(8) - inods(7);
+0055       idref = idofs(8);
+0056    <span class="keyword">end</span>
+0057 
+0058    <span class="comment">% For each DOF, a vector dQh/dq*F needs to be created.  This nominally</span>
+0059    <span class="comment">% spans all the DOFs, but due to the separate nature of each body,</span>
+0060    <span class="comment">% prior to constraints, we can consider each body in turn.  To avoid</span>
+0061    <span class="comment">% computing dQu/dq multiple times for each node, we index the outer</span>
+0062    <span class="comment">% loop according to the column of dQu/dq, considering 6 DOFs (one node)</span>
+0063    <span class="comment">% at a time.</span>
+0064    <span class="keyword">for</span> inod = 1:Nnod
+0065 
+0066       noddof = idref + 6*(inod-1);
+0067 
+0068       qB = qq(idref+[1:6]);
+0069       PB = PP(idref+[1:6]);
+0070 
+0071       <span class="keyword">if</span> (noddof ~= idref)
+0072          qn = qq(noddof+[1:6]);
+0073          Pn = PP(noddof+[1:6]);
+0074       <span class="keyword">else</span>
+0075          qn = zeros(6,1);
+0076          Pn = zeros(6,1);
+0077          Pn(4:6) = PP(noddof+6+[4:6]);
+0078       <span class="keyword">end</span>
+0079       Fn = FF(noddof+[1:6]);
+0080 
+0081       dQ = <a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a> (qn,qB,Pn,PB);
+0082 
+0083       <span class="comment">% dQ is 6-by-12*12.  The transpose is used in the present equations.</span>
+0084       <span class="comment">% That is, the 6 determines which components of F are multiplied</span>
+0085       <span class="comment">% (columns of Q), while the 12 corresponds to the rows of Q.  The</span>
+0086       <span class="comment">% DERIVATIVE index determines the column of Kf.  There are 12</span>
+0087       <span class="comment">% derivatives, associated with six qB and six qn DOFs.</span>
+0088       <span class="keyword">for</span> idof = 1:6  <span class="comment">% Start with the qB columns of Kf.</span>
+0089 
+0090          icol = idref + idof;  <span class="comment">% The column index of Kf.</span>
+0091          ic12 = 12*(idof-1);   <span class="comment">% Indexes the derivative of qB.  Derivatives 1-6.</span>
+0092 
+0093          <span class="comment">% Start with the qB rows.</span>
+0094          rows = idref + [1:6].';
+0095          dQhF(rows,icol) = dQhF(rows,icol) + (dQ(:,ic12+[1:6]).')*Fn;
+0096 
+0097          <span class="comment">% Then the qn rows, if this is not the reference node.</span>
+0098          <span class="keyword">if</span> (noddof ~= idref)
+0099             rows = noddof + [1:6];
+0100             dQhF(rows,icol) = dQhF(rows,icol) + (dQ(:,ic12+[7:12]).')*Fn;
+0101          <span class="keyword">end</span>
+0102 
+0103       <span class="keyword">end</span>
+0104 
+0105       <span class="keyword">if</span> (noddof ~= idref)
+0106 
+0107          <span class="keyword">for</span> idof = 1:6  <span class="comment">% Now the qn columns of Kf.</span>
+0108 
+0109             icol = noddof + idof;  <span class="comment">% The column index of Kf.</span>
+0110             ic12 = 12*(idof+6-1);  <span class="comment">% Indexes the derivative of qB.  Derivatives 7-12.</span>
+0111 
+0112             <span class="comment">% The qB rows.</span>
+0113             rows = idref + [1:6].';
+0114             dQhF(rows,icol) = dQhF(rows,icol) + (dQ(:,ic12+[1:6]).')*Fn;
+0115 
+0116             <span class="comment">% Then the qn rows, if this is not the reference node.</span>
+0117             <span class="keyword">if</span> (noddof ~= idref)
+0118                rows = noddof + [1:6];
+0119                dQhF(rows,icol) = dQhF(rows,icol) + (dQ(:,ic12+[7:12]).')*Fn;
+0120             <span class="keyword">end</span>
+0121 
+0122          <span class="keyword">end</span>
+0123 
+0124       <span class="keyword">end</span>
+0125 
+0126    <span class="keyword">end</span> <span class="comment">% for inod = 1:Nnod.</span>
+0127 
+0128 <span class="keyword">end</span> <span class="comment">% for ibod = 1:Nbod.</span>
+0129 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

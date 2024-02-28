@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of savemats</title>
+  <meta name="keywords" content="savemats">
+  <meta name="description" content="{">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; savemats.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>savemats
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>{</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">{
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%{</span>
+0002 <span class="keyword">if</span> (Vinf(1) &lt; 10)
+0003    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lpsi_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Lpsi'</span>);&quot;]);
+0004    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Apsi_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Apsi'</span>);&quot;]);
+0005    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bpsi_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Bpsi'</span>);&quot;]);
+0006    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cpsi_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Cpsi'</span>);&quot;]);
+0007    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dpsi_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Dpsi'</span>);&quot;]);
+0008    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'dret_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'dret'</span>);&quot;]);
+0009    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'shape_V0&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'shape0'</span>);&quot;]);
+0010 <span class="keyword">else</span>
+0011    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lpsi_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Lpsi'</span>);&quot;]);
+0012    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Apsi_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Apsi'</span>);&quot;]);
+0013    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bpsi_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Bpsi'</span>);&quot;]);
+0014    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cpsi_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Cpsi'</span>);&quot;]);
+0015    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dpsi_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'Dpsi'</span>);&quot;]);
+0016    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'dret_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'dret'</span>);&quot;]);
+0017    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'shape_V&quot; int2str(round(10*Vinf(1))) &quot;.bin'</span>,<span class="string">'shape0'</span>);&quot;]);
+0018 <span class="keyword">end</span>
+0019 <span class="comment">%}</span>
+0020 
+0021 
+0022 txt = outnm;
+0023 
+0024 <span class="keyword">if</span> (Vmag &lt; 10)
+0025    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'xpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'xpsi'</span>);&quot;]);
+0026    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'upsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'upsi'</span>);&quot;]);
+0027    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'dxpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'dxpsi'</span>);&quot;]);
+0028    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'ypsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'ypsi'</span>);&quot;]);
+0029    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'Rgrav&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'Rgrav'</span>);&quot;]);
+0030    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Lpsi'</span>);&quot;]);
+0031    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Apsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Apsi'</span>);&quot;]);
+0032    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Bpsi'</span>);&quot;]);
+0033    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Cpsi'</span>);&quot;]);
+0034    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dpsi&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Dpsi'</span>);&quot;]);
+0035    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'dret&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'dret'</span>);&quot;]);
+0036    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'shape&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'shape0'</span>);&quot;]);
+0037    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'mdamp&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'mdamp0'</span>);&quot;]);
+0038    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'bldof&quot; txt &quot;V0&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'bldof'</span>);&quot;]);
+0039 <span class="keyword">else</span>
+0040    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'xpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'xpsi'</span>);&quot;]);
+0041    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'upsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'upsi'</span>);&quot;]);
+0042    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'dxpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'dxpsi'</span>);&quot;]);
+0043    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'ypsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'ypsi'</span>);&quot;]);
+0044    eval([&quot;save(<span class="string">'-ascii'</span>,<span class="string">'Rgrav&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.txt'</span>,<span class="string">'Rgrav'</span>);&quot;]);
+0045    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Lpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Lpsi'</span>);&quot;]);
+0046    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Apsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Apsi'</span>);&quot;]);
+0047    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Bpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Bpsi'</span>);&quot;]);
+0048    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Cpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Cpsi'</span>);&quot;]);
+0049    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'Dpsi&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'Dpsi'</span>);&quot;]);
+0050    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'dret&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'dret'</span>);&quot;]);
+0051    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'shape&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'shape0'</span>);&quot;]);
+0052    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'mdamp&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'mdamp0'</span>);&quot;]);
+0053    eval([&quot;save(<span class="string">'-binary'</span>,<span class="string">'bldof&quot; txt &quot;V&quot; int2str(round(10*Vmag)) &quot;.bin'</span>,<span class="string">'bldof'</span>);&quot;]);
+0054 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of parBEMNL</title>
+  <meta name="keywords" content="parBEMNL">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; parBEMNL.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>parBEMNL
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function x = parBEMNL (iel,psiFlag,x0,t0,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,omega) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMNL.html" class="code" title="function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega)">BEMNL</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function x = parBEMNL (iel,psiFlag,x0,t0,             </a><span class="keyword">...</span>
+0002                        Tar,Trg,Vg,wg,zr,ch,Lel,       <span class="keyword">...</span>
+0003                        aoas,kfoils,foilwt,aoaz,aoast, <span class="keyword">...</span>
+0004                        xas,yas,rho,A,Dia,omega)
+0005 
+0006 Nel = size(Lel,1);
+0007 Neb = Nel/3;
+0008 ind = [iel Neb+iel 2*Neb+iel].';
+0009 i7 = 7*(ind-1);
+0010 i3 = 3*(ind-1);
+0011 i2 = 2*(ind-1);
+0012 
+0013 ind7 = [i7(1)+[1:7] i7(2)+[1:7] i7(3)+[1:7]].';
+0014 ind3 = [i3(1)+[1:3] i3(2)+[1:3] i3(3)+[1:3]].';
+0015 ind2 = [i2(1)+[1:2] i2(2)+[1:2] i2(3)+[1:2]].';
+0016 
+0017 [x,fvec,stat,outp,fjac] =                                <span class="keyword">...</span>
+0018         fsolve ( @(xc) <a href="BEMNL.html" class="code" title="function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega)">BEMNL</a> (psiFlag,xc,t0,             <span class="keyword">...</span>
+0019                               Tar(:,ind3),Trg,           <span class="keyword">...</span>
+0020                               Vg(ind3),wg(ind3),         <span class="keyword">...</span>
+0021                               zr(ind2),ch(ind),Lel(ind), <span class="keyword">...</span>
+0022                               aoas,kfoils,foilwt(:,ind), <span class="keyword">...</span>
+0023                               aoaz(ind),aoast(ind2),     <span class="keyword">...</span>
+0024                               xas(ind),yas(ind),rho,     <span class="keyword">...</span>
+0025                               A(ind),Dia,omega),x0(ind7));
+0026 
+0027 <span class="keyword">if</span> (stat ~= 1)  <span class="comment">% Fsolve had problems with this element.</span>
+0028    <span class="comment">% Use a robust and slow method.</span>
+0029    [xi,stat,msg] =                                          <span class="keyword">...</span>
+0030           lsode (@(xc,tc) <a href="BEMNL.html" class="code" title="function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega)">BEMNL</a> (psiFlag,xc,t0,             <span class="keyword">...</span>
+0031                                  Tar(:,ind3),Trg,           <span class="keyword">...</span>
+0032                                  Vg(ind3),wg(ind3),         <span class="keyword">...</span>
+0033                                  zr(ind2),ch(ind),Lel(ind), <span class="keyword">...</span>
+0034                                  aoas,kfoils,foilwt(:,ind), <span class="keyword">...</span>
+0035                                  aoaz(ind),aoast(ind2),     <span class="keyword">...</span>
+0036                                  xas(ind),yas(ind),rho,     <span class="keyword">...</span>
+0037                                  A(ind),Dia,omega),x0(ind7),[0:10:100]);
+0038    x = xi(size(xi,1),:);
+0039 <span class="keyword">end</span>
+0040 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildTqhq</title>
+  <meta name="keywords" content="buildTqhq">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; buildTqhq.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildTqhq
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Builds the transform that implements the constraints on the
+ structural state variables.  Also computes the values of the
+ full q vector, solving the nonlinear equations for qs in 
+ terms of qh.
+
+ d |q |  = T_qh^q d |qh | , with T_qh^q = |Lam  0 | 
+ dt|qd|           dt|qhd|                 |Gam Lam|   
+
+ Version:        Changes:
+ --------        -------------
+ 13.01.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 13.01.2020      Verified that q, qd, qdd match the true values,
+                 from which input qh, qhd, qhdd were derived.
+                 Verified T by complex step on qh, qhd inputs.
+
+ Inputs:
+ -------
+ linFlag         : = 1 to include linearization, dTdq and dTdqd.
+ s               : Data structure with structural inputs.
+ qh,qhd,qhdd     : q^h and its time derivatives.
+ P               : Vector of nodal positions.
+ ret,slv         : Retained and slave DOFs.
+
+ Outputs:
+ --------
+ q, qd, qdd      : q and its time derivatives.
+ T               : T_qh^q.
+ dTdq            : (dT/dq)*[qhd;qhdd], need to multiply by the vector
+                   to prevent storing a large number of matrices.
+ dTdqd           : (dT/dqd)*[qhd;qhdd]
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="constraintGamma.html" class="code" title="function [G,dLdq] = constraintGamma (q,dqdt,P,L,Lambda,Tbh,ret,slv,idofs,idofm)">constraintGamma</a>	</li>
+<li><a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a>	function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</li>
+<li><a href="dGammadq.html" class="code" title="function [dG,dGd] = dGammadq (csflag,q,P,dqdt,ret,slv,dofs,idofs,idofm,Tbh,L,dLdq,Lambda,Gamma,v)">dGammadq</a>	</li>
+<li><a href="dLambdadq.html" class="code" title="function dL = dLambdadq (Lambda,L,dLdq,dofs,ret,slv,v)">dLambdadq</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="getgdofs.html" class="code" title="function gdofs = getgdofs (idofs,idofm,Ndj)">getgdofs</a>	Here are the 72 elements of q that are active in the constraint</li>
+<li><a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Builds the transform that implements the constraints on the</span>
+0004 <span class="comment">% structural state variables.  Also computes the values of the</span>
+0005 <span class="comment">% full q vector, solving the nonlinear equations for qs in</span>
+0006 <span class="comment">% terms of qh.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% d |q |  = T_qh^q d |qh | , with T_qh^q = |Lam  0 |</span>
+0009 <span class="comment">% dt|qd|           dt|qhd|                 |Gam Lam|</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 13.01.2020      Original code.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Verification:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 13.01.2020      Verified that q, qd, qdd match the true values,</span>
+0018 <span class="comment">%                 from which input qh, qhd, qhdd were derived.</span>
+0019 <span class="comment">%                 Verified T by complex step on qh, qhd inputs.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% linFlag         : = 1 to include linearization, dTdq and dTdqd.</span>
+0024 <span class="comment">% s               : Data structure with structural inputs.</span>
+0025 <span class="comment">% qh,qhd,qhdd     : q^h and its time derivatives.</span>
+0026 <span class="comment">% P               : Vector of nodal positions.</span>
+0027 <span class="comment">% ret,slv         : Retained and slave DOFs.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">% q, qd, qdd      : q and its time derivatives.</span>
+0032 <span class="comment">% T               : T_qh^q.</span>
+0033 <span class="comment">% dTdq            : (dT/dq)*[qhd;qhdd], need to multiply by the vector</span>
+0034 <span class="comment">%                   to prevent storing a large number of matrices.</span>
+0035 <span class="comment">% dTdqd           : (dT/dqd)*[qhd;qhdd]</span>
+0036 
+0037 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0038 Ndj = size(ret,1) + size(slv,1);
+0039 
+0040 <span class="comment">% Get the elements of q that are active in the constraint equations.</span>
+0041 gdofs = <a href="getgdofs.html" class="code" title="function gdofs = getgdofs (idofs,idofm,Ndj)">getgdofs</a> (idofs,idofm,Ndj);
+0042 
+0043 Nret = size(ret,1);   <span class="comment">% Number of retained DOFs in each of qh, qhd, qhdd.</span>
+0044 II = speye(Nret);
+0045 
+0046 <span class="comment">% Will need Tb_h below.</span>
+0047 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0048 
+0049 <span class="comment">% Call a Newton-Raphson solution for the nonlinear constraint</span>
+0050 <span class="comment">% equations.  We are not at this point dealing with mode shapes,</span>
+0051 <span class="comment">% so just set the shape matrix to I.</span>
+0052 qguess = zeros(size(slv,1),1);  <span class="comment">% Initial guess for Newton-Raphson.</span>
+0053 [q,qd] = <a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a> ([qh;qhd],s,P,II,ret,slv,qguess);
+0054 
+0055 <span class="comment">% Get Lambda and Gamma and supporting variables.  Lambda and Gamma</span>
+0056 <span class="comment">% are in a partitioned ordering.</span>
+0057 [Lambda,Leq,Con,ret,slv] = <a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a> (q,P,Tb_h,idofs,idofm);
+0058 [Gamma,dLdq] = <a href="constraintGamma.html" class="code" title="function [G,dLdq] = constraintGamma (q,dqdt,P,L,Lambda,Tbh,ret,slv,idofs,idofm)">constraintGamma</a> (q,qd,P,Leq,Lambda,Tb_h, <span class="keyword">...</span><span class="comment"> </span>
+0059                                 ret,slv,idofs,idofm);
+0060 
+0061 <span class="comment">% Reorder Lambda and Gamma so partitioning isn't necessary.</span>
+0062 rsind         = [ret;slv];
+0063 Lamq          = sparse (size(Lambda,1),size(Lambda,2));
+0064 Lamq(rsind,:) = Lambda;
+0065 Gamq          = sparse (size(Gamma,1),size(Gamma,2));
+0066 Gamq(rsind,:) = Gamma;
+0067 
+0068 qdd = Lamq*qhdd + Gamq*qhd;
+0069 T = [Lamq, sparse(Ndj,Nret); Gamq, Lamq];
+0070 
+0071 <span class="keyword">if</span> (linFlag == 1)
+0072 
+0073    <span class="comment">% We are going to need (dLam/dq)*d2qh/dt2, dLam/dq*dqh/dt,</span>
+0074    <span class="comment">% dGam/dq*dqh/dt, and dGam/dqd*dqh/dt.</span>
+0075    dLamqhd  = <a href="dLambdadq.html" class="code" title="function dL = dLambdadq (Lambda,L,dLdq,dofs,ret,slv,v)">dLambdadq</a> (Lambda,Leq,dLdq,gdofs,ret,slv,qhd);
+0076    dLamqhdd = <a href="dLambdadq.html" class="code" title="function dL = dLambdadq (Lambda,L,dLdq,dofs,ret,slv,v)">dLambdadq</a> (Lambda,Leq,dLdq,gdofs,ret,slv,qhdd);
+0077 
+0078    dLamdq = sparse(Ndj,Ndj);
+0079    dLamdq(rsind,:) = dLamqhd;
+0080    dLamddq = sparse(Ndj,Ndj);
+0081    dLamddq(rsind,:) = dLamqhdd;
+0082 
+0083    <span class="comment">% ==================== Warning =====================</span>
+0084    <span class="comment">% Set csflag = 0 if using complex step for gradients.</span>
+0085    <span class="comment">% Otherwise, csflag = 1 provides better performance</span>
+0086    <span class="comment">% within dGammadq.</span>
+0087    <span class="keyword">if</span> (isreal(q) &amp;&amp; isreal(P) &amp;&amp; isreal(qd) &amp;&amp; isreal(Tb_h) &amp;&amp; <span class="keyword">...</span>
+0088        isreal(Leq) &amp;&amp; isreal(dLdq) &amp;&amp; isreal(Lambda) &amp;&amp; <span class="keyword">...</span>
+0089        isreal(Gamma) &amp;&amp; isreal(qhd))
+0090       csflag = 1;  <span class="comment">% No complex step.</span>
+0091    <span class="keyword">else</span>
+0092       csflag = 0;  <span class="comment">% Some imaginary input, could be complex step.</span>
+0093    <span class="keyword">end</span>
+0094    [dGam,dGamd] = <a href="dGammadq.html" class="code" title="function [dG,dGd] = dGammadq (csflag,q,P,dqdt,ret,slv,dofs,idofs,idofm,Tbh,L,dLdq,Lambda,Gamma,v)">dGammadq</a> (csflag,q,P,qd,ret,slv,gdofs,idofs,idofm,Tb_h, <span class="keyword">...</span>
+0095                             Leq,dLdq,Lambda,Gamma,qhd);
+0096 
+0097    dGamq = sparse(Ndj,Ndj);
+0098    dGamq(rsind,:) = dGam;
+0099    dGamdq = sparse(Ndj,Ndj);
+0100    dGamdq(rsind,:) = dGamd;
+0101 
+0102    dTdq = [dLamdq; dGamq + dLamddq];
+0103    dTdqd = [sparse(Ndj,Ndj); dGamdq];
+0104 
+0105 <span class="keyword">else</span>
+0106 
+0107    dTdq  = sparse (2*Ndj,Ndj);
+0108    dTdqd = sparse (2*Ndj,Ndj);
+0109 
+0110 <span class="keyword">end</span>
+0111 
+0112 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

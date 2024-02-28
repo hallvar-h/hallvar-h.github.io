@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of createStructure</title>
+  <meta name="keywords" content="createStructure">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; createStructure.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>createStructure
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function s = createStructure (Nef,Net,Nev,Ner,Nen,Ned,Neh,Neb,Nwel) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>	-------------------------- Mesh -----------------------------</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function s = createStructure (Nef,Net,Nev,Ner,Nen,Ned,Neh,Neb,Nwel)</a>
+0002 
+0003    s.Nef        = Nef;
+0004    s.Net        = Net;
+0005    s.Nev        = Nev;
+0006    s.Ner        = Ner;
+0007    s.Nen        = Nen;
+0008    s.Ned        = Ned;
+0009    s.Neh        = Neh;
+0010    s.Neb        = Neb;
+0011 
+0012    Nb           = 3;
+0013    s.Nb         = Nb;
+0014    s.foundation = <a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>(Nef,Nef+1);
+0015    s.tower      = <a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>(Net,Net+1);
+0016    s.nacelle    = <a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>(Nev+Ner+Nen,Nev+Ner+Nen+1);
+0017    s.driveshaft = <a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>(Ned+Neh+3,Ned+Neh+4);
+0018    s.blade(1)   = <a href="createBody.html" class="code" title="function b = createBody (Nel,Nnod);">createBody</a>(Neb,Neb+1);
+0019 
+0020    <span class="comment">% Additional structural parameters, beyond the basic body definition.</span>
+0021 
+0022    s.foundation.Lf    = 0;       <span class="comment">% Height of foundation pile.</span>
+0023    s.foundation.D     = zeros(Nef,1); <span class="comment">% Foundation outer diameter at elements.</span>
+0024                                  <span class="comment">% Used in the computation of stress.</span>
+0025    s.foundation.rhow  = 0;       <span class="comment">% Water density for added mass in mass matrix.</span>
+0026    s.foundation.wel   = zeros(Nwel,1); <span class="comment">% List of elements subject to wave loads.</span>
+0027    s.foundation.Nwater= 0;       <span class="comment">% Number of submerged elements.</span>
+0028    s.foundation.CmA   = zeros(Nwel,1); <span class="comment">% Inertia coefficient times area,</span>
+0029                                  <span class="comment">% for added mass in mass matrix.</span>
+0030    s.foundation.Cd    = zeros(Nwel,1); <span class="comment">% Drag coefficient.</span>
+0031    s.foundation.k     = zeros(8,Nef+1); <span class="comment">% Linearized p-y curve springs:</span>
+0032                                  <span class="comment">% kxg,kyg,kzg,kthzg,cxg,cyg,czg,cthzg</span>
+0033    s.tower.Lt         = 0;       <span class="comment">% Height from transition piece to the top</span>
+0034                                  <span class="comment">% of the tower.</span>
+0035    s.tower.D          = zeros(Net,1); <span class="comment">% Outer tower diameter at elements, for aero</span>
+0036                                  <span class="comment">% loads and stress.</span>
+0037    s.tower.Cd         = zeros(Net,1); <span class="comment">% Aerodynamic drag coefficient.</span>
+0038    s.nacelle.Lv       = 0;       <span class="comment">% Vertical distance from yaw bearing to</span>
+0039                                  <span class="comment">% shaft axis.</span>
+0040    s.nacelle.Lr       = 0;       <span class="comment">% Distance along shaft from yaw center to</span>
+0041                                  <span class="comment">% rear bearing.</span>
+0042    s.nacelle.Ln       = 0;       <span class="comment">% Distance along shaft from yaw center to</span>
+0043                                  <span class="comment">% front bearing.</span>
+0044    s.nacelle.delta    = 0;       <span class="comment">% Shaft tilt angle, rad.</span>
+0045    s.nacelle.D        = zeros(Nev+Ner+Nen,1); <span class="comment">% Nacelle outer diameter at elements.</span>
+0046    s.nacelle.rstat    = 0;       <span class="comment">% Effective r of generator stator for Jgen.</span>
+0047    s.nacelle.mgstat   = 0;       <span class="comment">% Generator stator mass.</span>
+0048    s.nacelle.Jgstat   = 0;       <span class="comment">% Generator stator inertia.</span>
+0049    s.driveshaft.Ld    = 0;       <span class="comment">% Distance from rear bearing to hub center.</span>
+0050    s.driveshaft.Lbrg  = 0;       <span class="comment">% Bearing-to-bearing length.</span>
+0051    s.driveshaft.Lh    = 0;       <span class="comment">% Hub radius.</span>
+0052    s.driveshaft.D     = zeros(Ned+Neh,1); <span class="comment">% Driveshaft outer diameter at elements.</span>
+0053    s.driveshaft.phi   = 0;       <span class="comment">% Root cone angle of the pitch axis.</span>
+0054    s.driveshaft.mh    = 0;       <span class="comment">% Hub mass.</span>
+0055    s.driveshaft.khfac = 0;       <span class="comment">% Stiffness factor: khfac*k(blade root) = k(hub).</span>
+0056    s.driveshaft.rrot  = 0;       <span class="comment">% Effective r of generator rotor for Jgen.</span>
+0057    s.driveshaft.mgrot = 0;       <span class="comment">% Generator rotor mass.</span>
+0058    s.driveshaft.Jgrot = 0;       <span class="comment">% Generator rotor inertia.</span>
+0059    s.blade(1).Lb      = 0;       <span class="comment">% Blade length from pitch flange to tip.</span>
+0060 
+0061    <span class="keyword">for</span> ib = 2:Nb
+0062       s.blade(ib) = s.blade(1);
+0063    <span class="keyword">end</span>
+0064 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

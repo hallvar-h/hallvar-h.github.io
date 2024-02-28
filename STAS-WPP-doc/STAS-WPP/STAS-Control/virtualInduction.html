@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of virtualInduction</title>
+  <meta name="keywords" content="virtualInduction">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Control</a> &gt; virtualInduction.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Control&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>virtualInduction
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,B,C] = virtualInduction (x,u,p) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This function implements a virtual induction generator for
+ damping driveshaft torsional resonance.  The electrical speed
+ is band-pass filtered to produce an in-phase torque signal,
+ around the resonant frequency band.
+
+   States:              y vector:             u vector:
+   wgbar   1            Tgi    1              wg     1
+   iwgb    2
+
+ Version:        Changes:
+ --------        -------------
+ 02.02.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 02.02.2019      Verified derivatives with complex step.  Verified
+                 transfer function.
+
+ Inputs:
+ -------
+ x               : 1: wgbar  (rad/s)   filtered gen. speed.
+                   2: iwgb   (rad)     integrated wgbar.
+ u               : 1: wg     (rad/s)   gen. rotor speed.
+ p               : 1: ag     (rad/s)   BP filter frequency.
+                   2: zetag  (-)       BP filter damping.
+                   3: Kd     (Nms/rad) Induction generator stiffness.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,B,C] = virtualInduction (x,u,p)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This function implements a virtual induction generator for</span>
+0004 <span class="comment">% damping driveshaft torsional resonance.  The electrical speed</span>
+0005 <span class="comment">% is band-pass filtered to produce an in-phase torque signal,</span>
+0006 <span class="comment">% around the resonant frequency band.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   States:              y vector:             u vector:</span>
+0009 <span class="comment">%   wgbar   1            Tgi    1              wg     1</span>
+0010 <span class="comment">%   iwgb    2</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Changes:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 02.02.2019      Original code.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 02.02.2019      Verified derivatives with complex step.  Verified</span>
+0019 <span class="comment">%                 transfer function.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% x               : 1: wgbar  (rad/s)   filtered gen. speed.</span>
+0024 <span class="comment">%                   2: iwgb   (rad)     integrated wgbar.</span>
+0025 <span class="comment">% u               : 1: wg     (rad/s)   gen. rotor speed.</span>
+0026 <span class="comment">% p               : 1: ag     (rad/s)   BP filter frequency.</span>
+0027 <span class="comment">%                   2: zetag  (-)       BP filter damping.</span>
+0028 <span class="comment">%                   3: Kd     (Nms/rad) Induction generator stiffness.</span>
+0029 
+0030 Nx = 2;
+0031 Nu = 1;
+0032 Ny = 1;
+0033 
+0034 ag    = p(1);
+0035 zetag = p(2);
+0036 Kd    = p(3);
+0037 
+0038 A  = sparse(Nx,Nx);
+0039 B  = sparse(Nx,Nu);
+0040 C  = sparse(Ny,Nx);
+0041 
+0042 <span class="comment">% diwgbar/dt = wgbar.</span>
+0043 A(2,1) = 1;
+0044 
+0045 <span class="comment">% dwgbar/dt = -2*zetag*ag*wgbar - (ag^2)*iwgb + 2*zetag*ag*wg</span>
+0046 A(1,1) = -2*zetag*ag;
+0047 A(1,2) = -(ag^2);
+0048 B(1,1) =  2*zetag*ag;
+0049 
+0050 <span class="comment">% Tgi = Kd*wgbar.</span>
+0051 C(1,1) = Kd;
+0052 
+0053 <span class="comment">% The equations are linear.</span>
+0054 dxdt = A*x + B*u;
+0055 yout = C*x;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dQgdq</title>
+  <meta name="keywords" content="dQgdq">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dQgdq.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dQgdq
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dQ = dQgdq (qn,qB,Pn,PB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Computes the derivatives of the linear and angular velocities
+ associated with a single node.
+
+ [v;w] = Qu dq/dt
+
+ Version:        Changes:
+ --------        -------------
+ 20.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 20.12.2017      Verified by complex step on Qgnod.m.
+
+ Inputs:
+ -------
+ qn              : DOFs associated with the node.
+ qB              : DOFs associated with the body reference node.
+ Pn              : Undeformed pos,rot of the node wrt body reference.
+ PB              : Undeformed pos,rot of the body reference.
+
+ Outputs:
+ --------
+ dQ              : Global velocity, in body coordinates.  6 rows
+                   representing [v;w].  Qu is a function of 12 state
+                   variables: the six body reference DOFs, and the six
+                   nodal DOFs.  So Qu is 6-by-12, and there is a 
+                   partial derivative with respect to each of the 12
+                   DOFs.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a>	Version:        Changes:</li>
+<li><a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a>	Version:        Changes:</li>
+<li><a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a>	Caution, the input TBg = T_B0^g*T_B^B0.</li>
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="dFdth.html" class="code" title="function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B)">dFdth</a>	</li>
+<li><a href="dFrefdth.html" class="code" title="function dF = dFrefdth (TTh,TBB0,dTBB0,d2TBB0,TB0g)">dFrefdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dQ = dQgdq (qn,qB,Pn,PB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Computes the derivatives of the linear and angular velocities</span>
+0004 <span class="comment">% associated with a single node.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [v;w] = Qu dq/dt</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Version:        Changes:</span>
+0009 <span class="comment">% --------        -------------</span>
+0010 <span class="comment">% 20.12.2017      Original code.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 20.12.2017      Verified by complex step on Qgnod.m.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Inputs:</span>
+0017 <span class="comment">% -------</span>
+0018 <span class="comment">% qn              : DOFs associated with the node.</span>
+0019 <span class="comment">% qB              : DOFs associated with the body reference node.</span>
+0020 <span class="comment">% Pn              : Undeformed pos,rot of the node wrt body reference.</span>
+0021 <span class="comment">% PB              : Undeformed pos,rot of the body reference.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% dQ              : Global velocity, in body coordinates.  6 rows</span>
+0026 <span class="comment">%                   representing [v;w].  Qu is a function of 12 state</span>
+0027 <span class="comment">%                   variables: the six body reference DOFs, and the six</span>
+0028 <span class="comment">%                   nodal DOFs.  So Qu is 6-by-12, and there is a</span>
+0029 <span class="comment">%                   partial derivative with respect to each of the 12</span>
+0030 <span class="comment">%                   DOFs.</span>
+0031 
+0032 dQ = zeros(6,12*12);
+0033 
+0034 r = qn(1:3) + Pn(1:3);
+0035 
+0036 [Fr,TBB0,dTBB0,TB0g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (qB(4:6),PB(4:6));
+0037 d2TBB0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qB(4:6),TBB0,dTBB0);
+0038 Fmat = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (Fr);
+0039 
+0040 TBg = TB0g*TBB0;
+0041 Tn0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn(4:6));
+0042 
+0043 [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (qn(4:6),TBg,Tn0B);
+0044 d2Tnn0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qn(4:6),Tnn0,dTnn0);
+0045 Gmat = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0046 
+0047 dFr = <a href="dFrefdth.html" class="code" title="function dF = dFrefdth (TTh,TBB0,dTBB0,d2TBB0,TB0g)">dFrefdth</a> (qB(4:6),TBB0,dTBB0,d2TBB0,TB0g);
+0048 dFmat = zeros(3,3*3);
+0049 <span class="keyword">for</span> jj = 1:3
+0050    jc3 = 3*(jj-1);
+0051    jc9 = 9*(jj-1);
+0052    dFmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (dFr(:,jc9+[1:9]));
+0053 <span class="keyword">end</span>
+0054 
+0055 dF = <a href="dFdth.html" class="code" title="function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B)">dFdth</a> (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B);
+0056 dGmat = zeros(3,6*3);
+0057 <span class="keyword">for</span> jj = 1:6
+0058    jc3 = 3*(jj-1);
+0059    jc9 = 9*(jj-1);
+0060    dGmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (dF(:,jc9+[1:9]));   
+0061 <span class="keyword">end</span>
+0062 
+0063 <span class="comment">% dQ/dOj = 0.  Translation of the body does not influence any of the</span>
+0064 <span class="comment">% relationships between [v;w] and dO/dt, dTH/dt, dd/dt, or dth/dt.</span>
+0065 
+0066 jref = 3;        <span class="comment">% dQ/dTHj</span>
+0067 <span class="keyword">for</span> jdof = 1:3
+0068 
+0069    jc3 = 3*(jdof-1);
+0070    jc9 = 9*(jdof-1);
+0071    jc12 = 12*(jref+jdof-1);
+0072 
+0073    dQ(1:3,jc12+[7:9])   = TB0g*dTBB0(:,jc3+[1:3]);
+0074    dQ(1:3,jc12+4)       = TB0g*(d2TBB0(:,jc9+[1:3])*r);
+0075    dQ(1:3,jc12+5)       = TB0g*(d2TBB0(:,jc9+[4:6])*r);
+0076    dQ(1:3,jc12+6)       = TB0g*(d2TBB0(:,jc9+[7:9])*r);
+0077    dQ(4:6,jc12+[4:6])   = dFmat(:,jc3+[1:3]);
+0078    dQ(4:6,jc12+[10:12]) = dGmat(:,jc3+[1:3]);
+0079 
+0080 <span class="keyword">end</span>
+0081 
+0082 jref = 6;       <span class="comment">% dQ/ddn</span>
+0083 T1 = TB0g*dTBB0(:,1:3);
+0084 T2 = TB0g*dTBB0(:,4:6);
+0085 T3 = TB0g*dTBB0(:,7:9);
+0086 <span class="keyword">for</span> jdof = 1:3
+0087 
+0088    jc12 = 12*(jref+jdof-1);
+0089 
+0090    dQ(1:3,jc12+4) = T1(:,jdof);
+0091    dQ(1:3,jc12+5) = T2(:,jdof);
+0092    dQ(1:3,jc12+6) = T3(:,jdof);
+0093 
+0094 <span class="keyword">end</span>
+0095 
+0096 jref = 9;       <span class="comment">% dQ/dthn</span>
+0097 <span class="keyword">for</span> jdof = 1:3
+0098 
+0099    jc3 = 3*(jdof-1);
+0100    jc12 = 12*(jref+jdof-1);
+0101 
+0102    dQ(4:6,jc12+[10:12]) = dGmat(:,9+jc3+[1:3]);
+0103 
+0104 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

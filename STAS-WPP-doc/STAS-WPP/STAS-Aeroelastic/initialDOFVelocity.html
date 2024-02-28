@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of initialDOFVelocity</title>
+  <meta name="keywords" content="initialDOFVelocity">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; initialDOFVelocity.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>initialDOFVelocity
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> 
+ Compute the initial DOFs' rate of change based on a given deflected
+ or undeflected shape and rotor speed.
+
+ Version:        Changes:
+ --------        -------------
+ 19.03.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 19.03.2017      Checked for a simple sample case.
+
+ Inputs:
+ -------
+ 
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a>	</li>
+<li><a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the initial DOFs' rate of change based on a given deflected</span>
+0004 <span class="comment">% or undeflected shape and rotor speed.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 19.03.2017      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 19.03.2017      Checked for a simple sample case.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Outputs:</span>
+0019 <span class="comment">% --------</span>
+0020 <span class="comment">%</span>
+0021 
+0022 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0023 Ndj = size(q,1);
+0024 
+0025 <span class="comment">% Retained and slave structural DOFs.</span>
+0026 slv = <a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a> (idofs);
+0027 vec = [1:Ndj].';
+0028 [jnk,ret,jnk2] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a> (vec,slv,[]);
+0029 Nret = size(ret,1);
+0030 Nslv = size(slv,1);
+0031 
+0032 x0   = zeros(2*Nret,1);
+0033 x0(1:Nret) = q(ret);
+0034 x0(2*Nret-6+2) = Omega;
+0035 qg   = zeros(Nslv,1);
+0036 [q,dq0dt] = <a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a> (x0,s,P,speye(Nret),ret,slv,qg);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

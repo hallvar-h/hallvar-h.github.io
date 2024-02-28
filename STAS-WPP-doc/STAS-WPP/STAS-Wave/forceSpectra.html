@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of forceSpectra</title>
+  <meta name="keywords" content="forceSpectra">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; forceSpectra.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>forceSpectra
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Qij,Sij] = forceSpectra (F,Nf,dt,Nnod) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The wave forces are computed at the given nodal locations.
+ The cross-spectral matrix between the wave forces at the
+ nodes is computed here.
+
+ Version:        Changes:
+ --------        -------------
+ 25.03.2015      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.03.2015      Memo AN 15.12.19
+
+ Inputs:
+ -------
+ F               : Time history of wave-direction forces on each
+                   node.  Vector of length Ntime*Nnod.
+ Nf              : Number of timesteps/number of frequencies/
+                   number of time offsets.
+ dt              : Timestep, for scaling the FFT.
+ Nnod            : Number of nodes for cross-correlations.
+
+ Outputs:
+ --------
+ Qij,Sij         : Correlations and spectra.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="runWave.html" class="code" title="">runWave</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Qij,Sij] = forceSpectra (F,Nf,dt,Nnod)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The wave forces are computed at the given nodal locations.</span>
+0004 <span class="comment">% The cross-spectral matrix between the wave forces at the</span>
+0005 <span class="comment">% nodes is computed here.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 25.03.2015      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 25.03.2015      Memo AN 15.12.19</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% F               : Time history of wave-direction forces on each</span>
+0018 <span class="comment">%                   node.  Vector of length Ntime*Nnod.</span>
+0019 <span class="comment">% Nf              : Number of timesteps/number of frequencies/</span>
+0020 <span class="comment">%                   number of time offsets.</span>
+0021 <span class="comment">% dt              : Timestep, for scaling the FFT.</span>
+0022 <span class="comment">% Nnod            : Number of nodes for cross-correlations.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Outputs:</span>
+0025 <span class="comment">% --------</span>
+0026 <span class="comment">% Qij,Sij         : Correlations and spectra.</span>
+0027 
+0028 Sij = sparse(Nf,Nnod*Nnod);
+0029 Qij = sparse(Nf,Nnod*Nnod);
+0030 FF  = sparse(Nf,Nnod);
+0031 
+0032 <span class="keyword">for</span> ii = 1:Nnod
+0033    indi = Nf*(ii-1);
+0034    Fi = zeros(Nf,1);
+0035    Fi(1:Nf/2) = F(indi+Nf/2+1:indi+Nf);
+0036    Fi(Nf/2+1:Nf) = F(indi+1:indi+Nf/2);
+0037    FF(:,ii) = fft(Fi);
+0038 <span class="keyword">end</span>
+0039 
+0040 <span class="keyword">for</span> ii = 1:Nnod
+0041    ind = Nnod*(ii-1);
+0042 
+0043    <span class="keyword">for</span> jj = 1:Nnod
+0044 
+0045       <span class="comment">% Compute the correlation between the two force vectors</span>
+0046       <span class="comment">% using FFTs.  (Press et al. pp 602 and 648.)</span>
+0047       prod = FF(:,jj).*conj(FF(:,ii))/Nf;
+0048       Sij(:,ind+jj) = dt*prod;
+0049       Qij(:,ind+jj) = ifft(prod);
+0050 
+0051    <span class="keyword">end</span>
+0052 
+0053 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

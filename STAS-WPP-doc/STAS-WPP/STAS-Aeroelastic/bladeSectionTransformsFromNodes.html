@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of bladeSectionTransformsFromNodes</title>
+  <meta name="keywords" content="bladeSectionTransformsFromNodes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; bladeSectionTransformsFromNodes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>bladeSectionTransformsFromNodes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [TB_s,Ts_B] = bladeSectionTransformsFromNodes (Pin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This computes body section transforms from dx,y,z and twist
+ inputs contained in the Pin vector.
+
+ Version:        Changes:
+ --------        -------------
+ 17.09.2017      Original code
+
+ Version:        Verification:
+ --------        -------------
+ 17.09.2017      Tested for sample x,y,z,twist inputs.
+
+ Inputs:
+ -------
+ Pin             : Nodal positions and twist-bend-sweep rotation.
+                   Of the rotations, only twist is used.  Bend and
+                   sweep are defined by nodal positions.
+
+ Outputs:
+ --------
+ TB_s,Ts_B
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [TB_s,Ts_B] = bladeSectionTransformsFromNodes (Pin)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This computes body section transforms from dx,y,z and twist</span>
+0004 <span class="comment">% inputs contained in the Pin vector.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 17.09.2017      Original code</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 17.09.2017      Tested for sample x,y,z,twist inputs.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% Pin             : Nodal positions and twist-bend-sweep rotation.</span>
+0017 <span class="comment">%                   Of the rotations, only twist is used.  Bend and</span>
+0018 <span class="comment">%                   sweep are defined by nodal positions.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">% --------</span>
+0022 <span class="comment">% TB_s,Ts_B</span>
+0023 
+0024 <span class="comment">%'bladeSectionTransformsFromNodes'</span>
+0025 
+0026 Nnod = size(Pin,1)/6;
+0027 Nel  = Nnod - 1;
+0028 
+0029 TB_s = zeros(3,3*Nel);
+0030 Ts_B = zeros(3,3*Nel);
+0031 
+0032 dr  = zeros(3*Nel,1);
+0033 L   = zeros(Nel,1);
+0034 <span class="keyword">for</span> idof = 1:3
+0035    ii = [idof:3:3*(Nel-1)+idof];
+0036    jj = [idof:6:6*(Nnod-2)+idof];
+0037    kk = [idof+6:6:6*(Nnod-1)+idof];
+0038 
+0039    dr(ii) = Pin(kk) - Pin(jj);
+0040 
+0041    L(:,1) = L(:,1) + dr(ii).^2;
+0042 
+0043 <span class="keyword">end</span>
+0044 L = sqrt(L);
+0045 
+0046 <span class="comment">% Do not average.  The element values are stored in the outboard node.</span>
+0047 <span class="comment">%xie = 0.5*(Pin(4:6:6*Nel-2) + Pin(10:6:6*Nnod-2));</span>
+0048 xie = Pin(10:6:6*Nnod-2);
+0049 
+0050 c1 = cos(xie);              <span class="comment">% Twist (Rotation about body x axis).</span>
+0051 s1 = sin(xie);
+0052 
+0053 th2 = asin(-dr(3:3:3*Nel)./L);
+0054 th3 = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(dr(2:3:3*Nel-1),dr(1:3:3*Nel-2));
+0055 
+0056 c2 = cos(th2);              <span class="comment">% Rotation about body y axis.</span>
+0057 s2 = sin(th2);
+0058 c3 = cos(th3);              <span class="comment">% Rotation about body z axis.</span>
+0059 s3 = sin(th3);
+0060 
+0061 <span class="keyword">for</span> iel = 1:Nel
+0062 
+0063    ic = 3*(iel-1);
+0064 
+0065    TB_s(:,ic+[1:3]) = [1 0 0;0 c1(iel) s1(iel);0 -s1(iel) c1(iel)] <span class="keyword">...</span>
+0066                     * [c2(iel) 0 -s2(iel);0 1 0;s2(iel) 0 c2(iel)] <span class="keyword">...</span>
+0067                     * [c3(iel) s3(iel) 0;-s3(iel) c3(iel) 0;0 0 1];
+0068 
+0069    Ts_B(:,ic+[1:3]) = TB_s(:,ic+[1:3]).';
+0070 
+0071 <span class="comment">%iel</span>
+0072 <span class="comment">%Ts_B(:,ic+[1:3])</span>
+0073 <span class="comment">%dr = Pin(6*(iel-1)+[7:9]) - Pin(6*(iel-1)+[1:3]);</span>
+0074 <span class="comment">%[Pin(6*(iel-1)+[1:3]) Pin(6*(iel-1)+[7:9]) dr]</span>
+0075 <span class="comment">%dr/sqrt(dr.'*dr)</span>
+0076 
+0077 <span class="comment">%{</span>
+0078 <span class="string">'BladeSectionTransformsFromNodes'</span>
+0079 iel
+0080 [c3(iel) s3(iel) 0;-s3(iel) c3(iel) 0;0 0 1]
+0081 [c2(iel) 0 -s2(iel);0 1 0;s2(iel) 0 c2(iel)]
+0082 [1 0 0;0 c1(iel) s1(iel);0 -s1(iel) c1(iel)]
+0083 Ts_B(:,ic+[1:3])
+0084 <span class="comment">%}</span>
+0085 
+0086 <span class="keyword">end</span>
+0087 
+0088 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of structInit</title>
+  <meta name="keywords" content="structInit">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; structInit.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>structInit
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Initialize parameters related to the structural model.
+
+ The mode shape calculation should ideally include centrifugal
+ stiffening, but this requires solving for the displaced position
+ of the blade under the rotational acceleration field.
+ - start the rotor spinning
+ - isolate one of the blades, fix its root
+ - compute the nonlinear steady-state solution
+ - compute the eigenmodes.
+ This is left to a future implementation.  Note that the primary
+ purpose of the modal reduction is to prevent very high-frequency
+ structural modes from making system matrices ill-conditioned.
+ A modal reduction based on static-blade modes, although not
+ ideal, is sufficient for this purpose.
+
+ Version:        Changes:
+ --------        -------------
+ 25.04.2018      Original code.
+ 25.01.2020      Accommodate updated buildMRQ.
+
+ Version:        Verification:
+ --------        -------------
+ 25.04.2018      
+ 25.01.2020      
+
+ Inputs:
+ -------
+ s               : Data structure.
+ yaw,psi,betas   : Yaw, azimuth, blade pitch angles that 
+ Omega           : Rotor speed.
+
+ Outputs:
+ --------
+ xs              : Constrained [qhat;dqhat/dt]
+ etas            : Reduced [eta;deta/dt]
+ q,dq,d2q        : Structural DOF displacement, velocity, accel.
+ P               : Nodal offsets.
+ shape,freq      : Mode shapes and frequencies.
+ mdamp           : Vector of modal damping ratios.
+ ret,slv         : Retained and slave DOFs.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="bodyModes.html" class="code" title="function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv)">bodyModes</a>	</li>
+<li><a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a>	</li>
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="initialDOFVelocity.html" class="code" title="function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)">initialDOFVelocity</a>	</li>
+<li><a href="undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv, </a><span class="keyword">...</span>
+0002           Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Initialize parameters related to the structural model.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% The mode shape calculation should ideally include centrifugal</span>
+0007 <span class="comment">% stiffening, but this requires solving for the displaced position</span>
+0008 <span class="comment">% of the blade under the rotational acceleration field.</span>
+0009 <span class="comment">% - start the rotor spinning</span>
+0010 <span class="comment">% - isolate one of the blades, fix its root</span>
+0011 <span class="comment">% - compute the nonlinear steady-state solution</span>
+0012 <span class="comment">% - compute the eigenmodes.</span>
+0013 <span class="comment">% This is left to a future implementation.  Note that the primary</span>
+0014 <span class="comment">% purpose of the modal reduction is to prevent very high-frequency</span>
+0015 <span class="comment">% structural modes from making system matrices ill-conditioned.</span>
+0016 <span class="comment">% A modal reduction based on static-blade modes, although not</span>
+0017 <span class="comment">% ideal, is sufficient for this purpose.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Changes:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 25.04.2018      Original code.</span>
+0022 <span class="comment">% 25.01.2020      Accommodate updated buildMRQ.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Version:        Verification:</span>
+0025 <span class="comment">% --------        -------------</span>
+0026 <span class="comment">% 25.04.2018</span>
+0027 <span class="comment">% 25.01.2020</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Inputs:</span>
+0030 <span class="comment">% -------</span>
+0031 <span class="comment">% s               : Data structure.</span>
+0032 <span class="comment">% yaw,psi,betas   : Yaw, azimuth, blade pitch angles that</span>
+0033 <span class="comment">% Omega           : Rotor speed.</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Outputs:</span>
+0036 <span class="comment">% --------</span>
+0037 <span class="comment">% xs              : Constrained [qhat;dqhat/dt]</span>
+0038 <span class="comment">% etas            : Reduced [eta;deta/dt]</span>
+0039 <span class="comment">% q,dq,d2q        : Structural DOF displacement, velocity, accel.</span>
+0040 <span class="comment">% P               : Nodal offsets.</span>
+0041 <span class="comment">% shape,freq      : Mode shapes and frequencies.</span>
+0042 <span class="comment">% mdamp           : Vector of modal damping ratios.</span>
+0043 <span class="comment">% ret,slv         : Retained and slave DOFs.</span>
+0044 <span class="comment">%</span>
+0045 
+0046 Nnod = s.foundation.Nnod + s.tower.Nnod + s.nacelle.Nnod     <span class="keyword">...</span>
+0047      + s.driveshaft.Nnod + s.blade(1).Nnod + s.blade(2).Nnod <span class="keyword">...</span>
+0048      + s.blade(3).Nnod;
+0049 
+0050 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0051 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0052 Pin = <a href="assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0053 [q,P,Ts0_B,TB0_g] =                                                      <span class="keyword">...</span>
+0054       <a href="undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a> (Pin,yaw,s.nacelle.delta,psi,s.driveshaft.phi, <span class="keyword">...</span>
+0055                           betas,0,idofs,idofm,inods,inodm);
+0056 Ndj  = size(q,1);
+0057 
+0058 <span class="comment">% Initial velocity considering rotor rotation.</span>
+0059 [xs,qd,ret,slv] = <a href="initialDOFVelocity.html" class="code" title="function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)">initialDOFVelocity</a> (s,q,P,Omega);
+0060 Nret = size(ret,1);
+0061 
+0062 <span class="comment">% We don't yet know the applied forces, let these be zero.  The</span>
+0063 <span class="comment">% DOF accelerations should be set to zero for the initial body mode</span>
+0064 <span class="comment">% calculation.  (After a static solution to the state equations is</span>
+0065 <span class="comment">% available the body modes may be recomputed so as to include</span>
+0066 <span class="comment">% centrifugal stiffening and other effects.)</span>
+0067 F     = zeros(Ndj,1);
+0068 grav  = zeros(3,1);
+0069 qdd   = zeros (Ndj,1); <span class="comment">% Zero acceleration for computing body modes.</span>
+0070 
+0071 <span class="comment">% Get the unconstrained matrices.</span>
+0072 [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] = <span class="keyword">...</span>
+0073                      <a href="buildMRQ.html" class="code" title="function [M,G,H,C,K,Q,dM,dMg,dG,dGd,dH,dHd,dC,dCd,dK,dQ,dQd] =buildMRQ (linFlag,s,q,qd,qdd,P,F,grav)">buildMRQ</a> (1,s,q,qd,qdd,P,F,grav);
+0074 KK = dG - dH + dK;  <span class="comment">% Should dG and dH be included, since the static</span>
+0075                     <span class="comment">% solution has not been obtained?</span>
+0076 
+0077 <span class="comment">% Constrain.</span>
+0078 qh   = xs(1:Nret);
+0079 qhd  = xs(Nret+[1:Nret]);
+0080 qhdd = qdd(ret);
+0081 [q,qd,qdd,Tqhq,dTdq,dTdqd] = <a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a> (0,s,qh,qhd,qhdd,P,ret,slv);
+0082 T = Tqhq(Ndj+[1:Ndj],Nret+[1:Nret]);
+0083 Mr   = (T.')*M*T;
+0084 Kr   = (T.')*KK*T;
+0085 
+0086 [shape,freq,mdamp] = <a href="bodyModes.html" class="code" title="function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv)">bodyModes</a> (s,Mr,Kr,ret,slv);
+0087 Neta = size(shape,2);
+0088 
+0089 sh2 = [shape sparse(Nret,Neta);sparse(Nret,Neta) shape];
+0090 etas = (sh2.')*xs;  <span class="comment">% Best estimate.</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

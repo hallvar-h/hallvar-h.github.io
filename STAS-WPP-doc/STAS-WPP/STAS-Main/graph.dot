@@ -1,0 +1,19 @@
+/* Created by mdot for Matlab */
+digraph m2html {
+  generateCpCtTables -> speedyBEM2;
+  generatorEfficiency -> BTEfun;
+  runSplineAirfoilCoefficients -> getLift;
+  speedyBEM2 -> fbem;
+
+  BTEfun [URL="BTEfun.html"];
+  RiccatiDT [URL="RiccatiDT.html"];
+  SSDiscreteTime [URL="SSDiscreteTime.html"];
+  TCfun [URL="TCfun.html"];
+  Ytransform [URL="Ytransform.html"];
+  fbem [URL="fbem.html"];
+  generateCpCtTables [URL="generateCpCtTables.html"];
+  generatorEfficiency [URL="generatorEfficiency.html"];
+  getLift [URL="getLift.html"];
+  runSplineAirfoilCoefficients [URL="runSplineAirfoilCoefficients.html"];
+  speedyBEM2 [URL="speedyBEM2.html"];
+}

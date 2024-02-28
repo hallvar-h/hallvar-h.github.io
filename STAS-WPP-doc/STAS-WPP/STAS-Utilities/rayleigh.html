@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of rayleigh</title>
+  <meta name="keywords" content="rayleigh">
+  <meta name="description" content="This function begins with spectral moments, one set of m0, m1, m2,">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; rayleigh.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>rayleigh
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This function begins with spectral moments, one set of m0, m1, m2,</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [rho,n] = rayleigh (m0,m2,T,s,ds) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This function begins with spectral moments, one set of m0, m1, m2,
+ and m4.  At selected stress amplitude levels, the Rayleigh formula
+ is used to calculate the probability density, and, using the input
+ time period, the expected number of cycles at that stress amplitude.
+
+ Version:        Changes:
+ --------        -------------
+ 22.09.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 22.09.2020      
+
+ Inputs:
+ -------
+ m0,m2           : spectral moments.
+ T               : period of time over which the current spectral
+                   moments apply.
+ s               : stress amplitudes.
+ ds              : width of each stress amplitude.
+
+ Outputs:
+ --------
+ rho             : Probability density of each stress amplitude.
+ n               : number of cycles at each stress amplitude, over
+                   the specified time period.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rho,n] = rayleigh (m0,m2,T,s,ds)</a>
+0002 <span class="comment">% This function begins with spectral moments, one set of m0, m1, m2,</span>
+0003 <span class="comment">% and m4.  At selected stress amplitude levels, the Rayleigh formula</span>
+0004 <span class="comment">% is used to calculate the probability density, and, using the input</span>
+0005 <span class="comment">% time period, the expected number of cycles at that stress amplitude.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 22.09.2020      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 22.09.2020</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% m0,m2           : spectral moments.</span>
+0018 <span class="comment">% T               : period of time over which the current spectral</span>
+0019 <span class="comment">%                   moments apply.</span>
+0020 <span class="comment">% s               : stress amplitudes.</span>
+0021 <span class="comment">% ds              : width of each stress amplitude.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% rho             : Probability density of each stress amplitude.</span>
+0026 <span class="comment">% n               : number of cycles at each stress amplitude, over</span>
+0027 <span class="comment">%                   the specified time period.</span>
+0028 
+0029 sig2 = m0;
+0030 fc = sqrt(m2/m0);
+0031 rho = (s./sig2).*exp(-0.5*(s.^2)/sig2);
+0032 n = rho.*ds.*fc*T;
+0033 
+0034 
+0035 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

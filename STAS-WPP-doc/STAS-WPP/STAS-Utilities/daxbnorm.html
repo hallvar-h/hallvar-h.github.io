@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of daxbnorm</title>
+  <meta name="keywords" content="daxbnorm">
+  <meta name="description" content="d   a x b">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; daxbnorm.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>daxbnorm
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>d   a x b</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d = daxbnorm (a,b) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">           d   a x b
+ Compute   -- -------
+           da |a x b|
+
+ 08.11.2017: verified by finite difference.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d = daxbnorm (a,b)</a>
+0002 <span class="comment">%           d   a x b</span>
+0003 <span class="comment">% Compute   -- -------</span>
+0004 <span class="comment">%           da |a x b|</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% 08.11.2017: verified by finite difference.</span>
+0007 
+0008 N = 3;
+0009 d = zeros(N,N);
+0010 
+0011 axb = cross(a,b);
+0012 naxb = sqrt((axb.')*axb);
+0013 naxb3 = naxb^3;
+0014 
+0015 <span class="keyword">for</span> jj = 1:N
+0016 
+0017    ee = zeros(N,1);
+0018    ee(jj) = 1;
+0019    exb = cross(ee,b);
+0020    d(:,jj) = exb/naxb - axb*((exb.')*axb)/naxb3;
+0021 
+0022 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

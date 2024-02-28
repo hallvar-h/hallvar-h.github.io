@@ -1,0 +1,405 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aeroelastic</title>
+  <meta name="keywords" content="aeroelastic">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; aeroelastic.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>aeroelastic
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the terms in the nonlinear aeroelastic equations and build a
+ linear model of the turbine at a given operating point, which does
+ not need to be an equilibrium point.  In the output matrices, joints
+ are free, and need to be controlled, or locked by eliminating their
+ DOFs.
+
+ The interface (input and output) variables for the nonlinear model
+ include nodal forces F on the structure; wind speeds Vg, in global
+ coordinates, at each blade element; and nodal displacements,
+ velocities, and accelerations in the &quot;q&quot; basis.  The linear model
+ includes many additional quantities that are interface variables
+ between the structural and aerodynamic models, as well as between
+ modules within the aerodynamic model.
+
+ ================
+ Nonlinear model:
+   States:              y vector:             u vector:
+   eta       Neta       q            Ndj      F          Ndj
+   deta/dt   Neta       dqdt         Ndj      d2eta/dt2  Neta
+                        d2qdt2       Ndj
+ -----
+ (For each aero element)
+   ad         1         Fa            6       Vg          3
+   a1,a2     2:3
+   Vih z,t   4:5
+   Vi z,t    6:7
+ -----
+                        F            Ndj
+
+ ================
+ Linear model, intermediate variables required for automated linking
+ in linkAeroelastic.
+   States:              y vector:             u vector:
+ ----------------------- Structure --------------------------
+   eta       Neta       q         Ndj         F          Ndj
+   deta/dt   Neta       dq/dt     Ndj         d2eta/dt2  Neta
+                        d2q/dt2   Ndj
+                        xng     3*Nnod
+                        vng     6*Nnod
+                        F         Ndj
+ ---------------------- Aerodynamic -------------------------
+   ad         1         (q)       1:24        Vg          3
+   a1,a2     2:3        (dq/dt)  25:48
+   Vih z,t   4:5        xng1,2   49:54
+   Vi z,t    6:7        vng1,2   55:60
+                        wg       61:63
+                        wa       64:66
+                        aq        67
+                        Cl,Cd,Cm 68:70
+                        Fl,Fd,M  71:73
+                        Fa       74:79
+                        Fp       80:85
+                        Fr       86:91
+                        Fzts     92:94
+                        Vg       95:97
+                        Ua       98:100
+                        Umag      101
+                        Ur      102:104
+                        Uzts    105:107
+                        Vzts    108:110
+                        Viq     111:112
+                        Viy     113:114
+                        Vixyz   115:117
+                        Wmag      118
+                        xeg     119:121
+                        xhg     122:124
+                        xnr1,2  125:130  
+                        xer     131:133
+                        r         134
+                        Lp        135
+                        z         136
+                        f         137  
+ (Repeat the above x,y,u consecutively for each blade element.)
+                        Azi       (1)  (effective rotor azimuth)
+                        Waero     (1)  (aero rotor speed)
+                        Dp        (3)
+
+
+ Version:        Changes:
+ --------        -------------
+ 06.02.2018      Original code.
+ 21.01.2020      Revised to accommodate the updates to structure.m.
+
+ Version:        Verification:
+ --------        -------------
+ 06.02.2018      I expect there is a problem with the (dM/dq)(d^2q/dt^2)
+                 term's linearization, but it is tricky to find, and it
+                 is generally not critical, as the linearization is
+                 seldom relevant in a condition with high steady DOF
+                 accelerations.
+ 21.01.2020      &quot;A&quot; matrix derivatives show precise agreement, based on
+                 complex step using Lmat, Rvec.  The above issue with
+                 accelerations is no longer evident.
+
+ Inputs:
+ -------
+ linFlag         : = 1 for linearization.
+ s               : Data structure describing the structures.
+ a               : Data structure describing the aerodynamics.
+ x               : State vector.
+ u               : Input vector.
+ P               : Undeformed nodal positions.
+ shape,mdamp     : Mode shapes and modal damping vector.
+ grav            : Gravity vector in global coordinates.
+ Psi             : Aero mode shapes.
+
+ Outputs:
+ --------
+ Lmat, Rvec      : LHS and RHS of nonlinear state equation.
+ y               : Nonlinear y vector.
+ A...Dy          : State matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a>	</li>
+<li><a href="airfoilToNodal.html" class="code" title="function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)">airfoilToNodal</a>	</li>
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a>	</li>
+<li><a href="buildTetaqh.html" class="code" title="function [qh,qhd,qhdd,T] = buildTetaqh (eta,etad,etadd,shape)">buildTetaqh</a>	</li>
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="globalPosVel.html" class="code" title="function [xng,vng,Dy] = globalPosVel (s,idofs,qq,PP,dqqdt)">globalPosVel</a>	</li>
+<li><a href="linkAeroelastic.html" class="code" title="function [LHS,A,Bu,By,C,Du,Dy] =linkAeroelastic (s,a,lls,aas,bbus,bbys,ccs,ddus,ddys,lla,aaa,bbya,cca,ddya,ddypv,ddyRSA)">linkAeroelastic</a>	</li>
+<li><a href="rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a>	</li>
+<li><a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>	</li>
+<li><a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =           </a><span class="keyword">...</span>
+0002             aeroelastic (linFlag,s,a,x,u,P,        <span class="keyword">...</span>
+0003                          shape,mdamp,grav,         <span class="keyword">...</span>
+0004                          Tas,Try,ch,Lel,foilwt,    <span class="keyword">...</span>
+0005                          aoaz,aoast,xas,yas,Psi)
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Compute the terms in the nonlinear aeroelastic equations and build a</span>
+0008 <span class="comment">% linear model of the turbine at a given operating point, which does</span>
+0009 <span class="comment">% not need to be an equilibrium point.  In the output matrices, joints</span>
+0010 <span class="comment">% are free, and need to be controlled, or locked by eliminating their</span>
+0011 <span class="comment">% DOFs.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% The interface (input and output) variables for the nonlinear model</span>
+0014 <span class="comment">% include nodal forces F on the structure; wind speeds Vg, in global</span>
+0015 <span class="comment">% coordinates, at each blade element; and nodal displacements,</span>
+0016 <span class="comment">% velocities, and accelerations in the &quot;q&quot; basis.  The linear model</span>
+0017 <span class="comment">% includes many additional quantities that are interface variables</span>
+0018 <span class="comment">% between the structural and aerodynamic models, as well as between</span>
+0019 <span class="comment">% modules within the aerodynamic model.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% ================</span>
+0022 <span class="comment">% Nonlinear model:</span>
+0023 <span class="comment">%   States:              y vector:             u vector:</span>
+0024 <span class="comment">%   eta       Neta       q            Ndj      F          Ndj</span>
+0025 <span class="comment">%   deta/dt   Neta       dqdt         Ndj      d2eta/dt2  Neta</span>
+0026 <span class="comment">%                        d2qdt2       Ndj</span>
+0027 <span class="comment">% -----</span>
+0028 <span class="comment">% (For each aero element)</span>
+0029 <span class="comment">%   ad         1         Fa            6       Vg          3</span>
+0030 <span class="comment">%   a1,a2     2:3</span>
+0031 <span class="comment">%   Vih z,t   4:5</span>
+0032 <span class="comment">%   Vi z,t    6:7</span>
+0033 <span class="comment">% -----</span>
+0034 <span class="comment">%                        F            Ndj</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">% ================</span>
+0037 <span class="comment">% Linear model, intermediate variables required for automated linking</span>
+0038 <span class="comment">% in linkAeroelastic.</span>
+0039 <span class="comment">%   States:              y vector:             u vector:</span>
+0040 <span class="comment">% ----------------------- Structure --------------------------</span>
+0041 <span class="comment">%   eta       Neta       q         Ndj         F          Ndj</span>
+0042 <span class="comment">%   deta/dt   Neta       dq/dt     Ndj         d2eta/dt2  Neta</span>
+0043 <span class="comment">%                        d2q/dt2   Ndj</span>
+0044 <span class="comment">%                        xng     3*Nnod</span>
+0045 <span class="comment">%                        vng     6*Nnod</span>
+0046 <span class="comment">%                        F         Ndj</span>
+0047 <span class="comment">% ---------------------- Aerodynamic -------------------------</span>
+0048 <span class="comment">%   ad         1         (q)       1:24        Vg          3</span>
+0049 <span class="comment">%   a1,a2     2:3        (dq/dt)  25:48</span>
+0050 <span class="comment">%   Vih z,t   4:5        xng1,2   49:54</span>
+0051 <span class="comment">%   Vi z,t    6:7        vng1,2   55:60</span>
+0052 <span class="comment">%                        wg       61:63</span>
+0053 <span class="comment">%                        wa       64:66</span>
+0054 <span class="comment">%                        aq        67</span>
+0055 <span class="comment">%                        Cl,Cd,Cm 68:70</span>
+0056 <span class="comment">%                        Fl,Fd,M  71:73</span>
+0057 <span class="comment">%                        Fa       74:79</span>
+0058 <span class="comment">%                        Fp       80:85</span>
+0059 <span class="comment">%                        Fr       86:91</span>
+0060 <span class="comment">%                        Fzts     92:94</span>
+0061 <span class="comment">%                        Vg       95:97</span>
+0062 <span class="comment">%                        Ua       98:100</span>
+0063 <span class="comment">%                        Umag      101</span>
+0064 <span class="comment">%                        Ur      102:104</span>
+0065 <span class="comment">%                        Uzts    105:107</span>
+0066 <span class="comment">%                        Vzts    108:110</span>
+0067 <span class="comment">%                        Viq     111:112</span>
+0068 <span class="comment">%                        Viy     113:114</span>
+0069 <span class="comment">%                        Vixyz   115:117</span>
+0070 <span class="comment">%                        Wmag      118</span>
+0071 <span class="comment">%                        xeg     119:121</span>
+0072 <span class="comment">%                        xhg     122:124</span>
+0073 <span class="comment">%                        xnr1,2  125:130</span>
+0074 <span class="comment">%                        xer     131:133</span>
+0075 <span class="comment">%                        r         134</span>
+0076 <span class="comment">%                        Lp        135</span>
+0077 <span class="comment">%                        z         136</span>
+0078 <span class="comment">%                        f         137</span>
+0079 <span class="comment">% (Repeat the above x,y,u consecutively for each blade element.)</span>
+0080 <span class="comment">%                        Azi       (1)  (effective rotor azimuth)</span>
+0081 <span class="comment">%                        Waero     (1)  (aero rotor speed)</span>
+0082 <span class="comment">%                        Dp        (3)</span>
+0083 <span class="comment">%</span>
+0084 <span class="comment">%</span>
+0085 <span class="comment">% Version:        Changes:</span>
+0086 <span class="comment">% --------        -------------</span>
+0087 <span class="comment">% 06.02.2018      Original code.</span>
+0088 <span class="comment">% 21.01.2020      Revised to accommodate the updates to structure.m.</span>
+0089 <span class="comment">%</span>
+0090 <span class="comment">% Version:        Verification:</span>
+0091 <span class="comment">% --------        -------------</span>
+0092 <span class="comment">% 06.02.2018      I expect there is a problem with the (dM/dq)(d^2q/dt^2)</span>
+0093 <span class="comment">%                 term's linearization, but it is tricky to find, and it</span>
+0094 <span class="comment">%                 is generally not critical, as the linearization is</span>
+0095 <span class="comment">%                 seldom relevant in a condition with high steady DOF</span>
+0096 <span class="comment">%                 accelerations.</span>
+0097 <span class="comment">% 21.01.2020      &quot;A&quot; matrix derivatives show precise agreement, based on</span>
+0098 <span class="comment">%                 complex step using Lmat, Rvec.  The above issue with</span>
+0099 <span class="comment">%                 accelerations is no longer evident.</span>
+0100 <span class="comment">%</span>
+0101 <span class="comment">% Inputs:</span>
+0102 <span class="comment">% -------</span>
+0103 <span class="comment">% linFlag         : = 1 for linearization.</span>
+0104 <span class="comment">% s               : Data structure describing the structures.</span>
+0105 <span class="comment">% a               : Data structure describing the aerodynamics.</span>
+0106 <span class="comment">% x               : State vector.</span>
+0107 <span class="comment">% u               : Input vector.</span>
+0108 <span class="comment">% P               : Undeformed nodal positions.</span>
+0109 <span class="comment">% shape,mdamp     : Mode shapes and modal damping vector.</span>
+0110 <span class="comment">% grav            : Gravity vector in global coordinates.</span>
+0111 <span class="comment">% Psi             : Aero mode shapes.</span>
+0112 <span class="comment">%</span>
+0113 <span class="comment">% Outputs:</span>
+0114 <span class="comment">% --------</span>
+0115 <span class="comment">% Lmat, Rvec      : LHS and RHS of nonlinear state equation.</span>
+0116 <span class="comment">% y               : Nonlinear y vector.</span>
+0117 <span class="comment">% A...Dy          : State matrices.</span>
+0118 
+0119 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0120 
+0121 Neta = size(shape,2);
+0122 Nxs  = 2*Neta;
+0123 Nxa  = size(Psi,2);
+0124 Ndj  = size(P,1);
+0125 Nel  = s.blade(1).Nel + s.blade(2).Nel + s.blade(3).Nel;
+0126 Nnod = Ndof/6;
+0127 
+0128 Nx   = size(x,1);
+0129 Nu   = Ndj + Neta + 3*Nel;
+0130 Ny   = 4*Ndj + 137*Nel + 9*Nnod + 5;
+0131 
+0132 <span class="comment">% Retained and slave structural DOFs.</span>
+0133 slv = <a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a> (idofs);
+0134 vec = [1:Ndj].';
+0135 [jnk,ret,jnk2] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a> (vec,slv,[]);
+0136 
+0137 <span class="comment">% Compute q DOFs from x input.</span>
+0138 xs   = x(1:Nxs);
+0139 eta  = xs(1:Neta);
+0140 etad = xs(Neta+[1:Neta]);
+0141 zro  = zeros(Neta,1);     <span class="comment">% Not needed for nonlinear.</span>
+0142 [qh,qhd,jnk1,jnk2] = <a href="buildTetaqh.html" class="code" title="function [qh,qhd,qhdd,T] = buildTetaqh (eta,etad,etadd,shape)">buildTetaqh</a> (eta,etad,zro,shape);
+0143 [q,qd,jnk2,jnk3,jnk4,jnk5] = <a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a> (0,s,qh,qhd,jnk1,P,ret,slv);
+0144 
+0145 <span class="comment">% Aerodynamic state equations.  Hard-code psiFlag = 1, wake dynamics</span>
+0146 <span class="comment">% in MBC coordinates.</span>
+0147 xa = x(Nxs+[1:Nxa]);
+0148 Vg = u(Ndj+Neta+[1:3*Nel]);
+0149 [dxadt,ya] = <a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a> (1,s,a,xa,0,q,qd,P,        <span class="keyword">...</span>
+0150                      Tas,Try,Vg,ch,Lel,foilwt, <span class="keyword">...</span>
+0151                      aoaz,aoast,xas,yas,Psi);
+0152 
+0153 <span class="comment">% Update force vector.</span>
+0154 Fext = u(1:Ndj);
+0155 F = <a href="airfoilToNodal.html" class="code" title="function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)">airfoilToNodal</a> (s,a,ya,Tas,q,P,idofs);  <span class="comment">% Fa = ya.</span>
+0156 F = F + Fext;
+0157 
+0158 <span class="comment">% Structural state equations.</span>
+0159 dxs  = zeros(Nxs,1);
+0160 dxs(1:Neta) = xs(Neta+[1:Neta]);
+0161 dxs(Neta+[1:Neta]) = u(Ndj+[1:Neta]);
+0162 [Lms,Rvs,ys,jA,jBu,jBy,jC,jDu,jDy,ret,slv] =  <span class="keyword">...</span>
+0163                <a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a> (0,2,s,xs,dxs,P,F,shape,mdamp,grav);
+0164 
+0165 Lmat = [Lms sparse(Nxs,Nxa);sparse(Nxa,Nxs) speye(Nxa)];
+0166 Rvec = [Rvs;dxadt];
+0167 y    = [ys;ya;F];   <span class="comment">% F output: total forces.</span>
+0168 
+0169 <span class="keyword">if</span> (linFlag == 1)
+0170 
+0171    <span class="comment">% =========== Structural state equations =============</span>
+0172    [lls,Rvs,ys,aas,bbus,bbys,ccs,ddus,ddys,ret,slv] =  <span class="keyword">...</span>
+0173              <a href="structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a> (1,2,s,xs,dxs,P,F,shape,mdamp,grav);
+0174    Nxs  = size(aas,1);
+0175    Nus  = size(bbus,2);
+0176    Nysq = size(ccs,1);
+0177    Nys  = Nysq + 9*Nnod + Ndj;
+0178    Nxs2 = Nxs/2;
+0179 
+0180    <span class="comment">% =========== Aerodynamic state equations ============</span>
+0181    <span class="keyword">if</span> (a.icp(1) == 0)
+0182       Ncp = a.Neb;
+0183    <span class="keyword">else</span>
+0184       Ncp = size(a.icp,1);
+0185    <span class="keyword">end</span>
+0186    bsh = <a href="bladeModeShape.html" class="code" title="function bsh = bladeModeShape (s,ret,shape)">bladeModeShape</a> (s,ret,shape);
+0187    [dxadt,aaa,bbya,cca,ddya,jnk] = <span class="keyword">...</span>
+0188               <a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a> (1,xa,Vg,s,a,q,qd,P,bsh);
+0189    Nxa = size(aaa,1);
+0190    Nya = size(cca,1);
+0191    Nua = 3*a.Nb*a.Neb;  <span class="comment">% We will define Vg as a global input.</span>
+0192    Nyae = 137;          <span class="comment">% Number of aero y's associated with each element.</span>
+0193    Nea = a.Nb*a.Neb;
+0194    Neb = a.Neb;
+0195    lla = speye (Nxa);
+0196 
+0197    <span class="comment">% ======= Equations for linking aero-structure =======</span>
+0198    [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0199    [xng,vng,ddypv] = <a href="globalPosVel.html" class="code" title="function [xng,vng,Dy] = globalPosVel (s,idofs,qq,PP,dqqdt)">globalPosVel</a> (s,idofs,q(1:Ndof),P(1:Ndof),qd(1:Ndof));
+0200    [Waero,azi,ddyRSA] = <a href="rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a> (q,qd,P,Tn_y, <span class="keyword">...</span>
+0201                                         idofs(3),idofs(4),idofm(6)-6);
+0202 
+0203    [llas,aaas,bbuas,bbyas,ccas,dduas,ddyas] =                       <span class="keyword">...</span>
+0204                   <a href="linkAeroelastic.html" class="code" title="function [LHS,A,Bu,By,C,Du,Dy] =linkAeroelastic (s,a,lls,aas,bbus,bbys,ccs,ddus,ddys,lla,aaa,bbya,cca,ddya,ddypv,ddyRSA)">linkAeroelastic</a> (s,a,                             <span class="keyword">...</span>
+0205                                    lls,aas,bbus,bbys,ccs,ddus,ddys, <span class="keyword">...</span>
+0206                                    lla,aaa,bbya,cca,ddya,           <span class="keyword">...</span>
+0207                                    ddypv,ddyRSA);
+0208 
+0209    A    = aaas;
+0210    Bu   = bbuas;
+0211    By   = sparse(bbyas);
+0212    C    = sparse(ccas);
+0213    Du   = sparse(dduas);
+0214    Dy   = sparse(ddyas);
+0215 
+0216 <span class="keyword">else</span>
+0217 
+0218    A  = sparse(Nx,Nx);
+0219    Bu = sparse(Nx,Nu);
+0220    By = sparse(Nx,Ny);
+0221    C  = sparse(Ny,Nx);
+0222    Du = sparse(Ny,Nu);
+0223    Dy = sparse(Ny,Ny);
+0224 
+0225 <span class="keyword">end</span>
+0226 
+0227 
+0228 
+0229 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

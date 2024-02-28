@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of connectGrid</title>
+  <meta name="keywords" content="connectGrid">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; connectGrid.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>connectGrid
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,A,B] = connectGrid (linFlag,x,u,p,nod) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ State-space model of a generic AC grid, cables connecting buses.
+
+             States:           u vector:
+   Overall:
+                               we          (Reference synchronous gen.) 
+   For each cable segment:
+             iLd,q      
+
+   For each bus:
+             vd,q
+
+   For each bus:
+             ird,q             ied,q       (External current entering bus.)
+
+ Version:        Changes:
+ --------        -------------
+ 08.03.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 08.03.2019      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ p               : Ncab:  R     (Ohms)  Phase resistance in line j
+                   Ncab:  L     (H)     Phase inductance in line j
+                   Nnod:  C     (F)     Phase capacitance to ground at node k
+                   Nnod:  Rr    (Ohms)  Phase resistance to ground at node k.
+                   Nnod:  Lr    (H)     Phase inductance to ground at node k.
+ nod             : Connectivity, 2-by-Nnod.
+
+ Outputs:
+ --------
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/buildWPPgrid.html" class="code" title="function [dxdt,A,B] = buildWPPgrid (linFlag,x,u,gpar,xpar,nod,nsub)">buildWPPgrid</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,A,B] = connectGrid (linFlag,x,u,p,nod)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% State-space model of a generic AC grid, cables connecting buses.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%             States:           u vector:</span>
+0006 <span class="comment">%   Overall:</span>
+0007 <span class="comment">%                               we          (Reference synchronous gen.)</span>
+0008 <span class="comment">%   For each cable segment:</span>
+0009 <span class="comment">%             iLd,q</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   For each bus:</span>
+0012 <span class="comment">%             vd,q</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%   For each bus:</span>
+0015 <span class="comment">%             ird,q             ied,q       (External current entering bus.)</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version:        Changes:</span>
+0018 <span class="comment">% --------        -------------</span>
+0019 <span class="comment">% 08.03.2019      Original code.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Version:        Verification:</span>
+0022 <span class="comment">% --------        -------------</span>
+0023 <span class="comment">% 08.03.2019      Derivatives verified by complex step.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Inputs:</span>
+0026 <span class="comment">% -------</span>
+0027 <span class="comment">% p               : Ncab:  R     (Ohms)  Phase resistance in line j</span>
+0028 <span class="comment">%                   Ncab:  L     (H)     Phase inductance in line j</span>
+0029 <span class="comment">%                   Nnod:  C     (F)     Phase capacitance to ground at node k</span>
+0030 <span class="comment">%                   Nnod:  Rr    (Ohms)  Phase resistance to ground at node k.</span>
+0031 <span class="comment">%                   Nnod:  Lr    (H)     Phase inductance to ground at node k.</span>
+0032 <span class="comment">% nod             : Connectivity, 2-by-Nnod.</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">% Outputs:</span>
+0035 <span class="comment">% --------</span>
+0036 <span class="comment">%</span>
+0037 
+0038 Ncab = size(nod,2);
+0039 Nnod = max(max(nod));
+0040 
+0041 Nx = 2*Ncab + 4*Nnod;
+0042 Nu = 1 + 2*Nnod;
+0043 
+0044 ixi = 0;
+0045 ixv = 2*Ncab;
+0046 ixr = ixv + 2*Nnod;
+0047 iue = 1;
+0048 
+0049 we = u(1);
+0050 R  = p(1:Ncab);
+0051 L  = p(Ncab+[1:Ncab]);
+0052 C  = p(2*Ncab+[1:Nnod]);
+0053 Rr = p(2*Ncab+Nnod+[1:Nnod]);
+0054 Lr = p(2*Ncab+2*Nnod+[1:Nnod]);
+0055 
+0056 dxdt = zeros(Nx,1);
+0057 
+0058 spn = [0 -1;1 0];
+0059 
+0060 <span class="keyword">for</span> icab = 1:Ncab
+0061 
+0062    ic2 = 2*(icab-1);
+0063 
+0064    <span class="keyword">if</span> (L(icab) &gt; 0)
+0065       dxdt(ixi+ic2+[1:2]) = -(we*spn + (R(icab)/L(icab))*speye(2))*x(ixi+ic2+[1:2]) <span class="keyword">...</span>
+0066                           + (x(ixv+2*nod(1,icab)+[-1:0])                            <span class="keyword">...</span>
+0067                           -  x(ixv+2*nod(2,icab)+[-1:0]))/L(icab);
+0068    <span class="keyword">end</span>
+0069 
+0070 <span class="keyword">end</span>
+0071 
+0072 i2a = ixi + [1:2:2*Ncab-1].';
+0073 i2b = ixi + [2:2:2*Ncab].';
+0074 
+0075 <span class="keyword">for</span> inod = 1:Nnod
+0076 
+0077    ic2 = 2*(inod-1);
+0078 
+0079    ind1 = (nod(1,:) == inod).';
+0080    ind2 = (nod(2,:) == inod).';
+0081 
+0082    <span class="keyword">if</span> (C(inod) &gt; 0)
+0083       dxdt(ixv+ic2+[1:2]) = -we*spn*x(ixv+ic2+[1:2])                <span class="keyword">...</span>
+0084                           + (-[sum(x(i2a(ind1)));sum(x(i2b(ind1)))]  <span class="keyword">...</span>
+0085                           +   [sum(x(i2a(ind2)));sum(x(i2b(ind2)))]  <span class="keyword">...</span>
+0086                           +  u(iue+ic2+[1:2]))/C(inod);
+0087    <span class="keyword">end</span>
+0088 
+0089    <span class="keyword">if</span> (Lr(inod) &gt; 0)
+0090       dxdt(ixr+ic2+[1:2]) = -(we*spn + (Rr(inod)/Lr(inod))*speye(2))*x(ixr+ic2+[1:2]) <span class="keyword">...</span>
+0091                           + x(ixv+ic2+[1:2])/Lr(inod);
+0092    <span class="keyword">end</span>
+0093 
+0094 <span class="keyword">end</span>
+0095 
+0096 
+0097 
+0098 <span class="keyword">if</span> (linFlag == 1)
+0099 
+0100    A = spalloc(Nx,Nx,0.1*Nx*Nx);
+0101    B = spalloc(Nx,Nu,0.1*Nx*Nu);
+0102 
+0103    <span class="keyword">for</span> icab = 1:Ncab
+0104 
+0105       ic2 = 2*(icab-1);
+0106 
+0107       <span class="keyword">if</span> (L(icab) &gt; 0)
+0108          ir = ixi + ic2 + [1:2];
+0109          ic = ir;
+0110          A(ir,ic) = -(we*spn + (R(icab)/L(icab))*speye(2));
+0111          ic = ixv+2*nod(1,icab)+[-1:0];
+0112          A(ir,ic) = A(ir,ic) + speye(2)/L(icab);
+0113          ic = ixv+2*nod(2,icab)+[-1:0];
+0114          A(ir,ic) = A(ir,ic) - speye(2)/L(icab);
+0115          ic = 1;
+0116          B(ir,ic) = -spn*x(ixi+ic2+[1:2]);
+0117       <span class="keyword">end</span>
+0118 
+0119    <span class="keyword">end</span>
+0120 
+0121    <span class="keyword">for</span> inod = 1:Nnod
+0122 
+0123       ic2 = 2*(inod-1);
+0124 
+0125       ind1 = (nod(1,:) == inod).';
+0126       ind2 = (nod(2,:) == inod).';
+0127 
+0128       <span class="keyword">if</span> (C(inod) &gt; 0)
+0129          ir = ixv+ic2+[1:2];
+0130          ic = ir;
+0131          A(ir,ic) = A(ir,ic) - we*spn;
+0132          ir = ixv+ic2+1;
+0133          ic = i2a(ind1);
+0134          A(ir,ic) = A(ir,ic) - ones(1,sum(ind1))/C(inod);
+0135          ic = i2a(ind2);
+0136          A(ir,ic) = A(ir,ic) + ones(1,sum(ind2))/C(inod);
+0137          ir = ixv+ic2+2;
+0138          ic = i2b(ind1);
+0139          A(ir,ic) = A(ir,ic) - ones(1,sum(ind1))/C(inod);
+0140          ic = i2b(ind2);
+0141          A(ir,ic) = A(ir,ic) + ones(1,sum(ind2))/C(inod);
+0142          ir = ixv+ic2+[1:2];
+0143          ic = iue+ic2+[1:2];
+0144          B(ir,ic) = B(ir,ic) + speye(2)/C(inod);
+0145          ic = 1;
+0146          B(ir,ic) = B(ir,ic) - spn*x(ixv+ic2+[1:2]);
+0147 
+0148       <span class="keyword">end</span>
+0149 
+0150       <span class="keyword">if</span> (Lr(inod) &gt; 0)
+0151          ir = ixr+ic2+[1:2];
+0152          ic = ir;
+0153          A(ir,ic) = A(ir,ic) - we*spn - (Rr(inod)/Lr(inod))*speye(2);
+0154          ic = ixv+ic2+[1:2];
+0155          A(ir,ic) = A(ir,ic) + speye(2)/Lr(inod);
+0156          ic = 1;
+0157          B(ir,ic) = B(ir,ic) - spn*x(ixr+ic2+[1:2]);
+0158       <span class="keyword">end</span>
+0159 
+0160    <span class="keyword">end</span>
+0161 
+0162 <span class="keyword">else</span>
+0163 
+0164    A = sparse(Nx,Nx);
+0165    B = sparse(Nx,Nu);
+0166 
+0167 <span class="keyword">end</span>
+0168 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

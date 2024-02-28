@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of stresses</title>
+  <meta name="keywords" content="stresses">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; stresses.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>stresses
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ In the postprocessing phase, compute stresses and their gradients
+ based on input nodal displacements.
+
+ Version:        Changes:
+ --------        -------------
+ 10.09.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 10.09.2020      
+
+ Inputs:
+ -------
+ qn1, qn2        : Nodal DOF vectors.
+ Pn1, Pn2        : Undeformed nodal vectors.
+ ry, rz          : Coordinates of points about the section at
+                   which to compute the stress.                   
+ EE              : 3-by-3 elasticity matrix in section coordinates,
+                   for each point.  Packed as 3-by-3*Nsp.
+
+ Outputs:
+ --------
+ s               : Stresses.
+ dsdq            : Sensitivities wrt the input q's.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a>	</li>
+<li><a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% In the postprocessing phase, compute stresses and their gradients</span>
+0004 <span class="comment">% based on input nodal displacements.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 10.09.2020      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 10.09.2020</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% qn1, qn2        : Nodal DOF vectors.</span>
+0017 <span class="comment">% Pn1, Pn2        : Undeformed nodal vectors.</span>
+0018 <span class="comment">% ry, rz          : Coordinates of points about the section at</span>
+0019 <span class="comment">%                   which to compute the stress.</span>
+0020 <span class="comment">% EE              : 3-by-3 elasticity matrix in section coordinates,</span>
+0021 <span class="comment">%                   for each point.  Packed as 3-by-3*Nsp.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% s               : Stresses.</span>
+0026 <span class="comment">% dsdq            : Sensitivities wrt the input q's.</span>
+0027 
+0028 Nsp = size(ry,1);
+0029 
+0030 [xe,TsB] = <a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0031 dTsB = <a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB);
+0032 mu = <a href="getMu.html" class="code" title="function mu = getMu (qn1,qn2,Pn1,Pn2,TsB)">getMu</a> (qn1,qn2,Pn1,Pn2,TsB);
+0033 dmu = <a href="dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a> (qn1,qn2,Pn1,Pn2,TsB,dTsB);
+0034 
+0035 L = sqrt((Pn2(1)-Pn1(1))^2 + (Pn2(2)-Pn1(2))^2 + (Pn2(3)-Pn1(3))^2);
+0036 Li = 1/L;
+0037 Li2 = Li^2;
+0038 
+0039 dSmat = [-Li,   0,    0,   0,   0,   0,   Li,  0,    0,   0,   0,   0; <span class="keyword">...</span>
+0040           0,    0,    0,   0,   0,   1,   0,   0,    0,   0,   0,   0; <span class="keyword">...</span>
+0041           0,    0,    0,   0,  -1,   0,   0,   0,    0,   0,   0,   0; <span class="keyword">...</span>
+0042           0,    0,    0,  -Li,  0,   0,   0,   0,    0,   Li,  0,   0; <span class="keyword">...</span>
+0043           0,    0,  6*Li2, 0, -4*Li, 0,   0,   0, -6*Li2, 0, -2*Li, 0; <span class="keyword">...</span>
+0044           0, -6*Li2,  0,   0,   0, -4*Li, 0, 6*Li2,  0,   0,   0, -2*Li];
+0045 
+0046 s = zeros(3,Nsp);
+0047 dsdq = zeros(3,12*Nsp);
+0048 <span class="keyword">for</span> ip = 1:Nsp
+0049 
+0050    ic3 = 3*(ip-1);
+0051    ic12 = 12*(ip-1);
+0052 
+0053    Dmat = [1, 0, 0,    0,    rz(ip), -ry(ip); <span class="keyword">...</span>
+0054            0, 0, 0, -rz(ip),   0,       0;    <span class="keyword">...</span>
+0055            0, 0, 0,  ry(ip),   0,       0];
+0056 
+0057    EDS = EE(:,ic3+[1:3])*Dmat*dSmat;
+0058    s(:,ip) = EDS*mu;
+0059 
+0060    dsdq(:,ic12+[1:12]) = EDS*dmu;
+0061 
+0062 <span class="keyword">end</span>
+0063 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

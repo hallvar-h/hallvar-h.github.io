@@ -1,0 +1,240 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of rotorSpeedAero</title>
+  <meta name="keywords" content="rotorSpeedAero">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; rotorSpeedAero.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>rotorSpeedAero
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Rotor speed and effective azimuth, as experienced by the
+ aerodynamic model.
+
+   States:           y vector:         u vector:
+                     q         Ndj
+                     dq/dt     Ndj
+
+ Version:        Changes:
+ --------        -------------
+ 08.02.2018      Original code.
+ 03.05.2018      Added calculation of effective azimuth.
+
+ Version:        Verification:
+ --------        -------------
+ 08.02.2018      Linearization verified by complex step.
+ 03.05.2018      
+
+ Inputs:
+ -------
+ Ddof            : Driveshaft reference DOF.
+ nodof           : A reference DOF for a node on the driveshaft
+                   representing rotor speed.  Say, the hub node.
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a>	</li>
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Rotor speed and effective azimuth, as experienced by the</span>
+0004 <span class="comment">% aerodynamic model.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:         u vector:</span>
+0007 <span class="comment">%                     q         Ndj</span>
+0008 <span class="comment">%                     dq/dt     Ndj</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 08.02.2018      Original code.</span>
+0013 <span class="comment">% 03.05.2018      Added calculation of effective azimuth.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Verification:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 08.02.2018      Linearization verified by complex step.</span>
+0018 <span class="comment">% 03.05.2018</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Inputs:</span>
+0021 <span class="comment">% -------</span>
+0022 <span class="comment">% Ddof            : Driveshaft reference DOF.</span>
+0023 <span class="comment">% nodof           : A reference DOF for a node on the driveshaft</span>
+0024 <span class="comment">%                   representing rotor speed.  Say, the hub node.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">%</span>
+0029 
+0030 Ndj = size(q,1);
+0031 
+0032 dofs = [Ydof+[4:6] Ddof+[4:6] nodof+[4:6]].';
+0033 qq   = q(dofs);
+0034 PP   = P(dofs);
+0035 dqq  = dqdt(dofs);
+0036 
+0037 Dy = spalloc(2,2*Ndj,36);
+0038 
+0039 [Tyy0,dTyy0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qq(1:3));
+0040 [Tdd0,dTdd0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qq(4:6));
+0041 [Tnn0,dTnn0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qq(7:9));
+0042 d2Tyy0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qq(1:3),Tyy0,dTyy0);
+0043 d2Tdd0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qq(4:6),Tdd0,dTdd0);
+0044 d2Tnn0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qq(7:9),Tnn0,dTnn0);
+0045 
+0046 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PP(1:3));
+0047 Td0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PP(4:6));
+0048 Tn0d = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PP(7:9));
+0049 
+0050 Tny0 = (Ty0g.')*Td0g*Tdd0*Tn0d*Tnn0;
+0051 Td0r = ((Ty0g*Tyy0*Try).')*Td0g;
+0052 Tn0r = Td0r*Tdd0*Tn0d;
+0053 
+0054 Tnr  = Tn0r*Tnn0;
+0055 rx   = -Tnr(1,2);
+0056 ry   = -Tnr(2,2);
+0057 r2   = rx^2 + ry^2;
+0058 r22  = r2^2;
+0059 azi  = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a> (ry,rx);
+0060 
+0061 dpdx    = -ry/r2;
+0062 dpdy    =  rx/r2;
+0063 d2pdx2  =  2*rx*ry/r22;
+0064 d2pdy2  = -d2pdx2;
+0065 d2pdxdy =  (ry^2 - rx^2)/r22;
+0066 
+0067 drdq = zeros(2,9);
+0068 <span class="keyword">for</span> jj = 1:3
+0069 
+0070    ic3 = 3*(jj-1);
+0071 
+0072    dT = ((dTyy0(:,ic3+[1:3])*Try).')*Tny0;
+0073    drdq(:,jj)   = -dT(1:2,2);
+0074 
+0075    dT = Td0r*dTdd0(:,ic3+[1:3])*Tn0d*Tnn0;
+0076    drdq(:,jj+3) = -dT(1:2,2);
+0077 
+0078    dT = Tn0r*dTnn0(:,ic3+[1:3]);
+0079    drdq(:,jj+6) = -dT(1:2,2);
+0080 
+0081 <span class="keyword">end</span>
+0082 
+0083 dpdq = dpdx*drdq(1,:) + dpdy*drdq(2,:);
+0084 Dy(1,dofs) = dpdq;
+0085 
+0086 W = dpdq*dqq;
+0087 
+0088 d2rdq2 = zeros(2,81);
+0089 
+0090 <span class="keyword">for</span> ii = 1:3
+0091 
+0092    ic9 = 9*(ii-1);
+0093    ic3 = 3*(ii-1);
+0094 
+0095    <span class="keyword">for</span> jj = 1:3
+0096 
+0097       jc3 = 3*(jj-1);
+0098 
+0099       <span class="comment">% q1:3, q1:3</span>
+0100       d2T = ((d2Tyy0(:,ic9+jc3+[1:3])*Try).')*Tny0;
+0101       d2rdq2(:,ic9+jj) = -d2T(1:2,2);
+0102 
+0103       <span class="comment">% q1:3, q4:6</span>
+0104       d2T = ((Ty0g*dTyy0(:,ic3+[1:3])*Try).') <span class="keyword">...</span>
+0105           * Td0g*dTdd0(:,jc3+[1:3])*Tn0d*Tnn0;
+0106       d2rdq2(:,ic9+3+jj) = -d2T(1:2,2);
+0107 
+0108       <span class="comment">% q1:3, q7:9</span>
+0109       d2T = ((Ty0g*dTyy0(:,ic3+[1:3])*Try).') <span class="keyword">...</span>
+0110           * Td0g*Tdd0*Tn0d*dTnn0(:,jc3+[1:3]);
+0111       d2rdq2(:,ic9+6+jj) = -d2T(1:2,2);
+0112 
+0113       <span class="comment">% q4:6, q1:3</span>
+0114       d2T = ((Ty0g*dTyy0(:,jc3+[1:3])*Try).') <span class="keyword">...</span>
+0115           * Td0g*dTdd0(:,ic3+[1:3])*Tn0d*Tnn0;
+0116       d2rdq2(:,27+ic9+jj) = -d2T(1:2,2);
+0117 
+0118       <span class="comment">% q4:6, q4:6</span>
+0119       d2T = Td0r*d2Tdd0(:,ic9+jc3+[1:3])*Tn0d*Tnn0;
+0120       d2rdq2(:,27+ic9+3+jj) = -d2T(1:2,2);
+0121 
+0122       <span class="comment">% q4:6, q7:9</span>
+0123       d2T = Td0r*dTdd0(:,ic3+[1:3])*Tn0d*dTnn0(:,jc3+[1:3]);
+0124       d2rdq2(:,27+ic9+6+jj) = -d2T(1:2,2);
+0125 
+0126       <span class="comment">% q7:9, q1:3</span>
+0127       d2T = ((Ty0g*dTyy0(:,jc3+[1:3])*Try).') <span class="keyword">...</span>
+0128           * Td0g*Tdd0*Tn0d*dTnn0(:,ic3+[1:3]);
+0129       d2rdq2(:,54+ic9+jj) = -d2T(1:2,2);
+0130 
+0131       <span class="comment">% q7:9, q4:6</span>
+0132       d2T = Td0r*dTdd0(:,jc3+[1:3])*Tn0d*dTnn0(:,ic3+[1:3]);
+0133       d2rdq2(:,54+ic9+3+jj) = -d2T(1:2,2);
+0134 
+0135       <span class="comment">% q7:9, q7:9</span>
+0136       d2T = Td0r*Tdd0*Tn0d*d2Tnn0(:,ic9+jc3+[1:3]);
+0137       d2rdq2(:,54+ic9+6+jj) = -d2T(1:2,2);
+0138 
+0139    <span class="keyword">end</span>
+0140 
+0141 <span class="keyword">end</span>
+0142 
+0143 rq = drdq*dqq;
+0144 dWdqd = dpdq;
+0145 dWdq  = d2pdx2*rq(1)*drdq(1,:)   <span class="keyword">...</span>
+0146       + d2pdy2*rq(2)*drdq(2,:)   <span class="keyword">...</span>
+0147       + d2pdxdy*rq(1)*drdq(2,:)  <span class="keyword">...</span>
+0148       + d2pdxdy*rq(2)*drdq(1,:);
+0149 <span class="keyword">for</span> pp = 1:9
+0150    ic9 = 9*(pp-1);
+0151    dWdq(pp) = dWdq(pp) <span class="keyword">...</span>
+0152             + dpdx*(d2rdq2(1,ic9+[1:9])*dqq) <span class="keyword">...</span>
+0153             + dpdy*(d2rdq2(2,ic9+[1:9])*dqq);
+0154 <span class="keyword">end</span>
+0155 
+0156 Dy(2,dofs) = dWdq;
+0157 Dy(2,Ndj+dofs) = dWdqd;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

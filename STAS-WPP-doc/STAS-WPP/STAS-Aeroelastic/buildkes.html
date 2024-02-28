@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildkes</title>
+  <meta name="keywords" content="buildkes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; buildkes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildkes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function ke = buildkes (EEs,L) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Ordering of DOFs is
+ wxs1,wys1,wzs1,txs1,tys1,tzs1,wxs2,wys2,wzs2,txs2,tys2,tzs2
+
+ EEs is a 6-by-6 matrix, EEs = int{(D^T)ED}dA}.  See
+ Merz KO.  Enhanced finite beam elements for wind turbine blades.
+ Memo AN 16.12.18, SINTEF Energy Research, 2016.
+
+ Version:        Changes:
+ --------        -------------
+ 27.10.2014      Original code.
+ 15.04.2016      Modified section properties to matrix format.
+ 30.06.2017      Adapted for complex step.
+
+ Version:        Verification:
+ --------        -------------
+ 27.10.2014      Verified natural frequencies in bending, axial,
+                 and torsion against analytical solutions, using
+                 one and two elements.
+ 15.04.2016      Reproduces results of previous version.
+ 30.06.2017      
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="kscoeff.html" class="code" title="function [S0,S1,S2,S3] = kscoeff (L)">kscoeff</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function ke = buildkes (EEs,L)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Ordering of DOFs is</span>
+0004 <span class="comment">% wxs1,wys1,wzs1,txs1,tys1,tzs1,wxs2,wys2,wzs2,txs2,tys2,tzs2</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% EEs is a 6-by-6 matrix, EEs = int{(D^T)ED}dA}.  See</span>
+0007 <span class="comment">% Merz KO.  Enhanced finite beam elements for wind turbine blades.</span>
+0008 <span class="comment">% Memo AN 16.12.18, SINTEF Energy Research, 2016.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 27.10.2014      Original code.</span>
+0013 <span class="comment">% 15.04.2016      Modified section properties to matrix format.</span>
+0014 <span class="comment">% 30.06.2017      Adapted for complex step.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 27.10.2014      Verified natural frequencies in bending, axial,</span>
+0019 <span class="comment">%                 and torsion against analytical solutions, using</span>
+0020 <span class="comment">%                 one and two elements.</span>
+0021 <span class="comment">% 15.04.2016      Reproduces results of previous version.</span>
+0022 <span class="comment">% 30.06.2017</span>
+0023 
+0024 <span class="comment">% Define coefficients on S polynomial.</span>
+0025 
+0026 [S0,S1,S2,S3] = <a href="kscoeff.html" class="code" title="function [S0,S1,S2,S3] = kscoeff (L)">kscoeff</a> (L);
+0027 
+0028 <span class="comment">% Compute the derivative.</span>
+0029 dS2 = 3*S3;
+0030 dS1 = 2*S2;
+0031 dS0 = S1;
+0032 
+0033 <span class="comment">% Multiply to get the new coefficients:</span>
+0034 SES4 = (dS2.')*EEs*dS2;
+0035 SES3 = (dS2.')*EEs*dS1 + (dS1.')*EEs*dS2;
+0036 SES2 = (dS2.')*EEs*dS0 + (dS0.')*EEs*dS2 <span class="keyword">...</span>
+0037      + (dS1.')*EEs*dS1;
+0038 SES1 = (dS1.')*EEs*dS0 + (dS0.')*EEs*dS1;
+0039 SES0 = (dS0.')*EEs*dS0;
+0040 
+0041 <span class="comment">% Integrate and evaluate at L.</span>
+0042 ke = L*(SES0 + L*((SES1/2) + L*((SES2/3) + L*((SES3/4) + L*(SES4/5)))));
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

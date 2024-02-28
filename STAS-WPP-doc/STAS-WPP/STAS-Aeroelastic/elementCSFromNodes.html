@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of elementCSFromNodes</title>
+  <meta name="keywords" content="elementCSFromNodes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; elementCSFromNodes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>elementCSFromNodes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This computes the element section coordinate system origin and
+ orientation from the values at the adjacent nodes.  Here qn1 holds
+ the d and theta values associated with node k.  The d's are given
+ in body coordinates.  The theta's specify the T_n^n0 transform.  At
+ node k, the &quot;n0&quot; coordinate system is aligned with the section CS 
+ of the previous element j-1.  (For element 1 this can be taken to
+ be equal to element 1's section CS.) The qn2 input holds the values
+ d and theta for node k+1, where the &quot;n0&quot; coordinate system is now
+ that of element j.  Pn1 and Pn2 contain rotation parameters that
+ specify the T_s0^B transforms for elements j-1 and j, respectively.
+
+ Version:        Changes:
+ --------        -------------
+ 06.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 06.12.2017      Selected cases checked and documented in report.
+                 Also 45-degree bend case.
+
+ Inputs:
+ -------
+ qn1, qn2        : Nodal vectors.  The position parts are dn^B,
+                   and the rotations code for T_n^n0.
+ Pn1,Pn2         : 6*Nel vector describing undeformed nodal position
+                   and orientation of nodes.  By definition, Pn1 and 
+                   Pn2 contain the orientation of the undeformed
+                   section coordinate systems, giving T_s0^B.
+
+ Outputs:
+ --------
+ xe              : Element position wrt body CS.
+ TsB             : Transform from element section to body CS.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="airfoilToNodal.html" class="code" title="function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)">airfoilToNodal</a>	</li>
+<li><a href="airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a>	</li>
+<li><a href="internalLoads.html" class="code" title="function [P,dPdq] = internalLoads (qn1,qn2,Pn1,Pn2,kes)">internalLoads</a>	</li>
+<li><a href="prepareElementInput.html" class="code" title="function [mu,dmu,d2mu,TsB,dTsB,d2TsB] =prepareElementInput (linFlag,qB,qn1,qn2,PB,Pn1,Pn2);">prepareElementInput</a>	</li>
+<li><a href="stresses.html" class="code" title="function [s,dsdq] = stresses (qn1,qn2,Pn1,Pn2,ry,rz,EE)">stresses</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This computes the element section coordinate system origin and</span>
+0004 <span class="comment">% orientation from the values at the adjacent nodes.  Here qn1 holds</span>
+0005 <span class="comment">% the d and theta values associated with node k.  The d's are given</span>
+0006 <span class="comment">% in body coordinates.  The theta's specify the T_n^n0 transform.  At</span>
+0007 <span class="comment">% node k, the &quot;n0&quot; coordinate system is aligned with the section CS</span>
+0008 <span class="comment">% of the previous element j-1.  (For element 1 this can be taken to</span>
+0009 <span class="comment">% be equal to element 1's section CS.) The qn2 input holds the values</span>
+0010 <span class="comment">% d and theta for node k+1, where the &quot;n0&quot; coordinate system is now</span>
+0011 <span class="comment">% that of element j.  Pn1 and Pn2 contain rotation parameters that</span>
+0012 <span class="comment">% specify the T_s0^B transforms for elements j-1 and j, respectively.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Changes:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 06.12.2017      Original code.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Version:        Verification:</span>
+0019 <span class="comment">% --------        -------------</span>
+0020 <span class="comment">% 06.12.2017      Selected cases checked and documented in report.</span>
+0021 <span class="comment">%                 Also 45-degree bend case.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Inputs:</span>
+0024 <span class="comment">% -------</span>
+0025 <span class="comment">% qn1, qn2        : Nodal vectors.  The position parts are dn^B,</span>
+0026 <span class="comment">%                   and the rotations code for T_n^n0.</span>
+0027 <span class="comment">% Pn1,Pn2         : 6*Nel vector describing undeformed nodal position</span>
+0028 <span class="comment">%                   and orientation of nodes.  By definition, Pn1 and</span>
+0029 <span class="comment">%                   Pn2 contain the orientation of the undeformed</span>
+0030 <span class="comment">%                   section coordinate systems, giving T_s0^B.</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">% Outputs:</span>
+0033 <span class="comment">% --------</span>
+0034 <span class="comment">% xe              : Element position wrt body CS.</span>
+0035 <span class="comment">% TsB             : Transform from element section to body CS.</span>
+0036 
+0037 <span class="comment">%'elementCSFromNodes'</span>
+0038 
+0039 Ts0Bjm1 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn1(4:6));
+0040 Ts0Bj   = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn2(4:6));
+0041 Tnn0k   = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qn1(4:6));
+0042 Tnn0k1  = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qn2(4:6));
+0043 
+0044 Tn0ks0j = (Ts0Bj.')*Ts0Bjm1;
+0045 Teks0j  = Tn0ks0j*Tnn0k*(Tn0ks0j.');
+0046 Tek1s0j = Tnn0k1;
+0047 
+0048 xe = zeros(6,1);
+0049 xe(1:3) = 0.5*(qn1(1:3) + qn2(1:3) + Pn1(1:3) + Pn2(1:3));
+0050 
+0051 dr = Pn2(1:3) + qn2(1:3) - Pn1(1:3) - qn1(1:3);
+0052 TsB(:,1) = dr/sqrt((dr.')*dr);
+0053 
+0054 ysp = 0.5*Ts0Bj*(Teks0j(:,2) + Tek1s0j(:,2));
+0055 
+0056 vec = cross(TsB(:,1),ysp);
+0057 TsB(:,3) = vec/sqrt((vec.')*vec);
+0058 
+0059 vec = cross(TsB(:,3),TsB(:,1));
+0060 TsB(:,2) = vec/sqrt((vec.')*vec);
+0061 
+0062 xe(4:6) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TsB);
+0063 
+0064 
+0065 <span class="comment">%{</span>
+0066 <span class="string">'--------- TsB ----------'</span>
+0067 
+0068 [Pn1 qn1 Pn2 qn2]
+0069 Ts0Bjm1
+0070 Ts0Bj
+0071 Tn0ks0j
+0072 Teks0j
+0073 Tek1s0j
+0074 TsB
+0075 
+0076 TsB-Ts0Bj
+0077 
+0078 <span class="string">'------- end TsB --------'</span>
+0079 <span class="comment">%}</span>
+0080 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

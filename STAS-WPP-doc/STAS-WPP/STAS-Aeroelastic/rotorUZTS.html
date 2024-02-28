@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of rotorUZTS</title>
+  <meta name="keywords" content="rotorUZTS">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; rotorUZTS.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>rotorUZTS
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [psie,Uzts,Dy] = rotorUZTS (xer,Ur) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Axial, tangential, and spanwise components of rotorplane velocity.
+ This is the local flow velocity, including the rotor's rotation.
+ Can also be used for Fxyz-to-Fzts.
+
+   States:           y vector:         u vector:
+                     xer   1:3
+                     Ur    4:6
+
+ Version:        Changes:
+ --------        -------------
+ 27.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 27.12.2017      Checked with complex step using Uzts output.
+
+ Inputs:
+ -------
+ xer             : Position of element centroid in rotor coordinates.
+ Ur              : Velocity in xyz rotor coordinates.
+
+ Outputs:
+ --------
+ psie            : Azimuth angle of the element in rotor coordinates.
+ Uzts            : Velocity in zts rotor coordinates.
+ Dy              : State-space matrix.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [psie,Uzts,Dy] = rotorUZTS (xer,Ur)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Axial, tangential, and spanwise components of rotorplane velocity.</span>
+0004 <span class="comment">% This is the local flow velocity, including the rotor's rotation.</span>
+0005 <span class="comment">% Can also be used for Fxyz-to-Fzts.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%   States:           y vector:         u vector:</span>
+0008 <span class="comment">%                     xer   1:3</span>
+0009 <span class="comment">%                     Ur    4:6</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 27.12.2017      Original code.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Verification:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 27.12.2017      Checked with complex step using Uzts output.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Inputs:</span>
+0020 <span class="comment">% -------</span>
+0021 <span class="comment">% xer             : Position of element centroid in rotor coordinates.</span>
+0022 <span class="comment">% Ur              : Velocity in xyz rotor coordinates.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Outputs:</span>
+0025 <span class="comment">% --------</span>
+0026 <span class="comment">% psie            : Azimuth angle of the element in rotor coordinates.</span>
+0027 <span class="comment">% Uzts            : Velocity in zts rotor coordinates.</span>
+0028 <span class="comment">% Dy              : State-space matrix.</span>
+0029 
+0030 Uzts  = zeros(3,1);
+0031 Dy    = zeros(3,6);
+0032 
+0033 xmag  =  sqrt(xer(1)^2 + xer(2)^2);
+0034 xm3   =  xmag^3;
+0035 cp    =  xer(1)/xmag;
+0036 sp    =  xer(2)/xmag;
+0037 dcpdx = (xer(2)^2)/xm3;
+0038 dcpdy = -xer(1)*xer(2)/xm3;
+0039 dspdx =  dcpdy;
+0040 dspdy = (xer(1)^2)/xm3;
+0041 
+0042 psie = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a> (xer(2),xer(1));
+0043 
+0044 Uzts(1) =  Ur(3);
+0045 Uzts(2) = -Ur(1)*sp + Ur(2)*cp;
+0046 Uzts(3) =  Ur(1)*cp + Ur(2)*sp;
+0047 
+0048 Dy(:,1) = [0;-Ur(1)*dspdx+Ur(2)*dcpdx;Ur(1)*dcpdx+Ur(2)*dspdx];
+0049 Dy(:,2) = [0;-Ur(1)*dspdy+Ur(2)*dcpdy;Ur(1)*dcpdy+Ur(2)*dspdy];
+0050 <span class="comment">%Dy(:,3) = 0;</span>
+0051 Dy(:,4) = [0;-sp;cp];
+0052 Dy(:,5) = [0;cp;sp];
+0053 Dy(:,6) = [1;0;0];
+0054 
+0055 <span class="comment">%{</span>
+0056 <span class="string">'---Uzts---'</span>
+0057 psie
+0058 cp
+0059 sp
+0060 Ur
+0061 Uzts
+0062 <span class="string">'----------'</span>
+0063 <span class="comment">%}</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

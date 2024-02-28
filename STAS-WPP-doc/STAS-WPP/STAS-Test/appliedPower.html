@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of appliedPower</title>
+  <meta name="keywords" content="appliedPower">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; appliedPower.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>appliedPower
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Pow,y,Du,TBg] = appliedPower (s,qq,dqqdt,F,PP,idofs) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the overall power (force-times-velocity) of the applied 
+ nodal forces. 
+
+   States:           y vector:         u vector:
+                     vg       Ndj      qB          Ndj
+                     Fg       Ndj      dqB/dt      Ndj
+                                       FB          Ndj
+
+ Version:        Changes:
+ --------        -------------
+ 25.12.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.12.2019      
+
+ Inputs:
+ -------
+ 
+
+ Outputs:
+ --------
+ Pow             : Mean power.
+ y               : v^g and F^g.
+ Du              : = dy/du
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Pow,y,Du,TBg] = appliedPower (s,qq,dqqdt,F,PP,idofs)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the overall power (force-times-velocity) of the applied</span>
+0004 <span class="comment">% nodal forces.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:           y vector:         u vector:</span>
+0007 <span class="comment">%                     vg       Ndj      qB          Ndj</span>
+0008 <span class="comment">%                     Fg       Ndj      dqB/dt      Ndj</span>
+0009 <span class="comment">%                                       FB          Ndj</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 25.12.2019      Original code.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Verification:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 25.12.2019</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Inputs:</span>
+0020 <span class="comment">% -------</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Outputs:</span>
+0024 <span class="comment">% --------</span>
+0025 <span class="comment">% Pow             : Mean power.</span>
+0026 <span class="comment">% y               : v^g and F^g.</span>
+0027 <span class="comment">% Du              : = dy/du</span>
+0028 
+0029 Ndj = size(qq,1);
+0030 Nu = 3*Ndj;
+0031 Ny = 2*Ndj;
+0032 
+0033 Du = sparse(Ny,Nu);
+0034 TBg = sparse(Ndj,Ndj);
+0035 
+0036 vg0 = zeros(Ndj,1);
+0037 Fg0 = zeros(Ndj,1);
+0038 Dvg = sparse(Ndj,2*Ndj);   <span class="comment">% 2*Ndj: q, dq/dt.</span>
+0039 DFg = sparse(Ndj,2*Ndj);   <span class="comment">% 2*Ndj: q, FB.</span>
+0040 
+0041 <span class="keyword">for</span> ibod = 1:7
+0042 
+0043    <span class="keyword">if</span> (ibod == 1)
+0044       idref = idofs(1);
+0045       Nnod  = s.foundation.Nnod;
+0046    <span class="keyword">elseif</span> (ibod == 2)
+0047       idref = idofs(2);
+0048       Nnod  = s.tower.Nnod;
+0049    <span class="keyword">elseif</span> (ibod == 3)
+0050       idref = idofs(3);
+0051       Nnod  = s.nacelle.Nnod;
+0052    <span class="keyword">elseif</span> (ibod == 4)
+0053       idref = idofs(4);
+0054       Nnod   = s.driveshaft.Nnod;
+0055    <span class="keyword">elseif</span> (ibod == 5)
+0056       idref = idofs(6);
+0057       Nnod   = s.blade(1).Nnod;
+0058    <span class="keyword">elseif</span> (ibod == 6)
+0059       idref = idofs(7);
+0060       Nnod   = s.blade(2).Nnod;
+0061    <span class="keyword">elseif</span> (ibod == 7)
+0062       idref = idofs(8);
+0063       Nnod   = s.blade(3).Nnod;
+0064    <span class="keyword">end</span>
+0065 
+0066    <span class="keyword">for</span> inod = 1:Nnod
+0067 
+0068       rdof = idref;
+0069       mdof = idref + 6*(inod-1);
+0070 
+0071       qB    = qq(rdof+[1:6]);
+0072       PB    = PP(rdof+[1:6]);
+0073       dqBdt = dqqdt(rdof+[1:6]);
+0074 
+0075       <span class="keyword">if</span> (mdof == rdof)
+0076          qn    = zeros(6,1);
+0077          Pn    = zeros(6,1);
+0078          dqndt = zeros(6,1);
+0079          Pn(4:6) = PP(rdof+6+[4:6]);  <span class="comment">% Consistent with other functions.</span>
+0080       <span class="keyword">else</span>
+0081          qn    = qq(mdof+[1:6]);
+0082          Pn    = PP(mdof+[1:6]);
+0083          dqndt = dqqdt(mdof+[1:6]);
+0084       <span class="keyword">end</span>
+0085 
+0086       [vg,ddy] = <a href="../../STAS-WPP/STAS-Aeroelastic/globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn,qB,Pn,PB,dqndt,dqBdt);
+0087       vg0(mdof+[1:6]) = vg;
+0088 
+0089       <span class="keyword">if</span> (mdof == rdof)
+0090          Dvg(rdof+[1:6],[rdof+[1:6] Ndj+rdof+[1:6]]) = ddy(:,[[1:6] [13:18]]);
+0091       <span class="keyword">else</span>
+0092          Dvg(mdof+[1:6],[rdof+[1:6] mdof+[1:6] Ndj+rdof+[1:6] Ndj+mdof+[1:6]]) = ddy;
+0093       <span class="keyword">end</span>
+0094 
+0095       [TBB0,dTBB0] = <a href="../../STAS-WPP/STAS-Aeroelastic/dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qB(4:6));
+0096       TB0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(4:6));
+0097       T = TB0g*TBB0;
+0098       dT = TB0g*dTBB0;
+0099       TT = [T, zeros(3,3);zeros(3,3), T];
+0100       Fg0(mdof+[1:6]) = TT*F(mdof+[1:6]);
+0101 
+0102       TBg(mdof+[1:3],mdof+[1:3]) = T;
+0103       TBg(mdof+[4:6],mdof+[4:6]) = T;
+0104       
+0105       DFg(mdof+[1:6],Ndj+mdof+[1:6]) = TT;
+0106       <span class="keyword">for</span> jj = 1:3
+0107          jc3 = 3*(jj-1);
+0108          dTT = [dT(:,jc3+[1:3]), zeros(3,3);zeros(3,3), dT(:,jc3+[1:3])];
+0109          DFg(mdof+[1:6],rdof+3+jj) = dTT*F(mdof+[1:6]);
+0110       <span class="keyword">end</span>
+0111 
+0112    <span class="keyword">end</span>
+0113 
+0114 <span class="keyword">end</span>
+0115 
+0116 TBg(Ndj-6+[1:6],Ndj-6+[1:6]) = speye(6);
+0117 
+0118 y = [vg0;Fg0];
+0119 Du(1:Ndj,1:2*Ndj) = Dvg;
+0120 Du(Ndj+[1:Ndj],[[1:Ndj] 2*Ndj+[1:Ndj]]) = DFg;
+0121 
+0122 Pow = sum(Fg0.*vg0);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

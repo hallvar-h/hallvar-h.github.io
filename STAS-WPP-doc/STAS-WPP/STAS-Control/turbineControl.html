@@ -1,0 +1,660 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of turbineControl</title>
+  <meta name="keywords" content="turbineControl">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Control</a> &gt; turbineControl.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Control&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>turbineControl
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Build and link the wind-turbine-level controls.  This outputs pitch
+ commands to the actuators, current commands to the generator
+ converter control (part of the electric system), and the yaw angle
+ command to the yaw actuator (not yet implemented).
+
+   States:              y vector:             u vector:
+
+ --------------- Top-level inputs, outputs --------------
+                        bhat     1:3          Pc     1   (grid)
+                        ihgd,q   4:5          azi    2   (turbine)
+                        yhat      6           W      3   (turbine)
+                                              bet   4:6  (turbine)
+                                              Pe     7   (turbine)
+                                              vT    8:9  (turbine)
+                                              Mbl  10:12 (turbine)(*)
+                                              wang  13   (systems: wind angle for yaw.)
+
+ ------------------ Windspeed observer ------------------
+   W*        1                                W      1  (u)
+   V*        2                                bet    2  (u, avg.)
+                                              Pem    3  (gen P)
+
+ ------------------ Rotor speed control -----------------
+   Wm        1          bhRSC     1           W      1  (u)
+   betm      2          PehRSC    2           bet    2  (u, avg.)
+   PsiWb     3                                V*     3  (obs)
+   Pf        4                                Pc     4  (u)
+   PehRSC    5
+   ntw      6,7
+   ntb      8,9
+   blp      10
+
+ -------------- Virtual induction generator -------------
+   wgm       1          Tgi(**)   1           wg     1  (u)
+   iwg       2
+
+ ----------------- Active power control -----------------
+   Pem       1          igq       1           Phat   1  (multiple)
+   PsiP      2                                Pe     2  (u)
+   nd       3,4
+
+ ------------------- Tower FA damping -------------------
+   vmF       1          bF        1           vF     1  (u)
+   ivmF      2                                betm   2  (RSC)
+   vdF       3
+
+ ---------------- Tower SS damping (gen) ----------------
+   vmS       1          TgS       1           vS     1  (u)
+   ivmS      2                                V*     2  (obs)
+   vdS       3
+
+ ------------------------ IBPSS -------------------------
+   vmS       1          betq     1:3          vS     1  (u)
+   ivmS      2                                azi    2  (u)
+   vdS       3                                betm   3  (RSC)
+
+ ------------------------ IBPLF -------------------------
+   Mpsim    1:2         beti     1:3          M     1:3 (u)
+   PsiM     3:4                               azi    4  (u)
+                                              betm   5  (RSC)
+
+ ------------------------- Yaw --------------------------
+
+
+ (*) Root bending strain or nodal rotation may also be used, provided
+ that the gains are scaled accordingly.
+ (**) The gain is defined such that this is a current output that can
+ be fed straight into the ihg,q output.
+
+ Version:        Changes:
+ --------        -------------
+ 02.02.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 02.02.2019      Derivatives verified with complex step.
+
+ Inputs:
+ -------
+ x               : 1: 
+ u               : 1: 
+ p               : 1: np    (-)       Number of generator poles.
+                   -------------------------
+                   1: Ro    (m)       Rotor outer radius.
+                   2: J     (kg m^2)  Rotor inertia.
+                   3: rho   (kg/m^3)  Density.
+                   4: KW    (-)       Gain on speed error.
+                   5: KV    (m)       Gain on speed error for windspeed.
+                   -------------------------
+                   1: aW    (rad/s)   LP filter on speed.
+                   2: ab    (rad/s)   LP filter on pitch.
+                   3: a1    (rad/s)   First filter on power.
+                   4: a2    (rad/s)   Second filter on power.
+                   5: Pr    (W)       Rated power.
+                   7: Wr    (rad/s)   Rated speed.
+                   6: fcd   (rad/s)   Rated speed fraction at transition to pitch control.
+                   8: anw   (rad/s)   Notch filter on speed.
+                   9: z1nw  (-)
+                  10: z2nw  (-)
+                  11: anb   (rad/s)   Notch filter on pitch.
+                  12: z1nb  (-)
+                  13: z2nb  (-)
+                  14: ablp  (rad/s)   Low-pass on pitch output.
+                   -------------------------
+                   1: ag    (rad/s)   BP filter frequency.
+                   2: zetag (-)       BP filter damping.
+                   3: Kd    (Nms/rad) Induction gen. stiffness.
+                   -------------------------
+                   1: Kp    (A/W)     Prop. gain on gen. power.
+                   2: Ki    (A/Ws)    Int. gain on gen. power.
+                   3: ap    (rad/s)   LP filter on power.
+                   4: anp   (rad/s)   Notch filter on power.
+                   5: z1np  (-)
+                   6: z2np  (-)
+                   -------------------------
+                   1: aF    (rad/s)   Frequency in rad/s.
+                   2: zetaF (-)       Damping ratio.
+                   3: azF   (rad/s)   Numerator frequency of phase shift.
+                   4: apF   (rad/s)   Denominator frequency of phase shift.
+                   -------------------------
+                   1: aS    (rad/s)   Frequency in rad/s (gen torque).
+                   2: zetaS (-)       Damping ratio.
+                   3: azS   (rad/s)   Numerator frequency of phase shift.
+                   4: apS   (rad/s)   Denominator frequency of phase shift.
+                   -------------------------
+                   1: aq    (rad/s)   Frequency in rad/s (IBP).
+                   2: zetaq (-)       Damping ratio.
+                   3: azq   (rad/s)   Numerator frequency of phase shift.
+                   4: apq   (rad/s)   Denominator frequency of phase shift.
+                   -------------------------
+                   1: aLP   (rad/s)   LP filter frequency.
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="FADamping.html" class="code" title="function [dxdt,yout,A,B,C,D] = FADamping (x,u,p,KFTab)">FADamping</a>	</li>
+<li><a href="IBPLF.html" class="code" title="function [dxdt,yout,A,B,C,D] = IBPLF (x,u,p,KpTab,KiTab)">IBPLF</a>	</li>
+<li><a href="IBPSS.html" class="code" title="function [dxdt,yout,A,B,C,D] = IBPSS (x,u,p,KSTab)">IBPSS</a>	</li>
+<li><a href="RSC.html" class="code" title="function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag)">RSC</a>	</li>
+<li><a href="SSDamping.html" class="code" title="function [dxdt,yout,A,B,C,D] = SSDamping (x,u,p,KSTab)">SSDamping</a>	</li>
+<li><a href="genPcontrol.html" class="code" title="function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)">genPcontrol</a>	</li>
+<li><a href="shaftFunc.html" class="code" title="function [dxdt,A,B] = shaftFunc (x,u,p,cpct,KeTab)">shaftFunc</a>	</li>
+<li><a href="virtualInduction.html" class="code" title="function [dxdt,yout,A,B,C] = virtualInduction (x,u,p)">virtualInduction</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Main/TCfun.html" class="code" title="function [dxdt,A] = TCfun (x,ret,x0,u,c);">TCfun</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =                  </a><span class="keyword">...</span>
+0002                turbineControl (linFlag,x,u,p,cpct,                <span class="keyword">...</span>
+0003                                KeTab,WVTab,WPTab,bminTab,KTables, <span class="keyword">...</span>
+0004                                KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Build and link the wind-turbine-level controls.  This outputs pitch</span>
+0007 <span class="comment">% commands to the actuators, current commands to the generator</span>
+0008 <span class="comment">% converter control (part of the electric system), and the yaw angle</span>
+0009 <span class="comment">% command to the yaw actuator (not yet implemented).</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   States:              y vector:             u vector:</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% --------------- Top-level inputs, outputs --------------</span>
+0014 <span class="comment">%                        bhat     1:3          Pc     1   (grid)</span>
+0015 <span class="comment">%                        ihgd,q   4:5          azi    2   (turbine)</span>
+0016 <span class="comment">%                        yhat      6           W      3   (turbine)</span>
+0017 <span class="comment">%                                              bet   4:6  (turbine)</span>
+0018 <span class="comment">%                                              Pe     7   (turbine)</span>
+0019 <span class="comment">%                                              vT    8:9  (turbine)</span>
+0020 <span class="comment">%                                              Mbl  10:12 (turbine)(*)</span>
+0021 <span class="comment">%                                              wang  13   (systems: wind angle for yaw.)</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% ------------------ Windspeed observer ------------------</span>
+0024 <span class="comment">%   W*        1                                W      1  (u)</span>
+0025 <span class="comment">%   V*        2                                bet    2  (u, avg.)</span>
+0026 <span class="comment">%                                              Pem    3  (gen P)</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% ------------------ Rotor speed control -----------------</span>
+0029 <span class="comment">%   Wm        1          bhRSC     1           W      1  (u)</span>
+0030 <span class="comment">%   betm      2          PehRSC    2           bet    2  (u, avg.)</span>
+0031 <span class="comment">%   PsiWb     3                                V*     3  (obs)</span>
+0032 <span class="comment">%   Pf        4                                Pc     4  (u)</span>
+0033 <span class="comment">%   PehRSC    5</span>
+0034 <span class="comment">%   ntw      6,7</span>
+0035 <span class="comment">%   ntb      8,9</span>
+0036 <span class="comment">%   blp      10</span>
+0037 <span class="comment">%</span>
+0038 <span class="comment">% -------------- Virtual induction generator -------------</span>
+0039 <span class="comment">%   wgm       1          Tgi(**)   1           wg     1  (u)</span>
+0040 <span class="comment">%   iwg       2</span>
+0041 <span class="comment">%</span>
+0042 <span class="comment">% ----------------- Active power control -----------------</span>
+0043 <span class="comment">%   Pem       1          igq       1           Phat   1  (multiple)</span>
+0044 <span class="comment">%   PsiP      2                                Pe     2  (u)</span>
+0045 <span class="comment">%   nd       3,4</span>
+0046 <span class="comment">%</span>
+0047 <span class="comment">% ------------------- Tower FA damping -------------------</span>
+0048 <span class="comment">%   vmF       1          bF        1           vF     1  (u)</span>
+0049 <span class="comment">%   ivmF      2                                betm   2  (RSC)</span>
+0050 <span class="comment">%   vdF       3</span>
+0051 <span class="comment">%</span>
+0052 <span class="comment">% ---------------- Tower SS damping (gen) ----------------</span>
+0053 <span class="comment">%   vmS       1          TgS       1           vS     1  (u)</span>
+0054 <span class="comment">%   ivmS      2                                V*     2  (obs)</span>
+0055 <span class="comment">%   vdS       3</span>
+0056 <span class="comment">%</span>
+0057 <span class="comment">% ------------------------ IBPSS -------------------------</span>
+0058 <span class="comment">%   vmS       1          betq     1:3          vS     1  (u)</span>
+0059 <span class="comment">%   ivmS      2                                azi    2  (u)</span>
+0060 <span class="comment">%   vdS       3                                betm   3  (RSC)</span>
+0061 <span class="comment">%</span>
+0062 <span class="comment">% ------------------------ IBPLF -------------------------</span>
+0063 <span class="comment">%   Mpsim    1:2         beti     1:3          M     1:3 (u)</span>
+0064 <span class="comment">%   PsiM     3:4                               azi    4  (u)</span>
+0065 <span class="comment">%                                              betm   5  (RSC)</span>
+0066 <span class="comment">%</span>
+0067 <span class="comment">% ------------------------- Yaw --------------------------</span>
+0068 <span class="comment">%</span>
+0069 <span class="comment">%</span>
+0070 <span class="comment">% (*) Root bending strain or nodal rotation may also be used, provided</span>
+0071 <span class="comment">% that the gains are scaled accordingly.</span>
+0072 <span class="comment">% (**) The gain is defined such that this is a current output that can</span>
+0073 <span class="comment">% be fed straight into the ihg,q output.</span>
+0074 <span class="comment">%</span>
+0075 <span class="comment">% Version:        Changes:</span>
+0076 <span class="comment">% --------        -------------</span>
+0077 <span class="comment">% 02.02.2019      Original code.</span>
+0078 <span class="comment">%</span>
+0079 <span class="comment">% Version:        Verification:</span>
+0080 <span class="comment">% --------        -------------</span>
+0081 <span class="comment">% 02.02.2019      Derivatives verified with complex step.</span>
+0082 <span class="comment">%</span>
+0083 <span class="comment">% Inputs:</span>
+0084 <span class="comment">% -------</span>
+0085 <span class="comment">% x               : 1:</span>
+0086 <span class="comment">% u               : 1:</span>
+0087 <span class="comment">% p               : 1: np    (-)       Number of generator poles.</span>
+0088 <span class="comment">%                   -------------------------</span>
+0089 <span class="comment">%                   1: Ro    (m)       Rotor outer radius.</span>
+0090 <span class="comment">%                   2: J     (kg m^2)  Rotor inertia.</span>
+0091 <span class="comment">%                   3: rho   (kg/m^3)  Density.</span>
+0092 <span class="comment">%                   4: KW    (-)       Gain on speed error.</span>
+0093 <span class="comment">%                   5: KV    (m)       Gain on speed error for windspeed.</span>
+0094 <span class="comment">%                   -------------------------</span>
+0095 <span class="comment">%                   1: aW    (rad/s)   LP filter on speed.</span>
+0096 <span class="comment">%                   2: ab    (rad/s)   LP filter on pitch.</span>
+0097 <span class="comment">%                   3: a1    (rad/s)   First filter on power.</span>
+0098 <span class="comment">%                   4: a2    (rad/s)   Second filter on power.</span>
+0099 <span class="comment">%                   5: Pr    (W)       Rated power.</span>
+0100 <span class="comment">%                   7: Wr    (rad/s)   Rated speed.</span>
+0101 <span class="comment">%                   6: fcd   (rad/s)   Rated speed fraction at transition to pitch control.</span>
+0102 <span class="comment">%                   8: anw   (rad/s)   Notch filter on speed.</span>
+0103 <span class="comment">%                   9: z1nw  (-)</span>
+0104 <span class="comment">%                  10: z2nw  (-)</span>
+0105 <span class="comment">%                  11: anb   (rad/s)   Notch filter on pitch.</span>
+0106 <span class="comment">%                  12: z1nb  (-)</span>
+0107 <span class="comment">%                  13: z2nb  (-)</span>
+0108 <span class="comment">%                  14: ablp  (rad/s)   Low-pass on pitch output.</span>
+0109 <span class="comment">%                   -------------------------</span>
+0110 <span class="comment">%                   1: ag    (rad/s)   BP filter frequency.</span>
+0111 <span class="comment">%                   2: zetag (-)       BP filter damping.</span>
+0112 <span class="comment">%                   3: Kd    (Nms/rad) Induction gen. stiffness.</span>
+0113 <span class="comment">%                   -------------------------</span>
+0114 <span class="comment">%                   1: Kp    (A/W)     Prop. gain on gen. power.</span>
+0115 <span class="comment">%                   2: Ki    (A/Ws)    Int. gain on gen. power.</span>
+0116 <span class="comment">%                   3: ap    (rad/s)   LP filter on power.</span>
+0117 <span class="comment">%                   4: anp   (rad/s)   Notch filter on power.</span>
+0118 <span class="comment">%                   5: z1np  (-)</span>
+0119 <span class="comment">%                   6: z2np  (-)</span>
+0120 <span class="comment">%                   -------------------------</span>
+0121 <span class="comment">%                   1: aF    (rad/s)   Frequency in rad/s.</span>
+0122 <span class="comment">%                   2: zetaF (-)       Damping ratio.</span>
+0123 <span class="comment">%                   3: azF   (rad/s)   Numerator frequency of phase shift.</span>
+0124 <span class="comment">%                   4: apF   (rad/s)   Denominator frequency of phase shift.</span>
+0125 <span class="comment">%                   -------------------------</span>
+0126 <span class="comment">%                   1: aS    (rad/s)   Frequency in rad/s (gen torque).</span>
+0127 <span class="comment">%                   2: zetaS (-)       Damping ratio.</span>
+0128 <span class="comment">%                   3: azS   (rad/s)   Numerator frequency of phase shift.</span>
+0129 <span class="comment">%                   4: apS   (rad/s)   Denominator frequency of phase shift.</span>
+0130 <span class="comment">%                   -------------------------</span>
+0131 <span class="comment">%                   1: aq    (rad/s)   Frequency in rad/s (IBP).</span>
+0132 <span class="comment">%                   2: zetaq (-)       Damping ratio.</span>
+0133 <span class="comment">%                   3: azq   (rad/s)   Numerator frequency of phase shift.</span>
+0134 <span class="comment">%                   4: apq   (rad/s)   Denominator frequency of phase shift.</span>
+0135 <span class="comment">%                   -------------------------</span>
+0136 <span class="comment">%                   1: aLP   (rad/s)   LP filter frequency.</span>
+0137 <span class="comment">%</span>
+0138 <span class="comment">% Outputs:</span>
+0139 <span class="comment">% --------</span>
+0140 <span class="comment">%</span>
+0141 
+0142 thrd = 1/3;
+0143 
+0144 <span class="comment">% bl(y,u)dof: Blade 1, 2, and 3 DOFs for MBC transform.</span>
+0145 blydof = [1:3];
+0146 bludof = [[4:6]; [10:12]];
+0147 
+0148 Nu  = 13;   <span class="comment">% Global input.</span>
+0149 Ny  = 6;    <span class="comment">% Global output.</span>
+0150 
+0151 Nxo = 2;
+0152 Nxr = 10;
+0153 Nxv = 2;
+0154 Nxg = 4;
+0155 Nxf = 3;
+0156 Nxs = 3;
+0157 Nxq = 3;
+0158 Nxi = 4;
+0159 
+0160 Nuo = 3;  <span class="comment">% Local u's.</span>
+0161 Nur = 4;
+0162 Nuv = 1;
+0163 Nug = 2;
+0164 Nuf = 2;
+0165 Nus = 2;
+0166 Nuq = 3;
+0167 Nui = 5;
+0168 
+0169 Nyo = 0;  <span class="comment">% Local y's.</span>
+0170 Nyr = 2;
+0171 Nyv = 1;
+0172 Nyg = 1;
+0173 Nyf = 1;
+0174 Nys = 1;
+0175 Nyq = 3;
+0176 Nyi = 3;
+0177 
+0178 Npo = 5;
+0179 Npr = 14;
+0180 Npv = 3;
+0181 Npg = 6;
+0182 Npf = 4;
+0183 Nps = 4;
+0184 Npq = 4;
+0185 Npi = 1;
+0186 
+0187 ixo = 0;
+0188 ixr = ixo + Nxo;
+0189 ixv = ixr + Nxr;
+0190 ixg = ixv + Nxv;
+0191 ixf = ixg + Nxg;
+0192 ixs = ixf + Nxf;
+0193 ixq = ixs + Nxs;
+0194 ixi = ixq + Nxq;
+0195 
+0196 iuo = 0;
+0197 iur = iuo + Nuo;
+0198 iuv = iur + Nur;
+0199 iug = iuv + Nuv;
+0200 iuf = iug + Nug;
+0201 ius = iuf + Nuf;
+0202 iuq = ius + Nus;
+0203 iui = iuq + Nuq;
+0204 
+0205 iyo = 0;
+0206 iyr = iyo + Nyo;
+0207 iyv = iyr + Nyr;
+0208 iyg = iyv + Nyv;
+0209 iyf = iyg + Nyg;
+0210 iys = iyf + Nyf;
+0211 iyq = iys + Nys;
+0212 iyi = iyq + Nyq;
+0213 
+0214 np  = p(1);
+0215 ipo = 1;
+0216 ipr = ipo + Npo;
+0217 ipv = ipr + Npr;
+0218 ipg = ipv + Npv;
+0219 ipf = ipg + Npg;
+0220 ips = ipf + Npf;
+0221 ipq = ips + Nps;
+0222 ipi = ipq + Npq;
+0223 
+0224 id = [<span class="string">'o'</span>;<span class="string">'r'</span>;<span class="string">'v'</span>;<span class="string">'g'</span>;<span class="string">'f'</span>;<span class="string">'s'</span>;<span class="string">'q'</span>;<span class="string">'i'</span>];
+0225 Nid = size(id,1);
+0226 Nx = 0;
+0227 nnu = 0;
+0228 nny1 = 0;
+0229 <span class="keyword">for</span> jj = 1:Nid
+0230    eval ([<span class="string">'Nx = Nx + Nx'</span> id(jj) <span class="string">';'</span>]);
+0231    eval ([<span class="string">'nnu = nnu + Nu'</span> id(jj) <span class="string">';'</span>]);
+0232    eval ([<span class="string">'nny1 = nny1 + Ny'</span> id(jj) <span class="string">';'</span>]);
+0233 <span class="keyword">end</span>
+0234 
+0235 <span class="comment">% Make an overall y vector of the global outputs plus all the local</span>
+0236 <span class="comment">% inputs/outputs.</span>
+0237 iyy = 0;
+0238 iyu = iyy + Ny;
+0239 iy1 = iyu + nnu;
+0240 nny = Ny + nnu + nny1; 
+0241 
+0242 Pc   = u(1);
+0243 azi  = u(2);
+0244 W    = u(3);
+0245 bet1 = u(4);
+0246 bet2 = u(5);
+0247 bet3 = u(6);
+0248 Pe   = u(7);
+0249 vF   = u(8);
+0250 vS   = u(9);
+0251 Mb1  = u(10);
+0252 Mb2  = u(11);
+0253 Mb3  = u(12);
+0254 wang = u(13);
+0255 bavg = (1/3)*(bet1+bet2+bet3);
+0256 
+0257 dxdt = zeros(Nx,1);
+0258 yout = zeros(Ny,1);
+0259 
+0260 <span class="comment">% Windspeed observer.</span>
+0261 opar = p(ipo+[1:Npo]);
+0262 xo = x(ixo+[1:Nxo]);
+0263 uo = [W; bavg; x(ixg+1)];
+0264 [dxodt,aao,bbo] = <a href="shaftFunc.html" class="code" title="function [dxdt,A,B] = shaftFunc (x,u,p,cpct,KeTab)">shaftFunc</a> (xo,uo,opar,cpct,KeTab);
+0265 
+0266 <span class="comment">% Rotor speed control.</span>
+0267 rpar = p(ipr+[1:Npr]);
+0268 xr = x(ixr+[1:Nxr]);
+0269 ur = [W; bavg; x(ixo+2); Pc];
+0270 [dxrdt,yrout,aar,bbr,ccr,ddr] = <a href="RSC.html" class="code" title="function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag)">RSC</a> (xr,ur,rpar, <span class="keyword">...</span>
+0271                                      WVTab,WPTab,bminTab,KTables,RSCFlag);
+0272 
+0273 <span class="comment">% Virtual induction generator.</span>
+0274 vpar = p(ipv+[1:Npv]);
+0275 xv = x(ixv+[1:Nxv]);
+0276 uv = 0.5*np*W;
+0277 [dxvdt,Tgi,aav,bbv,ccv] = <a href="virtualInduction.html" class="code" title="function [dxdt,yout,A,B,C] = virtualInduction (x,u,p)">virtualInduction</a> (xv,uv,vpar);
+0278 
+0279 <span class="comment">% Tower FA damping.</span>
+0280 fpar = p(ipf+[1:Npf]);
+0281 xf = x(ixf+[1:Nxf]);
+0282 uf = [vF; x(ixr+2)];
+0283 [dxfdt,betF,aaf,bbf,ccf,ddf] = <a href="FADamping.html" class="code" title="function [dxdt,yout,A,B,C,D] = FADamping (x,u,p,KFTab)">FADamping</a> (xf,uf,fpar,KFTab);
+0284 
+0285 <span class="comment">% Tower SS damping (gen).</span>
+0286 spar = p(ips+[1:Nps]);
+0287 xs = x(ixs+[1:Nxs]);
+0288 us = [vS; x(ixo+2)];
+0289 [dxsdt,TgS,aas,bbs,ccs,dds] = <a href="SSDamping.html" class="code" title="function [dxdt,yout,A,B,C,D] = SSDamping (x,u,p,KSTab)">SSDamping</a> (xs,us,spar,KSTab);
+0290 
+0291 <span class="comment">% Active power control.</span>
+0292 gpar = p(ipg+[1:Npg]);
+0293 xg = x(ixg+[1:Nxg]);
+0294 ug = [x(ixr+5)+TgS*x(ixo+1); Pe];
+0295 [dxgdt,ygout,aag,bbg,ccg,ddg] = <a href="genPcontrol.html" class="code" title="function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)">genPcontrol</a> (xg,ug,gpar);
+0296 
+0297 <span class="comment">% Tower SS damping (IBP).</span>
+0298 qpar = p(ipq+[1:Npq]);
+0299 xq = x(ixq+[1:Nxq]);
+0300 uq = [vS; azi; x(ixr+2)];
+0301 [dxqdt,betq,aaq,bbq,ccq,ddq] = <a href="IBPSS.html" class="code" title="function [dxdt,yout,A,B,C,D] = IBPSS (x,u,p,KSTab)">IBPSS</a> (xq,uq,qpar,KSqTab);
+0302 
+0303 <span class="comment">% Low-frequency individual blade pitch.</span>
+0304 ipar = p(ipi+[1:Npi]);
+0305 xi = x(ixi+[1:Nxi]);
+0306 ui = [Mb1; Mb2; Mb3; azi; x(ixr+2)];
+0307 [dxidt,beti,aai,bbi,cci,ddi] = <a href="IBPLF.html" class="code" title="function [dxdt,yout,A,B,C,D] = IBPLF (x,u,p,KpTab,KiTab)">IBPLF</a> (xi,ui,ipar,KpiTab,KiiTab);
+0308 
+0309 <span class="comment">% Yaw. (Not implemented.)</span>
+0310 
+0311 
+0312 dxdt(ixo+[1:Nxo]) = dxodt;
+0313 dxdt(ixr+[1:Nxr]) = dxrdt;
+0314 dxdt(ixv+[1:Nxv]) = dxvdt;
+0315 dxdt(ixg+[1:Nxg]) = dxgdt;
+0316 dxdt(ixf+[1:Nxf]) = dxfdt;
+0317 dxdt(ixs+[1:Nxs]) = dxsdt;
+0318 dxdt(ixq+[1:Nxq]) = dxqdt;
+0319 dxdt(ixi+[1:Nxi]) = dxidt;
+0320 
+0321 yout = [yrout(1)+betF+betq+beti;0;ygout-Tgi;0];
+0322 
+0323 <span class="keyword">if</span> (linFlag == 1)
+0324 
+0325    A  = spalloc (Nx,Nx,0.1*Nx^2);
+0326    Bu = spalloc (Nx,Nu,0.05*Nx*Nu);
+0327    By = spalloc (Nx,nny,0.05*Nx*nny);
+0328    C  = spalloc (nny,Nx,0.05*nny*Nx);
+0329    Du = spalloc (nny,Nu,0.06*nny*Nu);
+0330    Dy = spalloc (nny,nny,0.01*nny*nny);
+0331 
+0332    <span class="comment">% ---------- Windspeed observer -----------</span>
+0333    ir = ixo + [1:Nxo];
+0334    ic = ixo + [1:Nxo];
+0335    A(ir,ic) = aao;
+0336    ic = iyu + iuo + [1:Nuo];
+0337    By(ir,ic) = bbo;
+0338 
+0339    <span class="comment">% ----------------- RSC -------------------</span>
+0340    ir = ixr + [1:Nxr];
+0341    ic = ixr + [1:Nxr];
+0342    A(ir,ic) = aar;
+0343    ic = iyu + iur + [1:Nur];
+0344    By(ir,ic) = bbr;
+0345    ir = iy1 + iyr + [1:Nyr];
+0346    ic = ixr + [1:Nxr];
+0347    C(ir,ic) = ccr;
+0348    ic = iyu + iur + [1:Nur];
+0349    Dy(ir,ic) = ddr;
+0350 
+0351    <span class="comment">% -------- Virtual induction gen. ---------</span>
+0352    ir = ixv + [1:Nxv];
+0353    ic = ixv + [1:Nxv];
+0354    A(ir,ic) = aav;
+0355    ic = iyu + iuv + [1:Nuv];
+0356    By(ir,ic) = bbv;
+0357    ir = iy1 + iyv + [1:Nyv];
+0358    ic = ixv + [1:Nxv];
+0359    C(ir,ic) = ccv;
+0360 
+0361    <span class="comment">% ---------- Active power control ---------</span>
+0362    ir = ixg + [1:Nxg];
+0363    ic = ixg + [1:Nxg];
+0364    A(ir,ic) = aag;
+0365    ic = iyu + iug + [1:Nug];
+0366    By(ir,ic) = bbg;
+0367    ir = iy1 + iyg + [1:Nyg];
+0368    ic = ixg + [1:Nxg];
+0369    C(ir,ic) = ccg;
+0370    ic = iyu + iug + [1:Nug];
+0371    Dy(ir,ic) = ddg;
+0372 
+0373    <span class="comment">% ------------ Tower FA damping -----------</span>
+0374    ir = ixf + [1:Nxf];
+0375    ic = ixf + [1:Nxf];
+0376    A(ir,ic) = aaf;
+0377    ic = iyu + iuf + [1:Nuf];
+0378    By(ir,ic) = bbf;
+0379    ir = iy1 + iyf + [1:Nyf];
+0380    ic = ixf + [1:Nxf];
+0381    C(ir,ic) = ccf;
+0382    ic = iyu + iuf + [1:Nuf];
+0383    Dy(ir,ic) = ddf;
+0384 
+0385    <span class="comment">% -------- Tower SS damping (gen) ---------</span>
+0386    ir = ixs + [1:Nxs];
+0387    ic = ixs + [1:Nxs];
+0388    A(ir,ic) = aas;
+0389    ic = iyu + ius + [1:Nus];
+0390    By(ir,ic) = bbs;
+0391    ir = iy1 + iys + [1:Nys];
+0392    ic = ixs + [1:Nxs];
+0393    C(ir,ic) = ccs;
+0394    ic = iyu + ius + [1:Nus];
+0395    Dy(ir,ic) = dds;
+0396 
+0397    <span class="comment">% ---------------- IBPSS ------------------</span>
+0398    ir = ixq + [1:Nxq];
+0399    ic = ixq + [1:Nxq];
+0400    A(ir,ic) = aaq;
+0401    ic = iyu + iuq + [1:Nuq];
+0402    By(ir,ic) = bbq;
+0403    ir = iy1 + iyq + [1:Nyq];
+0404    ic = ixq + [1:Nxq];
+0405    C(ir,ic) = ccq;
+0406    ic = iyu + iuq + [1:Nuq];
+0407    Dy(ir,ic) = ddq;
+0408 
+0409    <span class="comment">% ---------------- IBPLF ------------------</span>
+0410    ir = ixi + [1:Nxi];
+0411    ic = ixi + [1:Nxi];
+0412    A(ir,ic) = aai;
+0413    ic = iyu + iui + [1:Nui];
+0414    By(ir,ic) = bbi;
+0415    ir = iy1 + iyi + [1:Nyi];
+0416    ic = ixi + [1:Nxi];
+0417    C(ir,ic) = cci;
+0418    ic = iyu + iui + [1:Nui];
+0419    Dy(ir,ic) = ddi;
+0420 
+0421    <span class="comment">% Link local u's to global u's.</span>
+0422    ir = iyu + [iuo+[1 2 2 2] iur+[1 2 2 2 4] iuv+1 iug+2 <span class="keyword">...</span>
+0423                iuf+1 ius+1 iuq+[1 2] iui+[1 2 3 4]];
+0424    ic = [3 4 5 6 3 4 5 6 1 3 7 8 9 9 2 10 11 12 2];
+0425    ss = [1 thrd thrd thrd 1 thrd thrd thrd 1 0.5*np <span class="keyword">...</span>
+0426          1 1 1 1 1 1 1 1 1];
+0427    Du = Du + sparse(ir,ic,ss,nny,Nu);
+0428 
+0429    <span class="comment">% Link local u's to x's.</span>
+0430    ir = iyu + [iuo+3 iur+3 iug+1 iuf+2 ius+2 iuq+3 iui+5];
+0431    ic =       [ixg+1 ixo+2 ixr+5 ixr+2 ixo+2 ixr+2 ixr+2];
+0432    ss = [1 1 1 1 1 1 1];
+0433    C = C + sparse(ir,ic,ss,nny,Nx);
+0434 
+0435    <span class="comment">% Link gen u's to local y's and x's.</span>
+0436    ir = iyu + iug + 1;
+0437    ic = iy1 + iys + 1;
+0438    Dy(ir,ic) = Dy(ir,ic) + x(ixo+1);
+0439    ir = iyu + iug + 1;
+0440    ic = ixo + 1;
+0441    C(ir,ic) = C(ir,ic) + TgS;
+0442 
+0443    <span class="comment">% Link global y's to local y's.</span>
+0444    ir = iyy + [1 1 1 1 2 2 2 2 3 3 3 3 5 5];
+0445    ic = iy1 + [iyr+1 iyf+1 iyq+1 iyi+1 <span class="keyword">...</span>
+0446                iyr+1 iyf+1 iyq+2 iyi+2 <span class="keyword">...</span>
+0447                iyr+1 iyf+1 iyq+3 iyi+3 <span class="keyword">...</span>
+0448                iyg+1 iyv+1];
+0449    ss = [1 1 1 1 1 1 1 1 1 1 1 1 1 -1];
+0450    Dy = Dy + sparse(ir,ic,ss,nny,nny);
+0451    
+0452    Dnorm = ones(nny,1);
+0453    [AA,BB,CC,DD] = <a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a> (A,Bu,By,C,Du,Dy,Dnorm);
+0454 
+0455 <span class="keyword">else</span>
+0456 
+0457    AA = sparse (Nx,Nx);
+0458    BB = sparse (Nx,Nu);
+0459    CC = sparse (nny,Nx);
+0460    DD = sparse (nny,Nu);
+0461 
+0462 <span class="keyword">end</span>
+0463 
+0464 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

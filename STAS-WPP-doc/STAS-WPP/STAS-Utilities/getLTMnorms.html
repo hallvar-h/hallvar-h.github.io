@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getLTMnorms</title>
+  <meta name="keywords" content="getLTMnorms">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; getLTMnorms.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>getLTMnorms
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Main/generatorEfficiency.html" class="code" title="">generatorEfficiency</a>	Run a set of steady-state calculations of generator efficiency, which is</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASControl_DTU10MW.html" class="code" title="function c = STASControl_DTU10MW ()">STASControl_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASPitch_DTU10MW.html" class="code" title="function params = STASPitch_DTU10MW ()">STASPitch_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASSensor_DTU10MW.html" class="code" title="function m = STASSensor_DTU10MW ()">STASSensor_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASYaw_DTU10MW.html" class="code" title="function params = STASYaw_DTU10MW ()">STASYaw_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42Lin.html" class="code" title="">TCD42Lin</a>	y vector:        u vector:</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42grid.html" class="code" title="">TCD42grid</a>	Newton-Raphson solution of the TC RWP grid with turbines, and</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [length,time,mass,current,voltage,        </a><span class="keyword">...</span>
+0002           velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0003           stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0004           capacitance,flux] = getLTMnorms (fname)
+0005 
+0006 load(fname);
+0007 length      = LTMnorms(1);
+0008 time        = LTMnorms(2);
+0009 mass        = LTMnorms(3);
+0010 current     = LTMnorms(4);
+0011 velocity    = length/time;
+0012 force       = mass*length/(time^2);
+0013 power       = force*velocity;
+0014 stress      = force/(length^2);
+0015 ndens       = mass/(length^3);
+0016 nvisc       = mass/(length*time);
+0017 stiffness   = force/length;
+0018 damping     = force*time/length;
+0019 voltage     = power/current;
+0020 resistance  = voltage/current;
+0021 <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>  = voltage*time/current;
+0022 capacitance = current*time/voltage;
+0023 flux        = voltage*time;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

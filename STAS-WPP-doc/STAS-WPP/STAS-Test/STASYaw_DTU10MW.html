@@ -1,0 +1,102 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of STASYaw_DTU10MW</title>
+  <meta name="keywords" content="STASYaw_DTU10MW">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; STASYaw_DTU10MW.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>STASYaw_DTU10MW
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function params = STASYaw_DTU10MW () </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 21.01.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.01.2019      
+
+ params          : 1: ka    (Nm/rad)   Torsional stiffness.
+                   2: ca    (Nms/rad)  Torsional damping.
+                   3: aa    (rad/s)    Frequency of motor dynamics.
+                   4: K     (1/s)      Gain on yaw rate control.
+                   5: bmax  (rad)      Max slew angle.
+                   6: bmin  (rad)      Min slew angle.
+                   7: bdmax (rad/s)    Max slew rate.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function params = STASYaw_DTU10MW ()</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 21.01.2019      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 21.01.2019</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% params          : 1: ka    (Nm/rad)   Torsional stiffness.</span>
+0012 <span class="comment">%                   2: ca    (Nms/rad)  Torsional damping.</span>
+0013 <span class="comment">%                   3: aa    (rad/s)    Frequency of motor dynamics.</span>
+0014 <span class="comment">%                   4: K     (1/s)      Gain on yaw rate control.</span>
+0015 <span class="comment">%                   5: bmax  (rad)      Max slew angle.</span>
+0016 <span class="comment">%                   6: bmin  (rad)      Min slew angle.</span>
+0017 <span class="comment">%                   7: bdmax (rad/s)    Max slew rate.</span>
+0018 
+0019 load <span class="string">'LTMnorms.txt'</span>;
+0020 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0021  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0022  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0023  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0024 
+0025 p180 = pi/180;
+0026 
+0027 ka    = 5e8              / (force*length);
+0028 ca    = 5e7              / (force*length*time);
+0029 aa    = 0.1*(2*pi)       * time;                  <span class="comment">% CHECK</span>
+0030 K     = 4                * time;                  <span class="comment">% CHECK</span>
+0031 bmax  =  720*p180;
+0032 bmin  = -720*p180;
+0033 bdmax =    4*p180;
+0034 
+0035 params = [ka;ca;aa;K;bmax;bmin;bdmax];
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

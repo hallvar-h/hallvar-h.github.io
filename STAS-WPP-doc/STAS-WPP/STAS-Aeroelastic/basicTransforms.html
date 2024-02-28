@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of basicTransforms</title>
+  <meta name="keywords" content="basicTransforms">
+  <meta name="description" content="This builds the basic 3-by-3 transform matrices,">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; basicTransforms.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>basicTransforms
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This builds the basic 3-by-3 transform matrices,</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This builds the basic 3-by-3 transform matrices,
+ associated with changes in the orientation of the
+ elements in a body, in particular the nacelle turret
+ and hub/pitch bearings.
+
+ Version:        Changes:
+ --------        -------------
+ 05.12.2014      Original code.
+ 30.06.2017      Adapted for complex step.
+
+ Version:        Verification:
+ --------        -------------
+ 05.12.2014      Double-checked all the transforms.
+ 30.06.2017      
+
+ Inputs:
+ -------
+ delta       : shaft tilt angle.
+ phi         : cone angle.
+
+ Outputs:
+ --------
+ Coordinate transforms, 3-by-3, except for Th_d,
+ which is 3-by-9, with a 3-by-3 block for each
+ blade.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="linkAeroelastic.html" class="code" title="function [LHS,A,Bu,By,C,Du,Dy] =linkAeroelastic (s,a,lls,aas,bbus,bbys,ccs,ddus,ddys,lla,aaa,bbya,cca,ddya,ddypv,ddyRSA)">linkAeroelastic</a>	</li>
+<li><a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a>	</li>
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="undeformedBodyToGlobal.html" class="code" title="function TB0_g = undeformedBodyToGlobal (yaw,tilt,azimuth,cone,pitch)">undeformedBodyToGlobal</a>	</li>
+<li><a href="undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/getPsia.html" class="code" title="function Psia = getPsia (modalAero,s,a,azi,q,qd,P,shape0)">getPsia</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/buildSij.html" class="code" title="function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)">buildSij</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/periodicWind.html" class="code" title="function [Vavg,vg] = periodicWind (s,a,q,P,psis,ppx,ppy,ppz)">periodicWind</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)</a>
+0002 <span class="comment">% This builds the basic 3-by-3 transform matrices,</span>
+0003 <span class="comment">% associated with changes in the orientation of the</span>
+0004 <span class="comment">% elements in a body, in particular the nacelle turret</span>
+0005 <span class="comment">% and hub/pitch bearings.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 05.12.2014      Original code.</span>
+0010 <span class="comment">% 30.06.2017      Adapted for complex step.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 05.12.2014      Double-checked all the transforms.</span>
+0015 <span class="comment">% 30.06.2017</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% delta       : shaft tilt angle.</span>
+0020 <span class="comment">% phi         : cone angle.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">% Coordinate transforms, 3-by-3, except for Th_d,</span>
+0025 <span class="comment">% which is 3-by-9, with a 3-by-3 block for each</span>
+0026 <span class="comment">% blade.</span>
+0027 
+0028 Th_d = zeros(3,9);
+0029 
+0030 cd = cos(delta);
+0031 sd = sin(delta);
+0032 ch2 = cos(2*pi/3);
+0033 sh2 = sin(2*pi/3);
+0034 ch3 = cos(4*pi/3);
+0035 sh3 = sin(4*pi/3);
+0036 cphi = cos(phi);
+0037 sphi = sin(phi);
+0038 
+0039 Tn_y = [ 0 sd  cd; <span class="keyword">...</span>
+0040          1 0   0 ; <span class="keyword">...</span>
+0041          0 cd -sd];
+0042 Th_d(:,1:3) = eye(3);
+0043 Th_d(:,4:6) = [ch2 -sh2 0; <span class="keyword">...</span>
+0044                sh2  ch2 0; <span class="keyword">...</span>
+0045                 0    0  1];
+0046 Th_d(:,7:9) = [ch3 -sh3 0; <span class="keyword">...</span>
+0047                sh3  ch3 0; <span class="keyword">...</span>
+0048                 0    0  1];
+0049 <span class="comment">% Positive phi rotates the blade upwind, about the</span>
+0050 <span class="comment">% positive Y^b axis.</span>
+0051 Tb_h = [cphi 0 sphi; <span class="keyword">...</span>
+0052          0   1  0  ; <span class="keyword">...</span>
+0053        -sphi 0 cphi];
+0054 
+0055 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

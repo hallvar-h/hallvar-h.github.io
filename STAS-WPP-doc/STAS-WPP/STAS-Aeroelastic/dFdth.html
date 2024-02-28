@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dFdth</title>
+  <meta name="keywords" content="dFdth">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dFdth.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dFdth
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 26.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 26.10.2017      Verified by complex step and finite difference.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="d2Qudq2.html" class="code" title="function d2Q = d2Qudq2 (qn,qB,Pn,PB)">d2Qudq2</a>	</li>
+<li><a href="dQgdq.html" class="code" title="function dQ = dQgdq (qn,qB,Pn,PB)">dQgdq</a>	</li>
+<li><a href="dQudq.html" class="code" title="function dQ = dQudq (qn,qB,Pn,PB)">dQudq</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 26.10.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 26.10.2017      Verified by complex step and finite difference.</span>
+0010 <span class="comment">%</span>
+0011 
+0012 dF = zeros(3,3*3*6);
+0013 
+0014 Tn0g = TB0g*TBB0*Tn0B;
+0015 
+0016 <span class="keyword">for</span> idof = 1:3   <span class="comment">% First the three body rotations.</span>
+0017 
+0018    ic9 = 9*(idof-1);
+0019    ic3 = 3*(idof-1);
+0020 
+0021    TdT = TB0g*dTBB0(:,ic3+[1:3])*Tn0B;
+0022 
+0023    <span class="keyword">for</span> jj = 1:3
+0024       jc3 = 3*(jj-1);
+0025       dF(:,ic9+jc3+[1:3]) = TdT*dTnn0(:,jc3+[1:3])*(Tn0g*Tnn0).' <span class="keyword">...</span>
+0026                           + Tn0g*dTnn0(:,jc3+[1:3])*(TdT*Tnn0).';
+0027    <span class="keyword">end</span>
+0028 
+0029 <span class="keyword">end</span>
+0030 
+0031 <span class="keyword">for</span> idof = 1:3   <span class="comment">% Then the nodal rotations.</span>
+0032 
+0033    jc9 = 9*(idof+3-1);
+0034    ic9 = 9*(idof-1);
+0035    ic3 = 3*(idof-1);
+0036 
+0037    <span class="keyword">for</span> jj = 1:3
+0038       jc3 = 3*(jj-1);
+0039       dF(:,jc9+jc3+[1:3]) = Tn0g*d2Tnn0(:,ic9+jc3+[1:3])*(Tn0g*Tnn0).' <span class="keyword">...</span>
+0040                           + Tn0g*dTnn0(:,jc3+[1:3])*(Tn0g*dTnn0(:,ic3+[1:3])).';
+0041    <span class="keyword">end</span>
+0042 
+0043 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

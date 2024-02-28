@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of solveRiccati</title>
+  <meta name="keywords" content="solveRiccati">
+  <meta name="description" content="CAUTION, NOT ADAPTED FOR COMPLEX STEP DERIVATIVES.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; solveRiccati.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>solveRiccati
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>CAUTION, NOT ADAPTED FOR COMPLEX STEP DERIVATIVES.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [PP,KK] = solveRiccati (solver,BCflag,AA,BC,QQ,RR,KK0,tf,dt) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> CAUTION, NOT ADAPTED FOR COMPLEX STEP DERIVATIVES.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="RiccatiQS.html" class="code" title="function [Pdot,dRic] = RiccatiQS (linFlag,Pin,A,B,Q,R)">RiccatiQS</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [PP,KK] = solveRiccati (solver,BCflag,AA,BC,QQ,RR,KK0,tf,dt)</a>
+0002 
+0003 <span class="comment">% CAUTION, NOT ADAPTED FOR COMPLEX STEP DERIVATIVES.</span>
+0004 
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Integrates the matrix Riccati equation in time, or applies an</span>
+0007 <span class="comment">% iterative solution, to find the steady-state solution.  The</span>
+0008 <span class="comment">% methods provided each have their strengths and weaknesses, so</span>
+0009 <span class="comment">% it is recommended to experiment and see which works best for</span>
+0010 <span class="comment">% a particular problem.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Changes:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 27.02.2017      Original code.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 27.02.2017      Proven to drive the residual to zero, which by</span>
+0019 <span class="comment">%                 definition is the correct solution.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Inputs:</span>
+0022 <span class="comment">% -------</span>
+0023 <span class="comment">% BCflag          : Set to 1 if this is a control problem and the</span>
+0024 <span class="comment">%                   matrix is B.  Set to 2 if this is an observer</span>
+0025 <span class="comment">%                   problem and the matrix is C.</span>
+0026 <span class="comment">% AA, BC          : The A matrix and either B or C matrix, with</span>
+0027 <span class="comment">%                   B for LQR and C for Kalman.</span>
+0028 <span class="comment">% QQ              : Weighting matrix on state vector, or &quot;noise&quot;</span>
+0029 <span class="comment">%                   covariance matrix forcing the state equation.</span>
+0030 <span class="comment">% RR              : Weighting matrix on the control, or &quot;noise&quot;</span>
+0031 <span class="comment">%                   covariance matrix on the measurements.</span>
+0032 <span class="comment">% TT              : Time interval to perform integration.</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% Outputs:</span>
+0036 <span class="comment">% --------</span>
+0037 <span class="comment">%</span>
+0038 
+0039 Nx = size(AA,1);
+0040 
+0041 <span class="keyword">if</span> (BCflag == 1)
+0042    AA_Ric = AA;
+0043    BC_Ric = BC;
+0044    QQ_Ric = QQ;
+0045    RR_Ric = RR;
+0046 <span class="keyword">elseif</span> (BCflag == 2)
+0047    AA_Ric = AA.';
+0048    BC_Ric = BC.';
+0049    QQ_Ric = QQ;   <span class="comment">% Symmetric, regardless.</span>
+0050    RR_Ric = RR;   <span class="comment">% Symmetric, regardless.</span>
+0051 <span class="keyword">end</span>
+0052 
+0053 <span class="keyword">if</span> (solver == 1)
+0054 
+0055    ts = [0:dt:tf].';
+0056    Nt = size(ts,1);
+0057 
+0058    PP = zeros(Nx,Nx);
+0059    <span class="keyword">for</span> it = 1:Nt
+0060 
+0061 <span class="keyword">if</span> (mod(it,100) == 1)
+0062 printf (<span class="string">'%6d of %6d\n'</span>,it,Nt);
+0063 fflush(stdout);
+0064 <span class="keyword">end</span>
+0065 
+0066       t = ts(it);
+0067       [k1,jnk] = <a href="RiccatiQS.html" class="code" title="function [Pdot,dRic] = RiccatiQS (linFlag,Pin,A,B,Q,R)">RiccatiQS</a> (0,PP,AA_Ric,BC_Ric,QQ_Ric,RR_Ric);
+0068       PP1 = PP + 0.5*k1*dt;
+0069       [k2,jnk] = <a href="RiccatiQS.html" class="code" title="function [Pdot,dRic] = RiccatiQS (linFlag,Pin,A,B,Q,R)">RiccatiQS</a> (0,PP1,AA_Ric,BC_Ric,QQ_Ric,RR_Ric);
+0070       PP = PP + k2*dt;
+0071 
+0072    <span class="keyword">end</span>
+0073 
+0074 <span class="keyword">elseif</span> (solver == 2)
+0075 
+0076    <span class="comment">% Caution, this tends to corrupt Octave's memory if the model</span>
+0077    <span class="comment">% is large.  Problems were encountered with a few hundred DOFs.</span>
+0078    [PP,LL,GG] = care (AA_Ric,BC_Ric,QQ_Ric,RR_Ric);
+0079 
+0080 <span class="keyword">elseif</span> (solver == 3)
+0081 
+0082    flg = 0;
+0083    iter = 0;
+0084    itmax = 50;
+0085    conv = sqrt(eps);
+0086    KK = KK0;
+0087    <span class="keyword">while</span> ((flg == 0) &amp;&amp; (iter &lt;= itmax))
+0088       iter = iter + 1;
+0089       RHS = -(QQ_Ric + (KK.')*RR*KK);
+0090       PP = lyap ((AA_Ric.')-(KK.')*(BC_Ric.'),-RHS);
+0091       KK = RR\((BC_Ric.')*PP);
+0092       Ric = (AA_Ric.')*PP + PP*AA_Ric - RHS;
+0093       <span class="keyword">if</span> (max(max(abs(Ric))) &lt; conv)
+0094          flg = 1;
+0095       <span class="keyword">end</span>
+0096 <span class="comment">%printf('%5d  %+5.4e\n',iter,max(max(abs(Ric))));</span>
+0097    <span class="keyword">end</span>
+0098 
+0099 <span class="keyword">end</span>
+0100 
+0101 KK = RR\((BC_Ric.')*PP);
+0102 
+0103 <span class="comment">% Riccati residual, should be zero.</span>
+0104 Ric = (AA_Ric.')*PP + PP*AA_Ric + QQ_Ric <span class="keyword">...</span>
+0105     - PP*BC_Ric*inv(RR_Ric)*(BC_Ric.')*PP;
+0106 
+0107 <span class="comment">% Absolute accuracy, normalized accuracy.</span>
+0108 [max(max(abs(Ric))) max(max(abs(Ric./PP)))]
+0109 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of splineAero</title>
+  <meta name="keywords" content="splineAero">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; splineAero.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>splineAero
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Psix = splineAero (bst,sind,icp,rel) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Splines are used to reduce the number of aerodynamic states.
+ This function produces the matrix used to perform the
+ reduction of the aero states.
+
+ Version:        Changes:
+ --------        -------------
+ 16.03.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 16.03.2018      
+
+ Inputs:
+ -------
+ bst             : A vector of indices, Neb*Nxe in size, containing
+                   the positions of each group of Neb aero states
+                   that are to be reduced according to the basis
+                   functions.
+ sind            : A vector of indices, Ncp*Nxe in size, specifying 
+                   the order of spline states.
+ icp             : A list of elements to use as control points
+                   for the spline curves.
+ rel             : The radial coordinate of each blade element.
+
+ Outputs:
+ --------
+ Psix            : The matrix used to reduce the aero states.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroPsi.html" class="code" title="function Psi = aeroPsi (a,rp,bsh)">aeroPsi</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Psix = splineAero (bst,sind,icp,rel)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Splines are used to reduce the number of aerodynamic states.</span>
+0004 <span class="comment">% This function produces the matrix used to perform the</span>
+0005 <span class="comment">% reduction of the aero states.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 16.03.2018      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 16.03.2018</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% bst             : A vector of indices, Neb*Nxe in size, containing</span>
+0018 <span class="comment">%                   the positions of each group of Neb aero states</span>
+0019 <span class="comment">%                   that are to be reduced according to the basis</span>
+0020 <span class="comment">%                   functions.</span>
+0021 <span class="comment">% sind            : A vector of indices, Ncp*Nxe in size, specifying</span>
+0022 <span class="comment">%                   the order of spline states.</span>
+0023 <span class="comment">% icp             : A list of elements to use as control points</span>
+0024 <span class="comment">%                   for the spline curves.</span>
+0025 <span class="comment">% rel             : The radial coordinate of each blade element.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% Outputs:</span>
+0028 <span class="comment">% --------</span>
+0029 <span class="comment">% Psix            : The matrix used to reduce the aero states.</span>
+0030 
+0031 Neb = size(rel,1);
+0032 
+0033 rcp = rel(icp);
+0034 Ncp = size(icp,1);
+0035 
+0036 Nx  = size(bst,1);
+0037 Nxe = Nx/Neb;
+0038 Nz  = Ncp*Nxe;
+0039 
+0040 [F,G] = <a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a> (rcp);
+0041 Sp = <a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a> (rcp,rel);
+0042 
+0043 FiG = F\G;
+0044 H = Sp*FiG;  <span class="comment">% The elemental transformation for each group of</span>
+0045              <span class="comment">% Neb states.</span>
+0046 
+0047 Psix = spalloc (Nx,Nz,Nx*Ncp);
+0048 <span class="keyword">for</span> ixe = 1:Nxe
+0049    icb = Neb*(ixe-1);
+0050    icc = Ncp*(ixe-1);
+0051    Psix(bst(icb+[1:Neb]),sind(icc+[1:Ncp])) = H;
+0052 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of inductance</title>
+  <meta name="keywords" content="inductance">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; inductance.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>inductance
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [L,dL] = inductance (I0,L0,II) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Saturation effects in magnetic components are represented by a 
+ nonlinear effective inductance, that at any given point is the tangent
+ of the terminal voltage versus rate-of-change-of-current curve.  This
+ curve is represented by a spline.
+
+ Version:        Changes:
+ --------        -------------
+ 27.08.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 27.08.2018      Checked sample test cases.
+
+ Inputs:
+ -------
+ I0              : I's at which L's are given, four points.
+ L0              : values of inductance at the I's.
+ II              : currents at which to compute L.
+
+ Outputs:
+ --------
+ L               : effective value of inductance.
+ dL              : = dL/dI.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="PMSG.html" class="code" title="function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params)">PMSG</a>	</li>
+<li><a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a>	</li>
+<li><a href="converterControlGen.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlGen (Linflag,x,yin,params)">converterControlGen</a>	</li>
+<li><a href="converterControlNet.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params)">converterControlNet</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generatorEfficiency.html" class="code" title="">generatorEfficiency</a>	Run a set of steady-state calculations of generator efficiency, which is</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASControl_DTU10MW.html" class="code" title="function c = STASControl_DTU10MW ()">STASControl_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASElectric_DTU10MW.html" class="code" title="function params = STASElectric_DTU10MW ()">STASElectric_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASPitch_DTU10MW.html" class="code" title="function params = STASPitch_DTU10MW ()">STASPitch_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASSensor_DTU10MW.html" class="code" title="function m = STASSensor_DTU10MW ()">STASSensor_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASYaw_DTU10MW.html" class="code" title="function params = STASYaw_DTU10MW ()">STASYaw_DTU10MW</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42.html" class="code" title="">TCD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42Lin.html" class="code" title="">TCD42Lin</a>	y vector:        u vector:</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42grid.html" class="code" title="">TCD42grid</a>	Newton-Raphson solution of the TC RWP grid with turbines, and</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [L,dL] = inductance (I0,L0,II)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Saturation effects in magnetic components are represented by a</span>
+0004 <span class="comment">% nonlinear effective inductance, that at any given point is the tangent</span>
+0005 <span class="comment">% of the terminal voltage versus rate-of-change-of-current curve.  This</span>
+0006 <span class="comment">% curve is represented by a spline.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Version:        Changes:</span>
+0009 <span class="comment">% --------        -------------</span>
+0010 <span class="comment">% 27.08.2018      Original code.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 27.08.2018      Checked sample test cases.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Inputs:</span>
+0017 <span class="comment">% -------</span>
+0018 <span class="comment">% I0              : I's at which L's are given, four points.</span>
+0019 <span class="comment">% L0              : values of inductance at the I's.</span>
+0020 <span class="comment">% II              : currents at which to compute L.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">% L               : effective value of inductance.</span>
+0025 <span class="comment">% dL              : = dL/dI.</span>
+0026 
+0027 L = zeros(size(II,1),1);
+0028 dL = zeros(size(II,1),1);
+0029 
+0030 [A,B] = <a href="../../STAS-WPP/STAS-Utilities/splineCoefficients.html" class="code" title="function [A,B] = splineCoefficients (r)">splineCoefficients</a> (I0);
+0031 [S,dSdx] = <a href="../../STAS-WPP/STAS-Utilities/splineSMatrix.html" class="code" title="function [S,dSdx] = splineSMatrix (rhat,x)">splineSMatrix</a> (I0,II);
+0032 Am1BL0 = A\(B*L0);
+0033 L = S*Am1BL0;
+0034 dL = dSdx*Am1BL0;
+0035 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

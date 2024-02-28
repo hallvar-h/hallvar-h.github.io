@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of teststresscycles</title>
+  <meta name="keywords" content="teststresscycles">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; teststresscycles.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>teststresscycles
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 clear;
+0003 
+0004 load <span class="string">'stress.txt'</span>;
+0005 load <span class="string">'csb.txt'</span>;
+0006 
+0007 WW = 0.868860523;
+0008 
+0009 freqs = stress(:,1);
+0010 Nf = size(freqs,1);
+0011 df = freqs(2) - freqs(1);
+0012 dt = 1/(Nf*df);
+0013 T = (Nf-1)*dt;
+0014 
+0015 Nrep = 200;  <span class="comment">% Number of repititions.</span>
+0016 
+0017 Sf = stress(:,6) + i*stress(:,7);
+0018 Se = stress(:,8) + i*stress(:,9);
+0019 cf = csb(:,2) + i*csb(:,3);
+0020 ce = csb(:,4) + i*csb(:,5);
+0021 
+0022 Sfp = cf.*conj(cf)/df;
+0023 Sep = ce.*conj(ce)/df;
+0024 
+0025 <span class="comment">% Isolate parts of the spectra.</span>
+0026 P = WW/(2*pi);
+0027 w = round(P/df);
+0028 w2 = round(w/2);
+0029 
+0030 indL = Nf/2-w2+[1:2*w2+1].';
+0031 SfL = Sf(indL);
+0032 SeL = Se(indL);
+0033 
+0034 cfL = cf(indL);
+0035 ceL = ce(indL);
+0036 
+0037 indS = [Nf/2-w2-w+[1:w] Nf/2+1+w2+[1:w]].';
+0038 SfS = Sf(indS);
+0039 SeS = Se(indS);
+0040 
+0041 cfP = cf(indS);
+0042 ceP = ce(indS);
+0043 
+0044 indH = [[1:Nf/2-w2-w] [Nf/2+2+w2+w:Nf]].';
+0045 SfH = (Sf(indH) + Sfp(indH));
+0046 SeH = (Se(indH) + Sep(indH));
+0047 
+0048 <span class="comment">% Output some time series.</span>
+0049 fidfL   = fopen(<span class="string">'data_fL.txt'</span>,<span class="string">'w'</span>);
+0050 fideL   = fopen(<span class="string">'data_eL.txt'</span>,<span class="string">'w'</span>);
+0051 fidfS   = fopen(<span class="string">'data_fS.txt'</span>,<span class="string">'w'</span>);
+0052 fideS   = fopen(<span class="string">'data_eS.txt'</span>,<span class="string">'w'</span>);
+0053 fidfP   = fopen(<span class="string">'data_fP.txt'</span>,<span class="string">'w'</span>);
+0054 fideP   = fopen(<span class="string">'data_eP.txt'</span>,<span class="string">'w'</span>);
+0055 fidfH   = fopen(<span class="string">'data_fH.txt'</span>,<span class="string">'w'</span>);
+0056 fideH   = fopen(<span class="string">'data_eH.txt'</span>,<span class="string">'w'</span>);
+0057 
+0058 fidfSP  = fopen(<span class="string">'data_fSP.txt'</span>,<span class="string">'w'</span>);
+0059 fideSP  = fopen(<span class="string">'data_eSP.txt'</span>,<span class="string">'w'</span>);
+0060 fidfSPH = fopen(<span class="string">'data_fSPH.txt'</span>,<span class="string">'w'</span>);
+0061 fideSPH = fopen(<span class="string">'data_eSPH.txt'</span>,<span class="string">'w'</span>);
+0062 fidf    = fopen(<span class="string">'data_f.txt'</span>,<span class="string">'w'</span>);
+0063 fide    = fopen(<span class="string">'data_e.txt'</span>,<span class="string">'w'</span>);
+0064 
+0065 <span class="keyword">for</span> irep = 1:Nrep
+0066 
+0067 printf(<span class="string">'%5d\n'</span>,irep);
+0068 fflush(stdout);
+0069 
+0070    a1 = -pi + 2*pi*rand(Nf/2+1,1);
+0071    a2 = -pi + 2*pi*rand(Nf/2+1,1);
+0072    a3 = -pi + 2*pi*rand(Nf/2+1,1);
+0073    a4 = -pi + 2*pi*rand(Nf/2+1,1);
+0074    a5 = -pi + 2*pi*rand(Nf/2+1,1);
+0075    a6 = -pi + 2*pi*rand(Nf/2+1,1);
+0076    alf1 = [a1; -a1(Nf/2:-1:2)];
+0077    alf2 = [a2; -a2(Nf/2:-1:2)];
+0078    alf3 = [a3; -a3(Nf/2:-1:2)];
+0079    alf4 = [a4; -a4(Nf/2:-1:2)];
+0080    alf5 = [a5; -a5(Nf/2:-1:2)];
+0081    alf6 = [a6; -a6(Nf/2:-1:2)];
+0082    <span class="keyword">for</span> it = 1:Nf
+0083 
+0084       t = (it-1)*dt;
+0085    
+0086       ftL = real(sum(sqrt(abs(SfL)*df).*exp(i*(2*pi*freqs(indL)*t + alf1(indL)))));
+0087       fprintf(fidfL,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftL);
+0088 
+0089       etL = real(sum(sqrt(abs(SeL)*df).*exp(i*(2*pi*freqs(indL)*t + alf2(indL)))));
+0090       fprintf(fideL,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etL);
+0091 
+0092       ftS = real(sum(sqrt(abs(SfS)*df).*exp(i*(2*pi*freqs(indS)*t + alf3(indS)))));
+0093 <span class="comment">%      ftS2 = sum(sqrt(abs(SfS)*df).*sin(2*pi*freqs(indS)*t + alf3(indS)));</span>
+0094       fprintf(fidfS,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftS);
+0095 
+0096       etS = real(sum(sqrt(abs(SeS)*df).*exp(i*(2*pi*freqs(indS)*t + alf4(indS)))));
+0097       fprintf(fideS,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etS);
+0098 
+0099       ftH = real(sum(sqrt(abs(SfH)*df).*exp(i*(2*pi*freqs(indH)*t + alf5(indH)))));
+0100       fprintf(fidfH,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftH);
+0101 
+0102       etH = real(sum(sqrt(abs(SeH)*df).*exp(i*(2*pi*freqs(indH)*t + alf6(indH)))));
+0103       fprintf(fideH,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etH);   
+0104 
+0105       ftP = sum(cfP.*exp(i*2*pi*freqs(indS)*t));
+0106       fprintf(fidfP,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftP);   
+0107 
+0108       etP = sum(ceP.*exp(i*2*pi*freqs(indS)*t));
+0109       fprintf(fideP,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etP);
+0110 
+0111       ftSP = ftS + ftP;
+0112       fprintf(fidfSP,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftSP);
+0113 
+0114       etSP = etS + etP;
+0115       fprintf(fideSP,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etSP);
+0116 
+0117       ftSPH = ftS + ftP + ftH;
+0118       fprintf(fidfSPH,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ftSPH);
+0119 
+0120       etSPH = etS + etP + etH;
+0121       fprintf(fideSPH,<span class="string">'%+5.6e %+5.6e\n'</span>,t,etSPH);
+0122 
+0123       ft = ftL + ftS + ftP + ftH;
+0124       fprintf(fidf,<span class="string">'%+5.6e %+5.6e\n'</span>,t,ft);
+0125 
+0126       et = etL + etS + etP + etH;
+0127       fprintf(fide,<span class="string">'%+5.6e %+5.6e\n'</span>,t,et);
+0128 
+0129    <span class="keyword">end</span> <span class="comment">% it</span>
+0130 
+0131 <span class="keyword">end</span> <span class="comment">% irep</span>
+0132 fclose(<span class="string">'all'</span>);
+0133 
+0134 nm1  = <span class="string">'_f'</span>;
+0135 nm2  = <span class="string">'_fL'</span>;
+0136 nm3  = <span class="string">'_fS'</span>;
+0137 nm4  = <span class="string">'_fP'</span>;
+0138 nm5  = <span class="string">'_fH'</span>;
+0139 nm6  = <span class="string">'_fSP'</span>;
+0140 nm7  = <span class="string">'_fSPH'</span>;
+0141 nm8  = <span class="string">'_e'</span>;
+0142 nm9  = <span class="string">'_eL'</span>;
+0143 nm10 = <span class="string">'_eS'</span>;
+0144 nm11 = <span class="string">'_eP'</span>;
+0145 nm12 = <span class="string">'_eH'</span>;
+0146 nm13 = <span class="string">'_eSP'</span>;
+0147 nm14 = <span class="string">'_eSPH'</span>;
+0148 
+0149 rs1  = <span class="string">'_30_0100'</span>;
+0150 rs2  = <span class="string">'_20_0050'</span>;
+0151 rs3  = <span class="string">'_20_0050'</span>;
+0152 rs4  = <span class="string">'_05_0020'</span>;
+0153 rs5  = <span class="string">'_20_0050'</span>;
+0154 rs6  = <span class="string">'_20_0050'</span>;
+0155 rs7  = <span class="string">'_20_0050'</span>;
+0156 rs8  = <span class="string">'_30_0100'</span>;
+0157 rs9  = <span class="string">'_02_0005'</span>;
+0158 rs10 = <span class="string">'_02_0005'</span>;
+0159 rs11 = <span class="string">'_20_0050'</span>;
+0160 rs12 = <span class="string">'_20_0050'</span>;
+0161 rs13 = <span class="string">'_20_0050'</span>;
+0162 rs14 = <span class="string">'_30_0100'</span>;
+0163 
+0164 <span class="keyword">for</span> jnm = 1:14
+0165 
+0166    eval([<span class="string">'nm = nm'</span> int2str(jnm) <span class="string">';'</span>]);
+0167 printf(<span class="string">'%s\n'</span>,nm);
+0168 fflush(stdout);
+0169    eval([<span class="string">'load data'</span> nm <span class="string">'.txt'</span>]);
+0170    eval([<span class="string">'dat = data'</span> nm <span class="string">';'</span>]);
+0171 
+0172    eval([<span class="string">'rs = rs'</span> int2str(jnm) <span class="string">';'</span>]);
+0173 
+0174    <span class="keyword">for</span> irep = 1:Nrep
+0175 
+0176       irow = Nf*(irep-1);
+0177 
+0178       dd = dat(irow+[1:Nf],:);
+0179 
+0180       fid = fopen(<span class="string">'data.txt'</span>,<span class="string">'w'</span>);
+0181       <span class="keyword">for</span> it = 1:Nf
+0182          fprintf(fid,<span class="string">'%+5.6e %+5.6e\n'</span>,dd(it,1),dd(it,2));
+0183       <span class="keyword">end</span>
+0184       fclose(fid);
+0185 
+0186       eval([&quot;system(<span class="string">'rainflow&quot; rs &quot;.exe'</span>);&quot;]);
+0187 
+0188       load <span class="string">'ncum.txt'</span>;
+0189       load <span class="string">'ncyc.txt'</span>;
+0190 
+0191       <span class="keyword">if</span> (irep == 1)
+0192          nbin = size(ncyc,1);
+0193          sbin = ncyc(nbin:-1:1,1);
+0194          ds = sbin(2) - sbin(1);
+0195          ntot = zeros(nbin,3);
+0196          ntot(:,1) = sbin;
+0197       <span class="keyword">end</span>
+0198 
+0199       cyc = ncyc(nbin:-1:1,2);
+0200       cum = ncum(nbin:-1:1,2);
+0201       ntot(:,2) = ntot(:,2) + cyc/Nrep;
+0202       ntot(:,3) = ntot(:,3) + cum/Nrep;
+0203 
+0204    <span class="keyword">end</span>
+0205 
+0206    eval([&quot;fid = fopen(<span class="string">'ncyc&quot; nm &quot;.txt'</span>,<span class="string">'w'</span>);&quot;]);
+0207    <span class="keyword">for</span> ib = 1:nbin
+0208       fprintf(fid,<span class="string">'%+5.6e %+5.6e %+5.6e\n'</span>, <span class="keyword">...</span>
+0209               0.5*ntot(ib,1),ntot(ib,2)/(T*(0.5*ds)),ntot(ib,3)/(T*(0.5*ds)));
+0210    <span class="keyword">end</span>
+0211    fclose(fid);
+0212 
+0213 <span class="keyword">end</span>
+0214 
+0215 
+0216 
+0217 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d2Qudq2</title>
+  <meta name="keywords" content="d2Qudq2">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d2Qudq2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d2Qudq2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function d2Q = d2Qudq2 (qn,qB,Pn,PB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the second partial derivative of the Qu matrix with respect to
+ nodal and body reference degrees-of-freedom, for a single node.
+
+ [v;w] = Qu dq/dt.
+
+ Version:        Changes:
+ --------        -------------
+ 05.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 05.11.2017      Verified with complex step using dQudq.m.
+ ERRORS FOUND FOR SOME SIMPLE INPUTS
+
+ Inputs:
+ -------
+ qn              : DOFs associated with the node.
+ qB              : DOFs associated with the body reference node.
+ Pn              : Undeformed pos,rot of the node wrt body reference.
+ PB              : Undeformed pos,rot of the body reference.
+
+ Outputs:
+ --------
+ d2Q             : Qu is of dimension 6-by-12, and there are 12-by-12
+                   second derivatives.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a>	Version:        Changes:</li>
+<li><a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a>	Version:        Changes:</li>
+<li><a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a>	Caution, the input TBg = T_B0^g*T_B^B0.</li>
+<li><a href="d2Fdth2.html" class="code" title="function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)">d2Fdth2</a>	</li>
+<li><a href="d2Frefdth2.html" class="code" title="function d2F = d2Frefdth2 (TTh,TBB0,dTBB0,d2TBB0,d3TBB0,TB0g)">d2Frefdth2</a>	</li>
+<li><a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a>	</li>
+<li><a href="d3Tdth3.html" class="code" title="function d3T = d3Tdth3 (th,T,dT,d2T)">d3Tdth3</a>	</li>
+<li><a href="dFdth.html" class="code" title="function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B)">dFdth</a>	</li>
+<li><a href="dFrefdth.html" class="code" title="function dF = dFrefdth (TTh,TBB0,dTBB0,d2TBB0,TB0g)">dFrefdth</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="assembleElements.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,C,dC,K,dK] =assembleElements (linFlag,s,qq,dqqdt,d2qqdt2,Pn,grav)">assembleElements</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function d2Q = d2Qudq2 (qn,qB,Pn,PB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the second partial derivative of the Qu matrix with respect to</span>
+0004 <span class="comment">% nodal and body reference degrees-of-freedom, for a single node.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% [v;w] = Qu dq/dt.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Version:        Changes:</span>
+0009 <span class="comment">% --------        -------------</span>
+0010 <span class="comment">% 05.11.2017      Original code.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 05.11.2017      Verified with complex step using dQudq.m.</span>
+0015 <span class="comment">% ERRORS FOUND FOR SOME SIMPLE INPUTS</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% qn              : DOFs associated with the node.</span>
+0020 <span class="comment">% qB              : DOFs associated with the body reference node.</span>
+0021 <span class="comment">% Pn              : Undeformed pos,rot of the node wrt body reference.</span>
+0022 <span class="comment">% PB              : Undeformed pos,rot of the body reference.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Outputs:</span>
+0025 <span class="comment">% --------</span>
+0026 <span class="comment">% d2Q             : Qu is of dimension 6-by-12, and there are 12-by-12</span>
+0027 <span class="comment">%                   second derivatives.</span>
+0028 <span class="comment">%</span>
+0029 
+0030 d2Q = zeros(6,12*12*12);
+0031 
+0032 r = qn(1:3) + Pn(1:3);
+0033 
+0034 [Fr,TBB0,dTBB0,TB0g] = <a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a> (qB(4:6),PB(4:6));
+0035 d2TBB0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qB(4:6),TBB0,dTBB0);
+0036 d3TBB0 = <a href="d3Tdth3.html" class="code" title="function d3T = d3Tdth3 (th,T,dT,d2T)">d3Tdth3</a> (qB(4:6),TBB0,dTBB0,d2TBB0);
+0037 Fmat = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (Fr);
+0038 
+0039 TBg = TB0g*TBB0;
+0040 TgB = TBg.';
+0041 Tn0B = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (Pn(4:6));
+0042 
+0043 [F,Tnn0,dTnn0] = <a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a> (qn(4:6),TBg,Tn0B);
+0044 d2Tnn0 = <a href="d2Tdth2.html" class="code" title="function d2T = d2Tdth2 (th,T,dT)">d2Tdth2</a> (qn(4:6),Tnn0,dTnn0);
+0045 Gmat = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (F);
+0046 
+0047 dFr = <a href="dFrefdth.html" class="code" title="function dF = dFrefdth (TTh,TBB0,dTBB0,d2TBB0,TB0g)">dFrefdth</a> (qB(4:6),TBB0,dTBB0,d2TBB0,TB0g);
+0048 dFmat = zeros(3,3*3);
+0049 <span class="keyword">for</span> jj = 1:3
+0050    jc3 = 3*(jj-1);
+0051    jc9 = 9*(jj-1);
+0052    dFmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (dFr(:,jc9+[1:9]));
+0053 <span class="keyword">end</span>
+0054 
+0055 dF = <a href="dFdth.html" class="code" title="function dF = dFdth (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B)">dFdth</a> (Tnn0,dTnn0,d2Tnn0,TBB0,dTBB0,TB0g,Tn0B);
+0056 dGmat = zeros(3,6*3);
+0057 <span class="keyword">for</span> jj = 1:6
+0058    jc3 = 3*(jj-1);
+0059    jc9 = 9*(jj-1);
+0060    dGmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (dF(:,jc9+[1:9]));   
+0061 <span class="keyword">end</span>
+0062 
+0063 d2Fr = <a href="d2Frefdth2.html" class="code" title="function d2F = d2Frefdth2 (TTh,TBB0,dTBB0,d2TBB0,d3TBB0,TB0g)">d2Frefdth2</a> (qB(4:6),TBB0,dTBB0,d2TBB0,d3TBB0,TB0g);
+0064 d2Fmat = zeros(3,3*3*3);
+0065 <span class="keyword">for</span> jj = 1:9
+0066    jc3 = 3*(jj-1);
+0067    jc9 = 9*(jj-1);
+0068    d2Fmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (d2Fr(:,jc9+[1:9]));
+0069 <span class="keyword">end</span>
+0070 
+0071 d2F = <a href="d2Fdth2.html" class="code" title="function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)">d2Fdth2</a> (qB(4:6),qn(4:6),TB0g,Tn0B);
+0072 d2Gmat = zeros(3,3*6*6);
+0073 <span class="keyword">for</span> jj = 1:36
+0074    jc3 = 3*(jj-1);
+0075    jc9 = 9*(jj-1);
+0076    d2Gmat(:,jc3+[1:3]) = <a href="Dmatrix.html" class="code" title="function D = Dmatrix (F)">Dmatrix</a> (d2F(:,jc9+[1:9]));
+0077 <span class="keyword">end</span>
+0078 
+0079 <span class="comment">% d2Qi/ddj dPhik.</span>
+0080 <span class="comment">% Same as d2Qi/dOj dPhik, but different jd index.</span>
+0081 jd = 7;   <span class="comment">% d</span>
+0082 kd = 4;   <span class="comment">% Phi</span>
+0083 
+0084 id = 4;   <span class="comment">% Phi</span>
+0085 ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0086 
+0087 <span class="keyword">for</span> jj = 1:3
+0088 
+0089    jc144 = 12*12*(jj-1);
+0090 
+0091    <span class="keyword">for</span> kk = 1:3
+0092 
+0093       kc12 = 12*(kk-1);
+0094       kc3  =  3*(kk-1);
+0095 
+0096       <span class="keyword">for</span> ii = 1:3
+0097 
+0098          ic3 = 3*(ii-1);
+0099          ic9 = 9*(ii-1);
+0100 
+0101          d2Q(1:3,ic+jc144+kc12+ii) = (dTBB0(:,kc3+[1:3]).')*dTBB0(:,ic3+jj) <span class="keyword">...</span>
+0102                                    + (TBB0.')*d2TBB0(:,ic9+kc3+jj);
+0103 
+0104       <span class="keyword">end</span>
+0105 
+0106    <span class="keyword">end</span>
+0107 
+0108 <span class="keyword">end</span>
+0109 
+0110 <span class="comment">% d2Qi/dPhij ddk.</span>
+0111 jd = 4;   <span class="comment">% Phi</span>
+0112 kd = 7;   <span class="comment">% d</span>
+0113 
+0114 id = 4;   <span class="comment">% Phi</span>
+0115 ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0116 
+0117 <span class="keyword">for</span> jj = 1:3
+0118 
+0119    jc144 = 12*12*(jj-1);
+0120    jc3   =     3*(jj-1);
+0121 
+0122    <span class="keyword">for</span> kk = 1:3
+0123 
+0124       kc12 = 12*(kk-1);
+0125 
+0126       <span class="keyword">for</span> ii = 1:3
+0127 
+0128          ic3 = 3*(ii-1);
+0129          ic9 = 9*(ii-1);
+0130 
+0131          d2Q(1:3,ic+jc144+kc12+ii) = (dTBB0(:,jc3+[1:3]).')*dTBB0(:,ic3+kk) <span class="keyword">...</span>
+0132                                    + (TBB0.')*d2TBB0(:,ic9+jc3+kk);
+0133 
+0134       <span class="keyword">end</span>
+0135 
+0136    <span class="keyword">end</span>
+0137 
+0138 <span class="keyword">end</span>
+0139 
+0140 <span class="comment">% d2Qi/dPhij dPhik</span>
+0141 jd = 4; <span class="comment">% Phi</span>
+0142 kd = 4; <span class="comment">% Phi</span>
+0143 
+0144 <span class="keyword">for</span> jj = 1:3
+0145 
+0146    jc144 = 144*(jj-1);
+0147    jc27  =  27*(jj-1);
+0148    jc18  =  18*(jj-1);
+0149    jc9   =   9*(jj-1);
+0150    jc6   =   6*(jj-1);
+0151    jc3   =   3*(jj-1);
+0152 
+0153    dTj = dTBB0(:,jc3+[1:3]);
+0154    dFj = dFmat(:,jc3+[1:3]);
+0155    dGj = dGmat(:,jc3+[1:3]);
+0156 
+0157    <span class="keyword">for</span> kk = 1:3
+0158 
+0159       kc12 = 12*(kk-1);
+0160       kc9  =  9*(kk-1);
+0161       kc6  =  6*(kk-1);
+0162       kc3  =  3*(kk-1);
+0163 
+0164       dTk   = dTBB0(:,kc3+[1:3]);
+0165       d2Tjk = d2TBB0(:,jc9+kc3+[1:3]);
+0166 
+0167       dFk   = dFmat(:,kc3+[1:3]);
+0168       d2Fjk = d2Fmat(:,jc9+kc3+[1:3]);
+0169 
+0170       dGk   = dGmat(:,kc3+[1:3]);
+0171       d2Gjk = d2Gmat(:,jc18+kc3+[1:3]);
+0172 
+0173       id = 1;   <span class="comment">% Start with the columns associated with O.</span>
+0174       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0175 
+0176       <span class="comment">% Rows associated with v.</span>
+0177       <span class="comment">% (Ahat*That)_i = (A*That)_i = I</span>
+0178       term1 = ((TB0g*d2Tjk).');  <span class="comment">% TB0g: the tilde transforms are I, so the</span>
+0179       term2 = zeros(3);          <span class="comment">% outer TB0g is not cancelled.</span>
+0180       term3 = zeros(3);
+0181       term4 = zeros(3);
+0182       term5 = zeros(3);
+0183       term6 = zeros(3);
+0184 
+0185       d2Q(1:3,ic+jc144+kc12+[1:3]) = term1;
+0186 
+0187       <span class="comment">% Rows associated with w are zero, as w is independent of O.</span>
+0188 
+0189       id = 4;   <span class="comment">% Columns associated with Phi.</span>
+0190       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0191 
+0192       <span class="comment">% Rows associated with v.</span>
+0193       <span class="comment">% (Ahat*That)_i = 0.  (A*That)_i = 0.</span>
+0194       term1 = zeros(3);
+0195       term2 = zeros(3);
+0196 <span class="comment">%     term3 = zeros(3);</span>
+0197 <span class="comment">%     term4 = zeros(3);</span>
+0198       term5 = zeros(3);
+0199       term6 = zeros(3);
+0200       <span class="keyword">for</span> ii = 1:3
+0201          ic3         = 3*(ii-1);
+0202          dTi         = dTBB0(:,ic3+[1:3]);
+0203          d2Tik       = d2TBB0(:,kc9+ic3+[1:3]);
+0204          d2Tij       = d2TBB0(:,jc9+ic3+[1:3]);
+0205          d3Tijk      = d3TBB0(:,jc27+kc9+ic3+[1:3]);
+0206          term1(:,ii) = (d2Tjk.')* dTi  *r;
+0207          term2(:,ii) =   (dTj.')*d2Tik *r;
+0208          term5(:,ii) =   (dTk.')*d2Tij *r;
+0209          term6(:,ii) =  (TBB0.')*d3Tijk*r;
+0210       <span class="keyword">end</span>
+0211 
+0212       d2Q(1:3,ic+jc144+kc12+[1:3]) = term1 + term2 + term5 + term6;
+0213 
+0214       <span class="comment">% Rows associated with w.</span>
+0215       <span class="comment">% (Ahat*That)_i = F*I.  A*That = 0.</span>
+0216       term1 = ((TB0g*d2Tjk).')*Fmat;
+0217       term2 = ((TB0g*dTj).')*dFk;
+0218       term3 = ((TB0g*dTk).')*dFj;
+0219       term4 = TgB*d2Fjk;
+0220 <span class="comment">%     term5 = zeros(3);</span>
+0221 <span class="comment">%     term6 = zeros(3);</span>
+0222 
+0223       d2Q(4:6,ic+jc144+kc12+[1:3]) = term1 + term2 + term3 + term4;
+0224 
+0225       id = 7;   <span class="comment">% Columns associated with d.</span>
+0226       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0227 
+0228       <span class="comment">% Rows associated with v.</span>
+0229       <span class="comment">% (Ahat*That)_i = (A*That)_i = TBg.</span>
+0230       term1 = (d2Tjk.')*TBB0;
+0231       term2 = (dTj.')*dTk;
+0232       term3 = (dTk.')*dTj;
+0233       term4 = (TBB0.')*d2Tjk;
+0234 <span class="comment">%     term5 = zeros(3);</span>
+0235 <span class="comment">%     term6 = zeros(3);</span>
+0236 
+0237       d2Q(1:3,ic+jc144+kc12+[1:3]) = term1 + term2 + term3 + term4;
+0238 
+0239       <span class="comment">% Rows associated with w.  Zero, both Ahat and A contribute zero here.</span>
+0240 
+0241       id = 10;  <span class="comment">% Columns associated with theta.</span>
+0242       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0243 
+0244       <span class="comment">% Rows associated with v.</span>
+0245       <span class="comment">% (Ahat*That)_i = 0.  (A*That)_i = 0.  Then, the terms multiplying</span>
+0246       <span class="comment">% r are also zero; these depend on Phi, not theta.</span>
+0247 
+0248       <span class="comment">% Rows associated with w.</span>
+0249       <span class="comment">% (Ahat*That)_i = G*I.  A*That = 0.</span>
+0250       term1 = ((TB0g*d2Tjk).')*Gmat;
+0251       term2 = ((TB0g*dTj).')*dGk;
+0252       term3 = ((TB0g*dTk).')*dGj;
+0253       term4 = TgB*d2Gjk;
+0254 <span class="comment">%     term5 = zeros(3);</span>
+0255 <span class="comment">%     term6 = zeros(3);</span>
+0256 
+0257       d2Q(1:3,ic+jc144+kc12+[1:3]) = term1 + term2 + term3 + term4;
+0258 
+0259    <span class="keyword">end</span>
+0260 
+0261 <span class="keyword">end</span>
+0262 
+0263 <span class="comment">% d2Qi/dPhij dthk</span>
+0264 jd = 4;  <span class="comment">% Phi</span>
+0265 kd = 10; <span class="comment">% theta</span>
+0266 
+0267 <span class="keyword">for</span> jj = 1:3
+0268 
+0269    jc144 = 144*(jj-1);
+0270    jc18  =  18*(jj-1);
+0271    jc3   =   3*(jj-1);
+0272 
+0273    dTj = dTBB0(:,jc3+[1:3]);
+0274    dGj = dGmat(:,jc3+[1:3]);
+0275 
+0276    <span class="keyword">for</span> kk = 1:3
+0277 
+0278       kc12 = 12*(kk-1);
+0279       kc3a =  3*(kk+3-1);
+0280 
+0281       dGk = dGmat(:,kc3a+[1:3]);
+0282       d2Gjk = d2Gmat(:,jc18+kc3a+[1:3]);
+0283 
+0284       <span class="comment">%id = 1;   % Columns associated with O.</span>
+0285       <span class="comment">%ic = 12*12*(jd-1) + 12*(kd-1) + id-1;</span>
+0286 
+0287       <span class="comment">% Rows associated with v.</span>
+0288       <span class="comment">% (Ahat*That)_i = (A*That)_i = I.  Derivatives of Ahat are zero.</span>
+0289 
+0290       <span class="comment">% Rows associated with w are zero.</span>
+0291 
+0292       <span class="comment">%id = 4;   % Columns associated with Phi.</span>
+0293       <span class="comment">%ic = 12*12*(jd-1) + 12*(kd-1) + id-1;</span>
+0294 
+0295       <span class="comment">% Rows associated with v.</span>
+0296       <span class="comment">% (Ahat*That)_i = 0.  (A*That)_i = 0.</span>
+0297 
+0298       <span class="comment">% Rows associated with w.</span>
+0299       <span class="comment">% (Ahat*That)_i = F*I.  A*That = 0.</span>
+0300       <span class="comment">% Derivatives of F wrt theta are zero.</span>
+0301 
+0302       <span class="comment">%id = 7;   % Columns associated with d.</span>
+0303       <span class="comment">%ic = 12*12*(jd-1) + 12*(kd-1) + id-1;</span>
+0304 
+0305       <span class="comment">% Rows associated with v.</span>
+0306       <span class="comment">% (Ahat*That)_i = (A*That)_i = TBg.  Derivatives of Ahat are zero.</span>
+0307 
+0308       <span class="comment">% Rows associated with w.  Zero, both Ahat and A contribute zero.</span>
+0309 
+0310       id = 10;   <span class="comment">% Columns associated with theta.</span>
+0311       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0312 
+0313       <span class="comment">% Rows associated with v.</span>
+0314       <span class="comment">% (Ahat*That)_i = 0.  (A*That)_i = 0.</span>
+0315 
+0316       <span class="comment">% Rows associated with w.</span>
+0317       <span class="comment">% (Ahat*That)_i = G*I.  A*That = 0.</span>
+0318       term1 = ((TB0g*dTj).')*dGk;
+0319       term2 = TgB*d2Gjk;
+0320 
+0321       d2Q(4:6,ic+jc144+kc12+[1:3]) = term1 + term2;
+0322 
+0323    <span class="keyword">end</span>
+0324 
+0325 <span class="keyword">end</span>
+0326 
+0327 <span class="comment">% d2Qi/dthj dPhik</span>
+0328 jd = 10;  <span class="comment">% theta</span>
+0329 kd = 4;   <span class="comment">% Phi</span>
+0330 
+0331 <span class="keyword">for</span> jj = 1:3
+0332 
+0333    jc144 = 144*(jj-1);
+0334    jc18a = 18*(jj+3-1);
+0335    jc3a  =  3*(jj+3-1);
+0336 
+0337    dGj = dGmat(:,jc3a+[1:3]);
+0338 
+0339    <span class="keyword">for</span> kk = 1:3
+0340 
+0341       kc12 = 12*(kk-1);
+0342       kc3 = 3*(kk-1);
+0343 
+0344       dTk = dTBB0(:,kc3+[1:3]);
+0345       d2Gjk = d2Gmat(:,jc18a+kc3+[1:3]);
+0346 
+0347       id = 10;   <span class="comment">% Columns associated with theta.</span>
+0348       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0349 
+0350       <span class="comment">% Rows associated with w.</span>
+0351       <span class="comment">% (Ahat*That)_i = G*I.  A*That = 0.</span>
+0352       term1 = ((TB0g*dTk).')*dGj;
+0353       term2 = TgB*d2Gjk;
+0354 
+0355       d2Q(4:6,ic+jc144+kc12+[1:3]) = term1 + term2;
+0356 
+0357    <span class="keyword">end</span>
+0358 
+0359 <span class="keyword">end</span>
+0360 
+0361 <span class="comment">% d2Qi/dthj dthk</span>
+0362 jd = 10;  <span class="comment">% theta</span>
+0363 kd = 10;  <span class="comment">% theta</span>
+0364 
+0365 <span class="keyword">for</span> jj = 1:3
+0366 
+0367    jc144 = 144*(jj-1);
+0368    jc18a = 18*(jj+3-1);
+0369 
+0370    <span class="keyword">for</span> kk = 1:3
+0371 
+0372       kc12 = 12*(kk-1);
+0373       kc3a = 3*(kk+3-1);
+0374 
+0375       d2Gjk = d2Gmat(:,jc18a+kc3a+[1:3]);
+0376 
+0377       <span class="comment">% Only columns associated with theta and rows associated with w</span>
+0378       <span class="comment">% have a nonzero value, since dAh/dth is nonzero only in this</span>
+0379       <span class="comment">% case.</span>
+0380 
+0381       id = 10;  <span class="comment">% Columns associated with theta.</span>
+0382       ic = 12*12*(jd-1) + 12*(kd-1) + id-1;
+0383 
+0384       <span class="comment">% Rows associated with w.</span>
+0385       <span class="comment">% (Ahat*That)_i = G*I.  A*That = 0.</span>
+0386       d2Q(4:6,ic+jc144+kc12+[1:3]) = TgB*d2Gjk;
+0387 
+0388    <span class="keyword">end</span>
+0389 
+0390 <span class="keyword">end</span>
+0391 
+0392 d2Q = sparse(d2Q);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

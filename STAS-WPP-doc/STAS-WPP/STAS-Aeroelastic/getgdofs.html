@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of getgdofs</title>
+  <meta name="keywords" content="getgdofs">
+  <meta name="description" content="Here are the 72 elements of q that are active in the constraint">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; getgdofs.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>getgdofs
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Here are the 72 elements of q that are active in the constraint</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function gdofs = getgdofs (idofs,idofm,Ndj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Here are the 72 elements of q that are active in the constraint
+ equations, and against which partial derivatives are taken.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="constraintGamma.html" class="code" title="function [G,dLdq] = constraintGamma (q,dqdt,P,L,Lambda,Tbh,ret,slv,idofs,idofm)">constraintGamma</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function gdofs = getgdofs (idofs,idofm,Ndj)</a>
+0002 
+0003 <span class="comment">% Here are the 72 elements of q that are active in the constraint</span>
+0004 <span class="comment">% equations, and against which partial derivatives are taken.</span>
+0005 gdofs = [idofs(1)+[4:6] idofm(2)+[1:6] idofs(2)+[4:6] idofm(3)+[1:6] <span class="keyword">...</span>
+0006          idofs(3)+[4:6] idofm(4)+[1:6] idofs(4)+[4:6] idofm(5)+[1:6] <span class="keyword">...</span>
+0007          idofs(5)+[1:3] idofm(6)+[1:6] idofs(6)+[4:6] idofm(7)+[1:6] <span class="keyword">...</span>
+0008          idofs(7)+[4:6] idofm(8)+[1:6] idofs(8)+[4:6] [Ndj-5:Ndj]].';
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

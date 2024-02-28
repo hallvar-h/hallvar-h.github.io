@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of dTdth</title>
+  <meta name="keywords" content="dTdth">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; dTdth.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>dTdth
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [T,dT] = dTdth (th) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Some effort was required for this to work with complex step.  The
+ problem is that the standard formula underflows if the real part
+ is zero and the complex part is very small.  A power series 
+ solution is used for small inputs.  This has been tested using
+ a complex step of sqrt(eps).
+
+ Version:        Changes:
+ --------        -------------
+ 08.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 08.10.2017      Checked against an independent calculation using
+                 alternate formulae.
+
+ Inputs:
+ -------
+ th              : theta parameters.
+
+ Outputs:
+ --------
+ T               : 3-by-3.
+ dT              : dT/dth, 3-by-9.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepTransforms.html" class="code" title="function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas)">BEMprepTransforms</a>	</li>
+<li><a href="FRefMatrix.html" class="code" title="function [F,TB_B0,dTB_B0,TB0_g] = FRefMatrix (th,th0)">FRefMatrix</a>	Version:        Changes:</li>
+<li><a href="Fmatrix.html" class="code" title="function [F,Tnn0,dTnn0] = Fmatrix (th,TBg,Tn0B)">Fmatrix</a>	Caution, the input TBg = T_B0^g*T_B^B0.</li>
+<li><a href="aeroPower.html" class="code" title="function [Pow,y,Du] = aeroPower (qpsi,dqpsidt,Fpsi,P,idofs,blxdof,dret,Nbnod)">aeroPower</a>	</li>
+<li><a href="airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a>	</li>
+<li><a href="bodyTransforms.html" class="code" title="function [T,dT,d2T] = bodyTransforms (idofs,qB)">bodyTransforms</a>	</li>
+<li><a href="constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a>	function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</li>
+<li><a href="d2Fdth2.html" class="code" title="function d2F = d2Fdth2 (TTh,th,TB0g,Tn0B)">d2Fdth2</a>	</li>
+<li><a href="d2mudq2.html" class="code" title="function d2mu = d2mudq2 (qn1,qn2,Pn1,Pn2,TsB,dTsB,d2TsB)">d2mudq2</a>	</li>
+<li><a href="derivConstraints.html" class="code" title="function dL = derivConstraints (qB,PB,Tbh,idofs,idofm)">derivConstraints</a>	</li>
+<li><a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="dmudq.html" class="code" title="function dmu = dmudq (qn1,qn2,Pn1,Pn2,TsB,dTsB)">dmudq</a>	</li>
+<li><a href="genSpeed.html" class="code" title="function [Wg,Dy] = genSpeed (qgen,dqgen,Pgen)">genSpeed</a>	</li>
+<li><a href="globalPosLin.html" class="code" title="function [xng,Dy] = globalPosLin (qB,PB,qn,Pn)">globalPosLin</a>	</li>
+<li><a href="jointTorque.html" class="code" title="function [Mm,Dy] = jointTorque (qm,Pm,Tjm,Mj)">jointTorque</a>	</li>
+<li><a href="projectElement.html" class="code" title="function [xeg,xnr1,xnr2,xer,r,Lp,Dy] = projectElement (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,xhg)">projectElement</a>	</li>
+<li><a href="projectElements.html" class="code" title="function [y,Dia,Dy,Dd] = projectElements (q,P,iq,idofs,idofm,Tn_y)">projectElements</a>	</li>
+<li><a href="rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a>	</li>
+<li><a href="secondDerivElementCS.html" class="code" title="function d2TsB = secondDerivElementCS (qn1,qn2,Pn1,Pn2,TsB)">secondDerivElementCS</a>	</li>
+<li><a href="soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a>	</li>
+<li><a href="soilNL.html" class="code" title="function F = soilNL (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/appliedPower.html" class="code" title="function [Pow,y,Du,TBg] = appliedPower (s,qq,dqqdt,F,PP,idofs)">appliedPower</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [T,dT] = dTdth (th)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Some effort was required for this to work with complex step.  The</span>
+0004 <span class="comment">% problem is that the standard formula underflows if the real part</span>
+0005 <span class="comment">% is zero and the complex part is very small.  A power series</span>
+0006 <span class="comment">% solution is used for small inputs.  This has been tested using</span>
+0007 <span class="comment">% a complex step of sqrt(eps).</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Changes:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 08.10.2017      Original code.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 08.10.2017      Checked against an independent calculation using</span>
+0016 <span class="comment">%                 alternate formulae.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% th              : theta parameters.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">% T               : 3-by-3.</span>
+0025 <span class="comment">% dT              : dT/dth, 3-by-9.</span>
+0026 
+0027 normth = sqrt(th.'*th);
+0028 
+0029 dT = zeros(3,9);
+0030 
+0031 <span class="comment">% Compute the T matrix and spin(th).</span>
+0032 TTH = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(th);
+0033 T = expm (TTH);
+0034 
+0035 <span class="keyword">if</span> (abs(normth) &lt; eps^0.25)  <span class="comment">% Complex magnitude is intentionally included</span>
+0036                              <span class="comment">% in this norm.</span>
+0037 
+0038    normth2 = normth^2;
+0039    normth4 = normth2^2;
+0040 
+0041    c1 = -1/3 + normth2/30;
+0042    c2 = 1 - normth2/6 + normth4/120;
+0043    c3 = -1/12 + normth2/180;
+0044    c4 = 0.5 - normth2/24 + normth4/720;
+0045 
+0046    <span class="keyword">for</span> kk = 1:3
+0047       k3 = 3*(kk-1);
+0048       ee = zeros(3,1);
+0049       ee(kk) = 1;
+0050       sigk = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(ee);
+0051       dT(:,k3+[1:3]) = c1*th(kk)*TTH + c2*sigk <span class="keyword">...</span>
+0052                      + c3*th(kk)*TTH*TTH + c4*(sigk*TTH + TTH*sigk);   
+0053    <span class="keyword">end</span>
+0054 
+0055 <span class="keyword">else</span>
+0056 
+0057    Tp = T.';
+0058 
+0059    <span class="comment">% Compute the partial derivatives of the T matrix.</span>
+0060    <span class="comment">% Gallego G, Yezzi A (2015).  A compact formula for the derivative</span>
+0061    <span class="comment">% of a 3-D rotation in exponential coordinates.  Journal of</span>
+0062    <span class="comment">% Mathematical Imaging and Vision 51: 378-384.</span>
+0063    <span class="keyword">for</span> ie = 1:3
+0064       ee = zeros(3,1);
+0065       ee(ie) = 1;
+0066       term1 = th(ie)*TTH;
+0067       term2 = <a href="../../STAS-WPP/STAS-Utilities/vecToSpin.html" class="code" title="function sp = vecToSpin (vec)">vecToSpin</a>(TTH*(eye(3) - T)*ee);
+0068       dT(:,3*(ie-1)+[1:3]) = ((term1 + term2)/(normth^2))*T;
+0069    <span class="keyword">end</span>   
+0070 
+0071 <span class="keyword">end</span>
+0072 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of PMSG</title>
+  <meta name="keywords" content="PMSG">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; PMSG.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>PMSG
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The generator is modelled with an equivalent electric circuit
+ in the dq frame.  It is assumed that the inductance and
+ resistance matrices in the abc frame are diagonal, that is,
+ no magnetic coupling between the phases.
+
+   states:           y vector:
+   igd,q     1,2     vgd,q     1,2    in   (gen. current control)
+                     wg         3     in   (shaft)
+                     Tg         4     out
+
+ ig is the stator current, vg is the terminal voltage, wg is the
+ electrical speed, and Tg is the mechanical torque.
+
+ Version:        Changes:
+ --------        -------------
+ 02.05.2016      Code based on buildGenerator.m.
+ 11.07.2017      Adapted for complex step derivatives.
+ 27.08.2018      Modified for linear/nonlinear equation pairs
+                 and nonlinear inductance.
+
+ Version:        Verification:
+ --------        -------------
+ 02.05.2016      
+ 11.07.2017      
+ 27.08.2018      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : 1,2:  ig    (A)     Stator currents
+ yin             : 1,2:  vg    (V)     Generator terminal voltage
+                   3:    wg    (rad/s) Generator electrical speed
+ params          : 1:    np    (-)     Number of poles.
+                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   6-9:  Lg    (H)     Nonlinear phase inductances.
+                   10:   Rg    (Ohms)  Phase resistance.
+                   11:   lamr  (Wb)    d-component flux linkage per phase.
+
+ Outputs:
+ --------
+ yout            : 1    Tg    (Nm)    Generator torque.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The generator is modelled with an equivalent electric circuit</span>
+0004 <span class="comment">% in the dq frame.  It is assumed that the inductance and</span>
+0005 <span class="comment">% resistance matrices in the abc frame are diagonal, that is,</span>
+0006 <span class="comment">% no magnetic coupling between the phases.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   states:           y vector:</span>
+0009 <span class="comment">%   igd,q     1,2     vgd,q     1,2    in   (gen. current control)</span>
+0010 <span class="comment">%                     wg         3     in   (shaft)</span>
+0011 <span class="comment">%                     Tg         4     out</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% ig is the stator current, vg is the terminal voltage, wg is the</span>
+0014 <span class="comment">% electrical speed, and Tg is the mechanical torque.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Changes:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 02.05.2016      Code based on buildGenerator.m.</span>
+0019 <span class="comment">% 11.07.2017      Adapted for complex step derivatives.</span>
+0020 <span class="comment">% 27.08.2018      Modified for linear/nonlinear equation pairs</span>
+0021 <span class="comment">%                 and nonlinear inductance.</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Version:        Verification:</span>
+0024 <span class="comment">% --------        -------------</span>
+0025 <span class="comment">% 02.05.2016</span>
+0026 <span class="comment">% 11.07.2017</span>
+0027 <span class="comment">% 27.08.2018      Derivatives verified by complex step.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Inputs:</span>
+0030 <span class="comment">% -------</span>
+0031 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0032 <span class="comment">% x               : 1,2:  ig    (A)     Stator currents</span>
+0033 <span class="comment">% yin             : 1,2:  vg    (V)     Generator terminal voltage</span>
+0034 <span class="comment">%                   3:    wg    (rad/s) Generator electrical speed</span>
+0035 <span class="comment">% params          : 1:    np    (-)     Number of poles.</span>
+0036 <span class="comment">%                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0037 <span class="comment">%                   6-9:  Lg    (H)     Nonlinear phase inductances.</span>
+0038 <span class="comment">%                   10:   Rg    (Ohms)  Phase resistance.</span>
+0039 <span class="comment">%                   11:   lamr  (Wb)    d-component flux linkage per phase.</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">% Outputs:</span>
+0042 <span class="comment">% --------</span>
+0043 <span class="comment">% yout            : 1    Tg    (Nm)    Generator torque.</span>
+0044 
+0045 Nx = 2;
+0046 Ny = 4;
+0047 
+0048 dxdt = zeros(Nx,1);
+0049 yout = 0;
+0050 
+0051 L = sparse(Nx,Nx);
+0052 A = sparse(Nx,Nx);
+0053 By = sparse(Nx,Ny);
+0054 C = sparse(Ny,Nx);
+0055 
+0056 ig = x;
+0057 
+0058 vg = yin(1:2);
+0059 wg = yin(3);
+0060 
+0061 np  = params(1);
+0062 IIg = params(2:5);
+0063 Lg  = params(6:9);
+0064 Rg  = params(10);
+0065 lam = params(11);
+0066 
+0067 two = 2*pi/3;
+0068 four = 4*pi/3;
+0069 sq = sqrt(2/3);
+0070 sq2 = sq/sqrt(2);
+0071 
+0072 th = 0;
+0073 
+0074 ct = cos(th);
+0075 st = sin(th);
+0076 c2 = cos(th-two);
+0077 s2 = sin(th-two);
+0078 c4 = cos(th-four);
+0079 s4 = sin(th-four);
+0080 
+0081 lamr = lam*[ct c2 c4].';
+0082 
+0083 Tat = sq*[ct  c2  c4; <span class="keyword">...</span>
+0084          -st -s2 -s4];
+0085 Tta = sq*[ct -st; <span class="keyword">...</span>
+0086           c2 -s2; <span class="keyword">...</span>
+0087           c4 -s4];
+0088 dTtadth = sq*[-st -ct; <span class="keyword">...</span>
+0089               -s2 -c2; <span class="keyword">...</span>
+0090               -s4 -c4];
+0091 
+0092 <span class="comment">% Compute the RMS phase current and phase inductance.</span>
+0093 magI = sqrt(ig(1)^2 + ig(2)^2);
+0094 angi = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>(ig(2),ig(1));
+0095 im1  = cos(angi);
+0096 im2  = sin(angi);
+0097 Irms = magI*sq2;
+0098 [Lph,dLph] = <a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> (IIg,Lg,Irms);
+0099 
+0100 <span class="comment">% dq-transformed permanent magnet flux linkage.</span>
+0101 lamdq   = Tat*lamr;
+0102 TTL     = Tat*dTtadth*lamdq;
+0103 WTL     = wg*TTL;
+0104 Lambda  = Lph*eye(3);
+0105 dLambda = dLph*eye(3);
+0106 dLamN   = [dLambda*sq2*im1 dLambda*sq2*im2];
+0107 TLT     = Tat*Lambda*Tta;
+0108 TLamDT  = Tat*Lambda*dTtadth;
+0109 WTLamDT = wg*TLamDT;
+0110 RR      = Rg*eye(3);
+0111 TRT     = Tat*RR*Tta;
+0112 
+0113 EW = -0.5*np*TTL;
+0114 
+0115 dxdt = -TLT\((TRT + WTLamDT)*ig + vg + WTL);
+0116 yout = (EW.')*ig;
+0117 
+0118 <span class="keyword">if</span> (Linflag == 1)
+0119 
+0120    L(:,:) = Tat*Lambda*Tta;
+0121 
+0122    A(:,:) = -(TRT + WTLamDT);
+0123    vec = Tta*dxdt + wg*dTtadth*ig;
+0124    A(:,1) = A(:,1) - Tat*dLamN(:,1:3)*vec;
+0125    A(:,2) = A(:,2) - Tat*dLamN(:,4:6)*vec;
+0126 
+0127    By(:,1:2) = -eye(2);
+0128    By(:,3) = -TLamDT*ig - TTL;
+0129    C(4,:) = EW.';
+0130 
+0131    LA = L\A;
+0132    LBy = L\By;
+0133 
+0134 <span class="keyword">else</span>
+0135 
+0136    LA = sparse(Nx,Nx);
+0137    LBy = sparse(Nx,Ny);
+0138 
+0139 <span class="keyword">end</span>
+0140 
+0141 <span class="comment">%{</span>
+0142 Tat
+0143 lam
+0144 lamr
+0145 wg
+0146 TLT
+0147 WTLamDT
+0148 TRT
+0149 vg
+0150 WTL
+0151 lamdq
+0152 <span class="comment">%}</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of modalTransformation</title>
+  <meta name="keywords" content="modalTransformation">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; modalTransformation.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>modalTransformation
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Am,Bm,Cm] = modalTransformation (A,B,C,freqs,tol,Yflg,wrtflg) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the eigenmodes of the matrix A, and retain the number
+ that contribute to the transfer functions with relative magnitude
+ &quot;tol&quot; or more, at the specified frequencies &quot;freqs&quot;.
+
+ Version:        Changes:
+ --------        -------------
+ 07.07.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 07.07.2020      
+
+ Inputs:
+ -------
+ A, B, C         : State matrices.
+ freqs           : Vector of frequencies at which to evaluate 
+                   TFs.
+ tol             : Tolerance for TF errors.
+ Yflg            : = 0: Y=I, output matrices may be complex.
+                   = 1: Perform a Y transform for real outputs.
+ wrtflg          : = 0: Do not write anything.
+                   = 1: Write ranked mode table. 
+
+ Outputs:
+ --------
+ Am, Bm, Cm      : Modal matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/eigVal_silent.html" class="code" title="function [slap,shp,ifrq] = eigVal_silent (A)">eigVal_silent</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Am,Bm,Cm] = modalTransformation (A,B,C,freqs,tol,Yflg,wrtflg)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the eigenmodes of the matrix A, and retain the number</span>
+0004 <span class="comment">% that contribute to the transfer functions with relative magnitude</span>
+0005 <span class="comment">% &quot;tol&quot; or more, at the specified frequencies &quot;freqs&quot;.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 07.07.2020      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 07.07.2020</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% A, B, C         : State matrices.</span>
+0018 <span class="comment">% freqs           : Vector of frequencies at which to evaluate</span>
+0019 <span class="comment">%                   TFs.</span>
+0020 <span class="comment">% tol             : Tolerance for TF errors.</span>
+0021 <span class="comment">% Yflg            : = 0: Y=I, output matrices may be complex.</span>
+0022 <span class="comment">%                   = 1: Perform a Y transform for real outputs.</span>
+0023 <span class="comment">% wrtflg          : = 0: Do not write anything.</span>
+0024 <span class="comment">%                   = 1: Write ranked mode table.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">% Am, Bm, Cm      : Modal matrices.</span>
+0029 
+0030 Nx = size(A,1);
+0031 Nu = size(B,2);
+0032 Ny = size(C,1);
+0033 Nf = size(freqs,1);
+0034 NTFs = Nu*Ny;
+0035 
+0036 [slap,shp,ifrq] = <a href="../../STAS-WPP/STAS-Utilities/eigVal_silent.html" class="code" title="function [slap,shp,ifrq] = eigVal_silent (A)">eigVal_silent</a> (A);
+0037 
+0038 <span class="comment">% Diagonalize.</span>
+0039 Phim = shp(:,ifrq);
+0040 Psim = inv(Phim);
+0041 
+0042 <span class="comment">% Some of the very closely spaced eigenfrequencies may lie out of order.</span>
+0043 <span class="comment">% This causes problems when I assume that conjugate modes are mirrored</span>
+0044 <span class="comment">% in the sorted mode shape matrix.  The solution is to force complex</span>
+0045 <span class="comment">% conjugacy by copying half the complex mode shapes and eigenvalues to</span>
+0046 <span class="comment">% the other half.  This is done in the 'for' loop below.</span>
+0047 iY = speye(Nx);
+0048 Nosc = 0;
+0049 <span class="keyword">for</span> im1 = 1:floor(Nx/2)
+0050 
+0051    imn = Nx - (im1-1);
+0052 
+0053    <span class="keyword">if</span> (abs(imag(slap(im1))) &gt; 0)
+0054       Nosc = Nosc + 1;
+0055       Phim(:,imn) = conj(Phim(:,im1));
+0056       Psim(imn,:) = conj(Psim(im1,:));
+0057       slap(imn) = conj(slap(im1));
+0058       <span class="keyword">if</span> (Yflg == 1)
+0059          iY([im1 imn],[im1 imn]) = [1 1;-i i];
+0060       <span class="keyword">end</span>
+0061    <span class="keyword">end</span>
+0062 
+0063 <span class="keyword">end</span>
+0064 Nexp = Nx - 2*Nosc;
+0065 Nmds = Nosc + Nexp;
+0066 
+0067 ii = [1:Nx].';
+0068 jj = ii;
+0069 PAP = sparse (ii,jj,slap,Nx,Nx);  <span class="comment">% = Psim*A*Phim.</span>
+0070 PB = Psim*B;
+0071 CP = C*Phim;
+0072 
+0073 <span class="comment">% Evaluate the mode-by-mode TFs at the specified frequencies.</span>
+0074 <span class="keyword">for</span> ifreq = 1:Nf
+0075 
+0076    f = freqs(ifreq);
+0077    w = 2*pi*f;
+0078 
+0079    <span class="comment">% Disturbances-to-states.</span>
+0080    iwslap = i*w - slap.';
+0081 
+0082    <span class="keyword">for</span> jinp = 1:Nu
+0083       <span class="keyword">for</span> jout = 1:Ny
+0084          icn = Nx*(jout-1) + Nx*Ny*(jinp-1);
+0085          Hmod(ifreq,icn+[1:Nx]) = CP(jout,:).*(PB(:,jinp).')./iwslap;
+0086       <span class="keyword">end</span>
+0087    <span class="keyword">end</span>
+0088 
+0089 <span class="keyword">end</span>
+0090 
+0091 H = zeros (Nf,NTFs);
+0092 <span class="keyword">for</span> itf = 1:NTFs
+0093    icn = Nx*(itf-1);
+0094    H(:,itf) = sum(Hmod(:,icn+[1:Nx]),2);
+0095 <span class="keyword">end</span>
+0096 
+0097 Hmag = abs(H);
+0098 Hang = atan2(imag(H),real(H))/pi;
+0099 
+0100 <span class="comment">% Compute projections.  Use the max error in the projection over freqs</span>
+0101 <span class="comment">% as a metric.</span>
+0102 proj = zeros(Nf,NTFs*Nmds);
+0103 <span class="keyword">for</span> itf = 1:NTFs
+0104 
+0105    icr = Nx*(itf-1);
+0106    icn = Nmds*(itf-1);
+0107    hvec = H(:,itf)./(conj(H(:,itf)).*H(:,itf));
+0108 
+0109    proj(:,icn+[1:Nosc]) = (conj(Hmod(:,icr+[1:Nosc]))             <span class="keyword">...</span>
+0110                         +  conj(Hmod(:,icr+[Nx:-1:Nx-Nosc+1]))).*hvec;
+0111    proj(:,icn+Nosc+[1:Nexp]) = conj(Hmod(:,icr+Nosc+[1:Nexp])).*hvec;
+0112 
+0113 <span class="keyword">end</span>
+0114 
+0115 pval = zeros(Nf,NTFs*Nmds);
+0116 sindx = zeros(Nf,NTFs*Nmds);
+0117 <span class="keyword">for</span> itf = 1:NTFs
+0118    icn = Nmds*(itf-1);
+0119 <span class="comment">% Projections aligned with the full TF.</span>
+0120 <span class="comment">%   [pval(:,icn+[1:Nmds]),sindx(:,icn+[1:Nmds])] = ...</span>
+0121 <span class="comment">%                       sort (abs(real(proj(:,icn+[1:Nmds]))),2,'descend');</span>
+0122 <span class="comment">% Magnitude, both aligned and orthogonal components.</span>
+0123    [pval(:,icn+[1:Nmds]),sindx(:,icn+[1:Nmds])] = <span class="keyword">...</span>
+0124                        sort (abs(proj(:,icn+[1:Nmds])),2,<span class="string">'descend'</span>);
+0125 
+0126    <span class="keyword">for</span> ifreq = 1:Nf
+0127       pval(ifreq,icn+[1:Nmds]) = proj(ifreq,icn+sindx(ifreq,icn+[1:Nmds]));
+0128    <span class="keyword">end</span>
+0129 <span class="keyword">end</span>
+0130 
+0131 pcum = zeros(Nf,NTFs*Nmds);
+0132 <span class="keyword">for</span> itf = 1:NTFs
+0133 
+0134    icn = Nmds*(itf-1);
+0135 
+0136    pcum(:,icn+1) = pval(:,icn+1);
+0137    <span class="keyword">for</span> imd = 2:Nmds
+0138       pcum(:,icn+imd) = pcum(:,icn+imd-1) + pval(:,icn+imd);
+0139    <span class="keyword">end</span>
+0140 
+0141 <span class="keyword">end</span>
+0142 
+0143 mlist = sindx(abs(pval) &gt;= tol);
+0144 [mls, inds] = sort(mlist);
+0145 mls = mls(mls &gt; 0);
+0146 Nmls = size(mls,1);
+0147 
+0148 ml = zeros(Nmls,1);
+0149 kk = 0;
+0150 prev = 0;
+0151 <span class="keyword">for</span> jj = 1:Nmls
+0152    <span class="keyword">if</span> (mls(jj) ~= prev)
+0153       kk = kk + 1;
+0154       ml(kk) = mls(jj);
+0155       prev = ml(kk);
+0156    <span class="keyword">end</span>
+0157 <span class="keyword">end</span>
+0158 
+0159 ml = ml(ml &gt; 0);
+0160 Nml = size(ml,1);
+0161 
+0162 <span class="comment">% Get the full set of indices (+ and - frequencies).</span>
+0163 mlf = zeros(2*Nml,1);
+0164 kk = 0;
+0165 <span class="keyword">for</span> jj = 1:Nml
+0166    <span class="keyword">if</span> (ml(jj) &lt;= Nosc)
+0167       kk = kk + 1;
+0168       mlf(kk) = ml(jj);
+0169       kk = kk + 1;
+0170       mlf(kk) = Nx - ml(jj) + 1;
+0171    <span class="keyword">else</span>
+0172       kk = kk + 1;
+0173       mlf(kk) = ml(jj);
+0174    <span class="keyword">end</span>
+0175 <span class="keyword">end</span>
+0176 
+0177 [mlf,indm] = sort (mlf);
+0178 mlf = mlf(mlf &gt; 0);
+0179 Nxi = size(mlf,1);
+0180 
+0181 Am = sparse (diag(slap(mlf)));
+0182 Bm = PB(mlf,:);
+0183 Cm = CP(:,mlf);
+0184 
+0185 <span class="keyword">if</span> (Yflg == 1)
+0186 
+0187    <span class="comment">% Perform the Y transform to get real matrices.</span>
+0188    iYY = iY(mlf,mlf);
+0189    YY = inv(iYY);
+0190    Am = real(iYY*Am*YY);
+0191    Bm = real(iYY*Bm);
+0192    Cm = real(Cm*YY);
+0193 
+0194 <span class="keyword">end</span>
+0195 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

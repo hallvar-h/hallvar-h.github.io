@@ -1,0 +1,487 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of generateCpCtTables</title>
+  <meta name="keywords" content="generateCpCtTables">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Main</a> &gt; generateCpCtTables.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Main&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>generateCpCtTables
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 clear;
+0002 
+0003 <span class="comment">%nm = 'Tjaereborg';</span>
+0004 <span class="comment">%lams = exp(linspace (log(2),log(45),50)).';</span>
+0005 <span class="comment">%bets = (pi/180)*[-5:45].';</span>
+0006 <span class="comment">%W = 2.5;</span>
+0007 
+0008 nm = <span class="string">'DTU10MW'</span>;
+0009 lams = [0.1 [0.2:0.2:1] 1.2 1.5 [2:1:10] [12:2:20]].';
+0010 bets = (pi/180)*[[-4:2:18] 21 [25:5:90]].';
+0011 W = 1;
+0012 
+0013 <span class="comment">%lams = 10;</span>
+0014 <span class="comment">%bets = (pi/180)*90;</span>
+0015 
+0016 Nl = size (lams,1);
+0017 Nb = size (bets,1);
+0018 
+0019 eval([<span class="string">'[s,a] = STASTurbine_'</span> nm <span class="string">' ();'</span>]);
+0020 load <span class="string">'LTMnorms.txt'</span>
+0021 length  = LTMnorms(1);
+0022 time    = LTMnorms(2);
+0023 mass    = LTMnorms(3);
+0024 current = LTMnorms(4);
+0025 power   = mass*(length^2)/(time^3);
+0026 voltage = sqrt(power);
+0027 velocity = length/time;
+0028 mass   = power*(time^3)/(length^2);
+0029 force  = mass*length/(time^2);
+0030 stress = force/(length^2);
+0031 ndens  = mass/(length^3);
+0032 nvisc  = mass/(length*time);
+0033 stiffness = force/length;
+0034 damping = force*time/length;
+0035 resistance = voltage/current;
+0036 <a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> = voltage*time/current;
+0037 capacitance = current*time/voltage;
+0038 flux   = voltage*time;
+0039 
+0040 dens = 1.225                           / ndens;
+0041 visc = 1.789e-5                        / nvisc;
+0042 
+0043 psiFlag = 1;
+0044 
+0045 Nel = a.Nb*a.Neb;
+0046 
+0047 i2a = [1:2:2*Nel-1].';
+0048 i2b = [2:2:2*Nel].';
+0049 i3a = [1:3:3*Nel-2].';
+0050 i3b = [2:3:3*Nel-1].';
+0051 i3c = [3:3:3*Nel].';
+0052 i6a = [1:6:6*Nel-5].';
+0053 i6b = [2:6:6*Nel-4].';
+0054 i6c = [3:6:6*Nel-3].';
+0055 i6d = [4:6:6*Nel-2].';
+0056 i6e = [5:6:6*Nel-1].';
+0057 i6f = [6:6:6*Nel].';
+0058 i7a = [1:7:7*Nel-6].';
+0059 i7b = [2:7:7*Nel-5].';
+0060 i7c = [3:7:7*Nel-4].';
+0061 i7d = [4:7:7*Nel-3].';
+0062 i7e = [5:7:7*Nel-2].';
+0063 i7f = [6:7:7*Nel-1].';
+0064 i7g = [7:7:7*Nel].';
+0065 
+0066 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0067 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0068 
+0069 Pin = <a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0070 
+0071 [qB0,Pn0_B,Ts0_B,TB0_g] = <span class="keyword">...</span>
+0072          <a href="../../STAS-WPP/STAS-Aeroelastic/undeformedPosition.html" class="code" title="function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm)">undeformedPosition</a> (Pin,0,s.nacelle.delta,0,s.driveshaft.phi,[0;0;0],0, <span class="keyword">...</span>
+0073                              idofs,idofm,inods,inodm);
+0074 
+0075 t0 = 0;
+0076 Psi0 = 0;  <span class="comment">% Must be zero here.</span>
+0077 
+0078 <span class="comment">% Ignore structural pitch.</span>
+0079 Tas = [0  0 -1; <span class="keyword">...</span>
+0080       -1  0  0; <span class="keyword">...</span>
+0081        0  1  0];
+0082 
+0083 Trg = Tn_y;  <span class="comment">% In this simplified case...</span>
+0084 
+0085 Tsp = zeros(3,3*Nel);
+0086 Tar = zeros(3,3*Nel);
+0087 Tpp0 = zeros(3,3*3);
+0088 Tp0g = zeros(3,3*3);
+0089 <span class="keyword">for</span> ibod = 5:7
+0090 
+0091    jb3 = 3*(ibod-5);
+0092 
+0093    <span class="keyword">if</span> (ibod == 5)
+0094       idref = idofs(6);
+0095       Neb   = s.blade(1).Nel;
+0096       conns = s.blade(1).conn;
+0097    <span class="keyword">elseif</span> (ibod == 6)
+0098       idref = idofs(7);
+0099       Neb   = s.blade(2).Nel;
+0100       conns = s.blade(2).conn;
+0101    <span class="keyword">elseif</span> (ibod == 7)
+0102       idref = idofs(8);
+0103       Neb   = s.blade(3).Nel;
+0104       conns = s.blade(3).conn;
+0105    <span class="keyword">end</span>
+0106 
+0107    qB = qB0(idref+[1:6]);
+0108    PB = Pn0_B(idref+[1:6]);
+0109 
+0110    Tpp0(:,jb3+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qB(4:6));
+0111    Tp0g(:,jb3+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(4:6));
+0112 
+0113    ic3n = 3*Neb*(ibod-5);
+0114 
+0115    <span class="keyword">for</span> iel = 1:Neb
+0116 
+0117       ic12 = 12*(iel-1);
+0118       ic3  =  3*(iel-1);
+0119 
+0120       conn  = conns(:,iel);
+0121       rdof  = idref + 6*(conn(1)-1);
+0122       n1dof = idref + 6*(conn(2)-1);
+0123       n2dof = idref + 6*(conn(3)-1);
+0124 
+0125       qn1 = qB0(n1dof+[1:6]);
+0126       qn2 = qB0(n2dof+[1:6]);
+0127       Pn1 = Pn0_B(n1dof+[1:6]);
+0128       Pn2 = Pn0_B(n2dof+[1:6]);
+0129 
+0130       <span class="keyword">if</span> (n1dof == rdof)
+0131 
+0132          qn1 = zeros(6,1);
+0133          Pn1(1:3) = zeros(3,1);
+0134 
+0135          <span class="comment">% Give the reference node the same undeformed orientation</span>
+0136          <span class="comment">% as the second node.</span>
+0137          Pn1(4:6) = Pn0_B(n1dof+6+[4:6]);  
+0138 
+0139       <span class="keyword">end</span>
+0140 
+0141       [xe,Tsp(:,ic3n+ic3+[1:3])] = <a href="../../STAS-WPP/STAS-Aeroelastic/elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0142 
+0143       Tar(:,ic3n+ic3+[1:3]) = (Trg.')*Tp0g(:,jb3+[1:3])*Tpp0(:,jb3+[1:3]) <span class="keyword">...</span>
+0144                             * Tsp(:,ic3n+ic3+[1:3])*Tas;
+0145 
+0146    <span class="keyword">end</span>
+0147 
+0148 <span class="keyword">end</span>
+0149 
+0150 xer = zeros(3*Nel,1);
+0151 Lep = zeros(Nel,1);
+0152 xnr = zeros(3*(Nel+a.Nb),1);
+0153 xhg = <a href="../../STAS-WPP/STAS-Aeroelastic/globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a> (qB0(idofs(4)+[1:6]),Pn0_B(idofs(4)+[1:6]), <span class="keyword">...</span>
+0154                       qB0(idofm(6)-6+[1:6]),Pn0_B(idofm(6)-6+[1:6]));
+0155 Dia = 0;
+0156 <span class="keyword">for</span> ib = 1:a.Nb
+0157 
+0158    ine = 3*a.Neb*(ib-1);
+0159    inn = 3*(a.Neb+1)*(ib-1);
+0160 
+0161    qB = qB0(idofs(5+ib)+[1:6]);
+0162    PB = Pn0_B(idofs(5+ib)+[1:6]);
+0163 
+0164    <span class="keyword">for</span> ieb = 1:a.Neb
+0165    
+0166       i6 = 6*(ieb-1);
+0167       i3 = 3*(ieb-1);
+0168 
+0169       qn2 = qB0(idofs(5+ib)+i6+[7:12]);
+0170       Pn2 = Pn0_B(idofs(5+ib)+i6+[7:12]);
+0171    
+0172       <span class="keyword">if</span> (ieb == 1)
+0173          qn1 = zeros(6,1);
+0174          Pn1 = zeros(6,1);
+0175          Pn1(4:6) = Pn2(4:6);   
+0176       <span class="keyword">else</span>
+0177          qn1 = qB0(idofs(5+ib)+i6+[1:6]);
+0178          Pn1 = Pn0_B(idofs(5+ib)+i6+[1:6]);
+0179       <span class="keyword">end</span>
+0180 
+0181       xg1 = <a href="../../STAS-WPP/STAS-Aeroelastic/globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a> (qB,PB,qn1,Pn1);
+0182       xg2 = <a href="../../STAS-WPP/STAS-Aeroelastic/globalPosition.html" class="code" title="function xng = globalPosition (qB,PB,qn,Pn)">globalPosition</a> (qB,PB,qn2,Pn2);
+0183       xge = 0.5*(xg2 + xg1);
+0184 
+0185       xer(ine+i3+[1:3]) = (Trg.')*(xge - xhg);
+0186 
+0187       <span class="keyword">if</span> (ieb == 1)
+0188          xnr(inn+[1:3]) = (Trg.')*(xg1 - xhg);
+0189       <span class="keyword">end</span>
+0190       xnr(inn+i3+[4:6]) = (Trg.')*(xg2 - xhg);
+0191 
+0192       Lep(a.Neb*(ib-1)+ieb) = sqrt((xnr(inn+i3+4) - xnr(inn+i3+1)).^2 <span class="keyword">...</span>
+0193                             +      (xnr(inn+i3+5) - xnr(inn+i3+2)).^2);
+0194 
+0195    <span class="keyword">end</span>
+0196 
+0197    val = sqrt(xnr(inn+3*(a.Neb-1)+4).^2 + xnr(inn+3*(a.Neb-1)+5).^2);
+0198    Dia = Dia + val;
+0199 
+0200 <span class="keyword">end</span>
+0201 
+0202 Dia = 2*Dia/3;
+0203 Area = (pi/4)*(Dia^2);
+0204 
+0205 zr = zeros(2*Nel,1);
+0206 zr(i2a) = xer(i3a);
+0207 zr(i2b) = xer(i3b);
+0208 
+0209 rs = zr(i2a);
+0210 r = [rs(1:Neb);rs(1:Neb);rs(1:Neb)];
+0211 
+0212 <span class="comment">%del = eps^0.5;</span>
+0213 dell = 1e-2; <span class="comment">% 1e-1;</span>
+0214 delb = 1e-2;
+0215 
+0216 ify = [2:6:6*Nel-4].';
+0217 ifz = [3:6:6*Nel-3].';
+0218 fid = fopen ([<span class="string">'cpct_'</span> nm <span class="string">'.txt'</span>],<span class="string">'w'</span>);
+0219 <span class="keyword">for</span> il = 1:Nl
+0220 
+0221 <span class="comment">%lam = 11.12014;</span>
+0222 <span class="comment">%bet3 = 0.06981317*[1;1;1];</span>
+0223 
+0224    lam = lams(il);
+0225    Vinf = (0.5*Dia*W/lam)*ones(Nel,1);
+0226 
+0227    <span class="keyword">for</span> ib = 1:Nb
+0228 
+0229       bet3 = [bets(ib);bets(ib);bets(ib)];
+0230 
+0231       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =             <span class="keyword">...</span>
+0232                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinf,W,Psi0,bet3,a.xia, <span class="keyword">...</span>
+0233                                      Dia,r,a.Lel,a.chord,a.xpc,    <span class="keyword">...</span>
+0234                                      a.aoas,a.kfoils,a.foilwt,     <span class="keyword">...</span>
+0235                                      dens,visc);
+0236       Fz = -Fap(ify)*sin(bet3(1)) + Fap(ifz)*cos(bet3(1));
+0237       Ft =  Fap(ify)*cos(bet3(1)) + Fap(ifz)*sin(bet3(1));
+0238       Thrust = sum(Fz);
+0239       Torq   = sum(r.*Ft);
+0240       Pow    = W*Torq;
+0241       Cpb = Pow/(0.5*dens*Area*(Vinf(1)^3));
+0242       Ctb = Thrust/(0.5*dens*Area*(Vinf(1)^2));
+0243 
+0244       beth = bet3 + delb;
+0245       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =             <span class="keyword">...</span>
+0246                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinf,W,Psi0,beth,a.xia, <span class="keyword">...</span>
+0247                                      Dia,r,a.Lel,a.chord,a.xpc,    <span class="keyword">...</span>
+0248                                      a.aoas,a.kfoils,a.foilwt,     <span class="keyword">...</span>
+0249                                      dens,visc);
+0250       Fz = -Fap(ify)*sin(beth(1)) + Fap(ifz)*cos(beth(1));
+0251       Ft =  Fap(ify)*cos(beth(1)) + Fap(ifz)*sin(beth(1));
+0252       Thrust = sum(Fz);
+0253       Torq   = sum(r.*Ft);
+0254       Pow    = W*Torq;
+0255       Cpbh = Pow/(0.5*dens*Area*(Vinf(1)^3));
+0256       Ctbh = Thrust/(0.5*dens*Area*(Vinf(1)^2));
+0257       betl = bet3 - delb;
+0258       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =             <span class="keyword">...</span>
+0259                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinf,W,Psi0,betl,a.xia, <span class="keyword">...</span>
+0260                                      Dia,r,a.Lel,a.chord,a.xpc,    <span class="keyword">...</span>
+0261                                      a.aoas,a.kfoils,a.foilwt,     <span class="keyword">...</span>
+0262                                      dens,visc);
+0263       Fz = -Fap(ify)*sin(betl(1)) + Fap(ifz)*cos(betl(1));
+0264       Ft =  Fap(ify)*cos(betl(1)) + Fap(ifz)*sin(betl(1));
+0265       Thrust = sum(Fz);
+0266       Torq   = sum(r.*Ft);
+0267       Pow    = W*Torq;
+0268       Cpbl = Pow/(0.5*dens*Area*(Vinf(1)^3));
+0269       Ctbl = Thrust/(0.5*dens*Area*(Vinf(1)^2));
+0270 
+0271       dCpdb = (Cpbh-Cpbl)/(2*delb);
+0272       dCtdb = (Ctbh-Ctbl)/(2*delb);
+0273 
+0274       lamh = lam + dell;
+0275       Vinfh = (0.5*Dia*W/lamh)*ones(Nel,1);
+0276       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0277                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfh,W,Psi0,bet3,a.xia, <span class="keyword">...</span>
+0278                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0279                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0280                                      dens,visc);
+0281       Fz = -Fap(ify)*sin(bet3(1)) + Fap(ifz)*cos(bet3(1));
+0282       Ft =  Fap(ify)*cos(bet3(1)) + Fap(ifz)*sin(bet3(1));
+0283       Thrust = sum(Fz);
+0284       Torq   = sum(r.*Ft);
+0285       Pow    = W*Torq;
+0286       Cplh = Pow/(0.5*dens*Area*(Vinfh(1)^3));
+0287       Ctlh = Thrust/(0.5*dens*Area*(Vinfh(1)^2));
+0288       laml = lam - dell;
+0289       Vinfl = (0.5*Dia*W/laml)*ones(Nel,1);
+0290       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0291                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfl,W,Psi0,bet3,a.xia, <span class="keyword">...</span>
+0292                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0293                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0294                                      dens,visc);
+0295       Fz = -Fap(ify)*sin(bet3(1)) + Fap(ifz)*cos(bet3(1));
+0296       Ft =  Fap(ify)*cos(bet3(1)) + Fap(ifz)*sin(bet3(1));
+0297       Thrust = sum(Fz);
+0298       Torq   = sum(r.*Ft);
+0299       Pow    = W*Torq;
+0300       Cpll = Pow/(0.5*dens*Area*(Vinfl(1)^3));
+0301       Ctll = Thrust/(0.5*dens*Area*(Vinfl(1)^2));
+0302 
+0303       dCpdl = (Cplh-Cpll)/(2*dell);
+0304       dCtdl = (Ctlh-Ctll)/(2*dell);
+0305 
+0306       beth = bet3 + delb;
+0307       betl = bet3 - delb;
+0308       lamh = lam + dell;
+0309       laml = lam - dell;
+0310       Vinfh = (0.5*Dia*W/lamh)*ones(Nel,1);
+0311       Vinfl = (0.5*Dia*W/laml)*ones(Nel,1);
+0312 
+0313       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0314                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfh,W,Psi0,beth,a.xia, <span class="keyword">...</span>
+0315                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0316                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0317                                      dens,visc);
+0318       Fz = -Fap(ify)*sin(beth(1)) + Fap(ifz)*cos(beth(1));
+0319       Ft =  Fap(ify)*cos(beth(1)) + Fap(ifz)*sin(beth(1));
+0320       Thrust = sum(Fz);
+0321       Torq   = sum(r.*Ft);
+0322       Pow    = W*Torq;
+0323       Cphh = Pow/(0.5*dens*Area*(Vinfh(1)^3));
+0324       Cthh = Thrust/(0.5*dens*Area*(Vinfh(1)^2));
+0325 
+0326       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0327                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfh,W,Psi0,betl,a.xia, <span class="keyword">...</span>
+0328                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0329                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0330                                      dens,visc);
+0331       Fz = -Fap(ify)*sin(betl(1)) + Fap(ifz)*cos(betl(1));
+0332       Ft =  Fap(ify)*cos(betl(1)) + Fap(ifz)*sin(betl(1));
+0333       Thrust = sum(Fz);
+0334       Torq   = sum(r.*Ft);
+0335       Pow    = W*Torq;
+0336       Cphl = Pow/(0.5*dens*Area*(Vinfh(1)^3));
+0337       Cthl = Thrust/(0.5*dens*Area*(Vinfh(1)^2)); 
+0338 
+0339       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0340                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfl,W,Psi0,beth,a.xia, <span class="keyword">...</span>
+0341                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0342                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0343                                      dens,visc);
+0344       Fz = -Fap(ify)*sin(beth(1)) + Fap(ifz)*cos(beth(1));
+0345       Ft =  Fap(ify)*cos(beth(1)) + Fap(ifz)*sin(beth(1));
+0346       Thrust = sum(Fz);
+0347       Torq   = sum(r.*Ft);
+0348       Pow    = W*Torq;
+0349       Cplh = Pow/(0.5*dens*Area*(Vinfl(1)^3));
+0350       Ctlh = Thrust/(0.5*dens*Area*(Vinfl(1)^2));
+0351 
+0352       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0353                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfl,W,Psi0,betl,a.xia, <span class="keyword">...</span>
+0354                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0355                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0356                                      dens,visc);
+0357       Fz = -Fap(ify)*sin(betl(1)) + Fap(ifz)*cos(betl(1));
+0358       Ft =  Fap(ify)*cos(betl(1)) + Fap(ifz)*sin(betl(1));
+0359       Thrust = sum(Fz);
+0360       Torq   = sum(r.*Ft);
+0361       Pow    = W*Torq;
+0362       Cpll = Pow/(0.5*dens*Area*(Vinfl(1)^3));
+0363       Ctll = Thrust/(0.5*dens*Area*(Vinfl(1)^2));
+0364 
+0365       d2Cp = (Cphh - Cphl - Cplh + Cpll)/(4*dell*delb);
+0366       d2Ct = (Cthh - Cthl - Ctlh + Ctll)/(4*dell*delb);
+0367 
+0368 
+0369       fprintf (fid,<span class="string">'%+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e\n'</span>, <span class="keyword">...</span>
+0370                lam,bet3(1),Cpb,dCpdl,dCpdb,d2Cp,Ctb,dCtdl,dCtdb,d2Ct);
+0371 
+0372 printf (<span class="string">'%10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f %10.4f\n'</span>, <span class="keyword">...</span>
+0373         lam,bet3(1),Cpb,dCpdl,dCpdb,d2Cp,Ctb,dCtdl,dCtdb,d2Ct);
+0374 
+0375 <span class="comment">%{</span>
+0376 
+0377 <span class="comment">% Numerically unstable derivatives at certain conditions, likely a result of fsolve () in speedyBEM2.</span>
+0378 
+0379       betc = bet3 + i*del;
+0380       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =             <span class="keyword">...</span>
+0381                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinf,W,Psi0,betc,a.xia, <span class="keyword">...</span>
+0382                                      Dia,r,a.Lel,a.chord,a.xpc,    <span class="keyword">...</span>
+0383                                      a.aoas,a.kfoils,a.foilwt,     <span class="keyword">...</span>
+0384                                      dens,visc);
+0385       Fz = -Fap(ify)*sin(betc(1)) + Fap(ifz)*cos(betc(1));
+0386       Ft =  Fap(ify)*cos(betc(1)) + Fap(ifz)*sin(betc(1));
+0387       Thrust = sum(Fz);
+0388       Torq   = sum(r.*Ft);
+0389       Pow    = W*Torq;
+0390       Cpb = Pow/(0.5*dens*Area*(Vinf(1)^3));
+0391       Ctb = Thrust/(0.5*dens*Area*(Vinf(1)^2));
+0392 
+0393       lamc = lam + i*del;
+0394       Vinfc = (0.5*Dia*W/lamc)*ones(Nel,1);
+0395       [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =              <span class="keyword">...</span>
+0396                          <a href="speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a> (a.Neb,Vinfc,W,Psi0,bet3,a.xia, <span class="keyword">...</span>
+0397                                      Dia,r,a.Lel,a.chord,a.xpc,     <span class="keyword">...</span>
+0398                                      a.aoas,a.kfoils,a.foilwt,      <span class="keyword">...</span>
+0399                                      dens,visc);
+0400       Fz = -Fap(ify)*sin(bet3(1)) + Fap(ifz)*cos(bet3(1));
+0401       Ft =  Fap(ify)*cos(bet3(1)) + Fap(ifz)*sin(bet3(1));
+0402       Thrust = sum(Fz);
+0403       Torq   = sum(r.*Ft);
+0404       Pow    = W*Torq;
+0405       Cpl = Pow/(0.5*dens*Area*(Vinfc(1)^3));
+0406       Ctl = Thrust/(0.5*dens*Area*(Vinfc(1)^2));
+0407 
+0408       fprintf (fid,<span class="string">'%+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e %+5.6e\n'</span>, <span class="keyword">...</span>
+0409                lam,bet3(1),real(Cpb),imag(Cpl)/del,imag(Cpb)/del,               <span class="keyword">...</span>
+0410                            real(Ctb),imag(Ctl)/del,imag(Ctb)/del);
+0411 
+0412 <span class="comment">%printf ('%12.4f %12.4f %12.4f %12.4f\n',lam,bet3(1),real(Cpb),real(Ctb));</span>
+0413 printf (<span class="string">'%12.4f %12.4f %12.4f %12.4f %12.4f\n'</span>,lam,bet3(1),real(Cpb),imag(Cpl)/del,imag(Cpb)/del);
+0414 
+0415 <span class="comment">%}</span>
+0416 
+0417 
+0418 fflush(stdout);
+0419 
+0420 <span class="comment">%return</span>
+0421 
+0422    <span class="keyword">end</span>
+0423 
+0424 
+0425 <span class="keyword">end</span>
+0426 
+0427 fclose(<span class="string">'all'</span>);
+0428 
+0429 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of RSC</title>
+  <meta name="keywords" content="RSC">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Control</a> &gt; RSC.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Control&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>RSC
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Implement a rotor speed control function across the operating
+ envelope.
+
+   States:              y vector:             u vector:
+   Wm      1            bhat                  W
+   betm    2            Pehat                 bet
+   PsiWb   3                                  V
+   Pf      4                                  Pc
+   Pehat   5
+   ntw    6,7
+   ntb    8,9
+   blp    10
+
+ Version:        Changes:
+ --------        -------------
+ 28.01.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 28.01.2019      Derivatives verified by finite difference.  Tested
+                 the response to step functions and white noise.
+
+ Inputs:
+ -------
+ 
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a>	Utilize Matlab/Octave spline interpolation capability.  "tab" is then</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Implement a rotor speed control function across the operating</span>
+0004 <span class="comment">% envelope.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   States:              y vector:             u vector:</span>
+0007 <span class="comment">%   Wm      1            bhat                  W</span>
+0008 <span class="comment">%   betm    2            Pehat                 bet</span>
+0009 <span class="comment">%   PsiWb   3                                  V</span>
+0010 <span class="comment">%   Pf      4                                  Pc</span>
+0011 <span class="comment">%   Pehat   5</span>
+0012 <span class="comment">%   ntw    6,7</span>
+0013 <span class="comment">%   ntb    8,9</span>
+0014 <span class="comment">%   blp    10</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Changes:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 28.01.2019      Original code.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Version:        Verification:</span>
+0021 <span class="comment">% --------        -------------</span>
+0022 <span class="comment">% 28.01.2019      Derivatives verified by finite difference.  Tested</span>
+0023 <span class="comment">%                 the response to step functions and white noise.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Inputs:</span>
+0026 <span class="comment">% -------</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">%</span>
+0032 
+0033 Nx = size(x,1);
+0034 Ny = 2;
+0035 Nu = size(u,1);
+0036 
+0037 A = zeros(Nx,Nx);
+0038 B = zeros(Nx,Nu);
+0039 C = zeros(Ny,Nx);
+0040 D = zeros(Ny,Nu);
+0041 
+0042 Wm    = x(1);
+0043 betm  = x(2);
+0044 PsiWb = x(3);
+0045 Pf    = x(4);
+0046 Pehat = x(5);
+0047 ntw   = x(6:7);
+0048 ntb   = x(8:9);
+0049 blp   = x(10);
+0050 W     = u(1);
+0051 bet   = u(2);
+0052 V     = u(3);
+0053 Pc    = u(4);
+0054 aW    = p(1);
+0055 ab    = p(2);
+0056 a1    = p(3);
+0057 a2    = p(4);
+0058 Pr    = p(5);
+0059 fcd   = p(6);
+0060 Wr    = p(7);
+0061 anw   = p(8);
+0062 z1nw  = p(9);
+0063 z2nw  = p(10);
+0064 anb   = p(11);
+0065 z1nb  = p(12);
+0066 z2nb  = p(13);
+0067 ablp  = p(14);
+0068 
+0069 Wcd   = fcd*Wr;
+0070 
+0071 aw2   = anw^2;
+0072 tz2aw = 2*z2nw*anw;
+0073 tzzaw = 2*(z1nw-z2nw)*anw;
+0074 ab2   = anb^2;
+0075 tz2ab = 2*z2nb*anb;
+0076 tzzab = 2*(z1nb-z2nb)*anb;
+0077 
+0078 KpbTab = KTables(1);
+0079 KibTab = KTables(2);
+0080 KdbTab = KTables(3);
+0081 
+0082 dxdt = zeros(Nx,1);
+0083 
+0084 dxdt(1) = -aW*Wm + aW*W;
+0085 dxdt(2) = -ab*betm + ab*bet;
+0086 
+0087 A(1,:) = [-aW, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+0088 A(2,:) = [0, -ab, 0, 0, 0, 0, 0, 0, 0, 0];
+0089 
+0090 B(1,:) = [aW, 0, 0, 0];
+0091 B(2,:) = [0, ab, 0, 0];
+0092 
+0093 dxdt(6) = ntw(2);
+0094 dxdt(7) = -aw2*ntw(1) - tz2aw*ntw(2) + Wm;
+0095 dxdt(8) = ntb(2);
+0096 dxdt(9) = -ab2*ntb(1) - tz2ab*ntb(2) + betm;
+0097 
+0098 Wfilt = tzzaw*ntw(2) + Wm;
+0099 dWfdt = tzzaw*dxdt(7) + dxdt(1);
+0100 bfilt = tzzab*ntb(2) + betm;
+0101 dbfdt = tzzab*dxdt(9) + dxdt(2);
+0102 
+0103 dWfdx = [1, 0, 0, 0, 0, 0, tzzaw, 0, 0, 0];
+0104 ddWfdx = [-aW+tzzaw, 0, 0, 0, 0, -tzzaw*aw2, -tzzaw*tz2aw, 0, 0, 0];
+0105 ddWfdu = [aW, 0, 0, 0];
+0106 
+0107 dbfdx = [0, 1, 0, 0, 0, 0, 0, 0, tzzab, 0];
+0108 ddbfdx = [0, -ab+tzzab, 0, 0, 0, 0, 0, -tzzab*ab2, -tzzab*tz2ab, 0];
+0109 ddbfdu = [0, ab, 0, 0];
+0110 
+0111 A(6,:) = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0];
+0112 A(7,:) = [1, 0, 0, 0, 0, -aw2, -tz2aw, 0, 0, 0];
+0113 A(8,:) = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0];
+0114 A(9,:) = [0, 1, 0, 0, 0, 0, 0, -ab2, -tz2ab, 0];
+0115 
+0116 [bmin,dbdV] = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (V,bminTab);   <span class="comment">% Maybe VLP?</span>
+0117 bmax = pi/2;
+0118 bcen = 0.5*(bmax + bmin);
+0119 
+0120 [Kpb,dKpb]  = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (bfilt,KpbTab);
+0121 [Kib,dKib]  = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (bfilt,KibTab);
+0122 [Kdb,dKdb]  = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (bfilt,KdbTab);
+0123 
+0124 <span class="comment">% Solve for the transition speed as a function of the power, based</span>
+0125 <span class="comment">% on the curve of power as a function of speed.</span>
+0126 [Wt,dWtdP] = <a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a> (@(W) <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (W,WPTab),Pc,0.8,eps,50,ones(50,1),50);
+0127 
+0128 <span class="comment">% Find the target speed for curtailed operation as a function of the</span>
+0129 <span class="comment">% observed windspeed.</span>
+0130 <span class="keyword">if</span> (real(Wt) &gt;= real(Wcd))
+0131    What = Wr;
+0132    dWhdV = 0;
+0133    dWhdP = 0;
+0134 <span class="keyword">else</span>
+0135    [What0,dWh0dV] = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (V,WVTab);
+0136    Wmax = 2*Wr;      <span class="comment">% Arbitrary, should be &gt; Wr by some reasonable amount.</span>
+0137    Wmin = Wt/fcd;    <span class="comment">% A bit over the trans. speed, and by the definition Wcd = fcd*Wr</span>
+0138                      <span class="comment">% this will be continuous with the other part of the &quot;if&quot;.</span>
+0139    Wcen = 0.5*(Wmax + Wmin);
+0140    WmWc = Wmax - Wcen;
+0141    Wnorm = (What0 - Wcen)/WmWc;
+0142    [Wns,dWns,d2Wns] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> (Wnorm,[0.99;1.01]);
+0143    What = WmWc*Wns + Wcen;
+0144    dWndWc = -(1/WmWc) + (What0 - Wcen)/(WmWc^2);
+0145    dWhdV = dWns*dWh0dV;
+0146    dWhdP = 0.5*WmWc*dWns*dWndWc*dWtdP/fcd <span class="keyword">...</span>
+0147          + 0.5*(1 - Wns)*dWtdP/fcd;
+0148 
+0149 <span class="keyword">end</span>
+0150 
+0151 <span class="comment">% [From a perspective of Newton's method solution for operating points,</span>
+0152 <span class="comment">% optimization, optimal control, etc. it would be much preferred to have</span>
+0153 <span class="comment">% a smooth transition rather than &quot;if&quot; statements...]</span>
+0154 
+0155 <span class="keyword">if</span> ((((real(Wfilt) &gt; real(Wcd)) || (real(Wfilt) &gt; real(Wt))) &amp;&amp; mflag == 0) || <span class="keyword">...</span>
+0156     mflag == 1)
+0157 <span class="comment">%printf('   RSC: Prescribed power and pitch control\n');</span>
+0158 <span class="comment">%fflush(stdout);</span>
+0159    <span class="comment">% Prescribed power.</span>
+0160    Peh = Pc;
+0161 
+0162    <span class="comment">% Pitch control.  Target speed is based on a windspeed estimate.</span>
+0163    epsW = Wfilt - What;
+0164    bhat0 = Kpb*epsW + PsiWb + Kdb*dWfdt;
+0165 
+0166    dbhdx = Kpb*dWfdx + dKpb*epsW*dbfdx <span class="keyword">...</span>
+0167          + [0, 0, 1, 0, 0, 0, 0, 0, 0, 0] <span class="keyword">...</span>
+0168          + Kdb*ddWfdx + dKdb*dWfdt*dbfdx;
+0169    dbhdu = [0, 0, -Kpb*dWhdV, -Kpb*dWhdP] <span class="keyword">...</span>
+0170          + Kdb*ddWfdu;
+0171    
+0172    dxdt(4) = -a1*Pf + a1*Peh;
+0173    A(4,:) = [0, 0, 0, -a1, 0, 0, 0, 0, 0, 0];
+0174    B(4,:) = [0, 0, 0, a1];
+0175 
+0176    <span class="comment">% Smooth saturation and anti-windup.</span>
+0177    bnorm = (bhat0 - bcen)/(bmax - bcen);
+0178    [bns,dbns,d2bns] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> (bnorm,[0.99;1.01]);
+0179    bhat = (bmax - bcen)*bns + bcen;
+0180 
+0181    dxdt(3) = dbns*Kib*epsW;
+0182    A(3,:) = dbns*Kib*dWfdx       <span class="keyword">...</span>
+0183           + dbns*dKib*epsW*dbfdx <span class="keyword">...</span>
+0184           + d2bns*Kib*epsW*dbhdx/(bmax - bcen);
+0185    B(3,:) = dbns*[0, 0, -Kib*dWhdV, -Kib*dWhdP] <span class="keyword">...</span>
+0186           + d2bns*Kib*epsW*dbhdu/(bmax - bcen)  <span class="keyword">...</span>
+0187           + d2bns*Kib*epsW*(-bmax/((bmax-bcen)^2))*0.5*dbdV*[0, 0, 1, 0];
+0188 
+0189    dxdt(10) = -ablp*blp + ablp*bhat;
+0190    A(10,:) = [0, 0, 0, 0, 0, 0, 0, 0, 0, -ablp] + ablp*dbns*dbhdx;
+0191    B(10,:) = ablp*(dbns*dbhdu <span class="keyword">...</span>
+0192            +      [0, 0, (dbns*(bhat0-bmax)*0.5*dbdV/(bmax - bcen))+(1-bns)*0.5*dbdV, 0]);
+0193    
+0194 
+0195 <span class="keyword">else</span>
+0196 <span class="comment">%printf('   RSC: Power from power-speed schedule\n');</span>
+0197 <span class="comment">%fflush(stdout);</span>
+0198    <span class="comment">% Prescribed power from the operating schedule.</span>
+0199    [Peh,dPedW] = <a href="gains1.html" class="code" title="function [y,dy] = gains1 (x,tab);">gains1</a> (Wfilt,WPTab);
+0200 
+0201    <span class="comment">% Control pitch to the prescribed minimum angle.</span>
+0202    epsW = bmin - bfilt;
+0203    bhat = Kpb*epsW + PsiWb - Kdb*dbfdt;
+0204 
+0205    dbhdx = -Kpb*dbfdx + dKpb*epsW*dbfdx <span class="keyword">...</span>
+0206          + [0, 0, 1, 0, 0, 0, 0, 0, 0, 0] <span class="keyword">...</span>
+0207          - Kdb*ddbfdx - dKdb*dbfdt*dbfdx;
+0208    dbhdu = Kpb*[0, 0, dbdV, 0] <span class="keyword">...</span>
+0209          - Kdb*ddbfdu;
+0210 
+0211    dxdt(3) = Kib*epsW;
+0212 
+0213    A(3,:) = -Kib*dbfdx + dKib*epsW*dbfdx;
+0214    B(3,:) = [0, 0, Kib*dbdV, 0];
+0215 
+0216    dxdt(4) = -a1*Pf + a1*Peh;
+0217    A(4,:) = [0, 0, 0, -a1, 0, 0, 0, 0, 0, 0] <span class="keyword">...</span>
+0218           + a1*dPedW*dWfdx;
+0219 
+0220    dxdt(10) = -ablp*blp + ablp*bhat;
+0221    A(10,:) = [0, 0, 0, 0, 0, 0, 0, 0, 0, -ablp] + ablp*dbhdx;
+0222    B(10,:) = ablp*dbhdu;
+0223 
+0224 <span class="keyword">end</span>
+0225 
+0226 dxdt(5) = -a2*Pehat + a2*Pf;
+0227 
+0228 A(5,:) = [0, 0, 0, a2, -a2, 0, 0, 0, 0, 0];
+0229 
+0230 C(1,:) = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
+0231 C(2,:) = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0];
+0232 
+0233 yout = [blp;Pehat];
+0234 
+0235 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

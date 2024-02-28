@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of d2TmeT</title>
+  <meta name="keywords" content="d2TmeT">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; d2TmeT.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>d2TmeT
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [TmT,dTmT,d2TmT] = d2TmeT (mes,TsB,dTsB,d2TsB) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 13.11.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 13.11.2017      Verified using complex step derivatives.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildElement.html" class="code" title="function [M,dM,dMg,G,dG,dGd,H,dH,dHd,K,dK] =buildElement (linFlag,mes,kes,dqdt,d2qdt2,Qu1,Qu2,dQu1,dQu2,d2Qu1,d2Qu2,mu,dmu,d2mu,TsB,dTsB,d2TsB,gvec)">buildElement</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [TmT,dTmT,d2TmT] = d2TmeT (mes,TsB,dTsB,d2TsB)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 13.11.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 13.11.2017      Verified using complex step derivatives.</span>
+0010 <span class="comment">%</span>
+0011 
+0012 TsBe = [TsB zeros(3,9);            <span class="keyword">...</span>
+0013         zeros(3,3) TsB zeros(3,6); <span class="keyword">...</span>
+0014         zeros(3,6) TsB zeros(3,3); <span class="keyword">...</span>
+0015         zeros(3,9) TsB];
+0016 TBse = TsBe.';
+0017 
+0018 TmT = TsBe*mes*TBse;
+0019 dTmT = zeros(12,12*18);
+0020 d2TmT = zeros(12,12*18*18);
+0021 mT = mes*TBse;
+0022 <span class="keyword">for</span> ii = 1:12
+0023 
+0024    ic216 = 216*(ii+6-1); <span class="comment">% First six groups are zero.</span>
+0025    ic36 = 36*(ii-1);
+0026    ic12 = 12*(ii+6-1);
+0027    ic3 = 3*(ii-1);
+0028 
+0029    dTi = [dTsB(:,ic3+[1:3]) zeros(3,9);            <span class="keyword">...</span>
+0030           zeros(3,3) dTsB(:,ic3+[1:3]) zeros(3,6); <span class="keyword">...</span>
+0031           zeros(3,6) dTsB(:,ic3+[1:3]) zeros(3,3); <span class="keyword">...</span>
+0032           zeros(3,9) dTsB(:,ic3+[1:3])];
+0033    dTm = dTi*mes;
+0034    mat = dTm*TBse;
+0035    dTmT(:,ic12+[1:12]) = mat + mat.';
+0036 
+0037    <span class="keyword">for</span> jj = 1:12
+0038 
+0039       jc12 = 12*(jj+6-1);      
+0040       jc3 = 3*(jj-1);
+0041 
+0042       dTj = [dTsB(:,jc3+[1:3]) zeros(3,9);            <span class="keyword">...</span>
+0043              zeros(3,3) dTsB(:,jc3+[1:3]) zeros(3,6); <span class="keyword">...</span>
+0044              zeros(3,6) dTsB(:,jc3+[1:3]) zeros(3,3); <span class="keyword">...</span>
+0045              zeros(3,9) dTsB(:,jc3+[1:3])];
+0046       d2T = [d2TsB(:,ic36+jc3+[1:3]) zeros(3,9);            <span class="keyword">...</span>
+0047              zeros(3,3) d2TsB(:,ic36+jc3+[1:3]) zeros(3,6); <span class="keyword">...</span>
+0048              zeros(3,6) d2TsB(:,ic36+jc3+[1:3]) zeros(3,3); <span class="keyword">...</span>
+0049              zeros(3,9) d2TsB(:,ic36+jc3+[1:3])];
+0050       mat = d2T*mT + dTm*(dTj.');
+0051       d2TmT(:,ic216+jc12+[1:12]) = mat + mat.';
+0052 
+0053    <span class="keyword">end</span>
+0054 
+0055 <span class="keyword">end</span>
+0056 dTmT = sparse(dTmT);
+0057 d2TmT = sparse(d2TmT);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

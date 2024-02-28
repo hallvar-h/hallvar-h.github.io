@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of modularToUnifiedStateSpace</title>
+  <meta name="keywords" content="modularToUnifiedStateSpace">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; modularToUnifiedStateSpace.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>modularToUnifiedStateSpace
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Converts a modular state space of the form
+ dx/dt = Am x + Bu u + By y
+   y   = Cm x + Du u + Dy y
+ into the standard form
+ dx/dt = Ax + Bu
+   y   = Cx + Du
+
+ Dnorm is a vector of length Ny which is used to balance Dy, to
+ avoid some numerical conditioning warnings.  If unused, set this
+ to ones(Ny,1).
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Control/turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy, </a><span class="keyword">...</span>
+0002                                                 Dnorm)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Converts a modular state space of the form</span>
+0005 <span class="comment">% dx/dt = Am x + Bu u + By y</span>
+0006 <span class="comment">%   y   = Cm x + Du u + Dy y</span>
+0007 <span class="comment">% into the standard form</span>
+0008 <span class="comment">% dx/dt = Ax + Bu</span>
+0009 <span class="comment">%   y   = Cx + Du</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Dnorm is a vector of length Ny which is used to balance Dy, to</span>
+0012 <span class="comment">% avoid some numerical conditioning warnings.  If unused, set this</span>
+0013 <span class="comment">% to ones(Ny,1).</span>
+0014 <span class="comment">%</span>
+0015 
+0016 Nx = size(Am,1);
+0017 Ny = size(Cm,1);
+0018 Nu = size(Bu,2);
+0019 
+0020 A = sparse(Nx,Nx);
+0021 B = sparse(Nx,Nu);
+0022 C = sparse(Ny,Nx);
+0023 D = sparse(Ny,Nu);
+0024 
+0025 ii = [1:Ny];
+0026 jj = [1:Ny];
+0027 ImDy = sparse(ii,jj,ones(Ny,1)) - Dy;
+0028 
+0029 <span class="comment">% inv(ImDy) may be such that there are warnings of ill-conditioning,</span>
+0030 <span class="comment">% however in all cases so far the inverse is precise, as verified by</span>
+0031 <span class="comment">% ImDy1*ImDy and ImDy*ImDy1.  That said, here is a way to avoid the</span>
+0032 <span class="comment">% warnings.</span>
+0033 DD = sparse(ii,jj,Dnorm);
+0034 iDD = inv(DD);
+0035 ImDy1 = DD*((iDD*ImDy*DD)\iDD);
+0036 
+0037 C(:,:) = ImDy1*Cm;
+0038 D(:,:) = ImDy1*Du;
+0039 
+0040 A(:,:) = Am + By*C;
+0041 B(:,:) = Bu + By*D;
+0042 
+0043 <span class="comment">%del = 1e-12;</span>
+0044 <span class="comment">%A(abs(A)&lt;del) = 0;</span>
+0045 <span class="comment">%B(abs(B)&lt;del) = 0;</span>
+0046 <span class="comment">%C(abs(C)&lt;del) = 0;</span>
+0047 <span class="comment">%D(abs(D)&lt;del) = 0;</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of airfoilToPitch</title>
+  <meta name="keywords" content="airfoilToPitch">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; airfoilToPitch.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>airfoilToPitch
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Fp,Dy] = airfoilToPitch (Fa,TsB,dTsB,Tas) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The transform of a vector from airfoil to pitch coordinates.
+
+   States:           y vector:         u vector:
+                     qn1,2     1:12
+                     Fa       13:18
+
+ Version:        Changes:
+ --------        -------------
+ 24.02.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 24.02.2018      Double-checked code.
+
+ Inputs:
+ -------
+ Fa              : Forces in airfoil coordinates.
+ TsB,dTsB        : Section-to-body transform and its derivatives.
+ Tas             : Airfoil-to-section transform, a constant matrix
+                   for a given element.
+
+ Outputs:
+ --------
+ Fp
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+<li><a href="airfoilToNodal.html" class="code" title="function F = airfoilToNodal (s,a,Fa,Tas,qq,Pn,idofs)">airfoilToNodal</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Fp,Dy] = airfoilToPitch (Fa,TsB,dTsB,Tas)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The transform of a vector from airfoil to pitch coordinates.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   States:           y vector:         u vector:</span>
+0006 <span class="comment">%                     qn1,2     1:12</span>
+0007 <span class="comment">%                     Fa       13:18</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Changes:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 24.02.2018      Original code.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 24.02.2018      Double-checked code.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% Fa              : Forces in airfoil coordinates.</span>
+0020 <span class="comment">% TsB,dTsB        : Section-to-body transform and its derivatives.</span>
+0021 <span class="comment">% Tas             : Airfoil-to-section transform, a constant matrix</span>
+0022 <span class="comment">%                   for a given element.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">% Outputs:</span>
+0025 <span class="comment">% --------</span>
+0026 <span class="comment">% Fp</span>
+0027 
+0028 Dy = spalloc(6,18);
+0029 
+0030 Fp = zeros(6,1);
+0031 
+0032 TT = TsB*Tas;
+0033 T6 = [TT zeros(3,3);zeros(3,3) TT];
+0034 Fp = T6*Fa;
+0035 
+0036 Dy(:,13:18) = T6;
+0037 
+0038 <span class="keyword">for</span> jj = 1:12
+0039 
+0040    jc3 = 3*(jj-1);
+0041 
+0042    dTT = dTsB(:,jc3+[1:3])*Tas;
+0043    Dy(:,jj) = [dTT zeros(3,3);zeros(3,3) dTT]*Fa;
+0044 
+0045 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

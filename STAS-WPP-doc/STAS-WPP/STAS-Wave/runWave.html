@@ -1,0 +1,236 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of runWave</title>
+  <meta name="keywords" content="runWave">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; runWave.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>runWave
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="forceSpectra.html" class="code" title="function [Qij,Sij] = forceSpectra (F,Nf,dt,Nnod)">forceSpectra</a>	</li>
+<li><a href="waveForce.html" class="code" title="function F = waveForce (Hs,Tp,Vc,d,rho,f,theta,z,t,znod,Dnod)">waveForce</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 clear;
+0002 
+0003 nm = <span class="string">'DTU10MW'</span>;
+0004 eval([<span class="string">'[s,a] = STASTurbine_'</span>  nm <span class="string">' ();'</span>]);
+0005 
+0006 Nmud = s.foundation.Nmud;
+0007 Nwater = s.foundation.Nwater;
+0008 Lel = s.foundation.Lel;
+0009 Diaf = s.foundation.D;
+0010 
+0011 depth = sum(Lel(Nmud+1:Nmud+Nwater));
+0012 Nnod = s.foundation.Nnod - Nmud;
+0013 znod = zeros(Nnod,1);  
+0014 znod(1) = -depth;
+0015 <span class="keyword">for</span> inod = 2:Nnod
+0016    znod(inod) = znod(inod-1) + Lel(Nmud+inod-1);
+0017 <span class="keyword">end</span>
+0018 Dnod = zeros(Nnod,1);
+0019 Dnod(1) = Diaf(Nmud+1);
+0020 Dnod(2:Nnod) = Diaf(Nmud+1:Nmud+Nnod-1);
+0021 
+0022 <span class="comment">%{</span>
+0023 
+0024 <span class="comment">% The coarse Hs-Tp table from Memo AN 15.12.19.</span>
+0025 Hs = [1;1;1;1;1;1;1;1;2;2;2;2;2;2;2;3;3;3;3;3; <span class="keyword">...</span>
+0026       4;4;4;4;4;5;5;5;5;6;6;6;7;7;7;8];
+0027 Tp = [2;4;6;8;10;12;14;16;4;6;8;10;12;14;16;6;8;10;12;14; <span class="keyword">...</span>
+0028       6;8;10;12;14;8;10;12;14;10;12;14;10;12;14;14];
+0029 
+0030 <span class="comment">%}</span>
+0031 <span class="comment">%{</span>
+0032 
+0033 <span class="comment">% A refined Hs-Tp table.</span>
+0034 Hs = [0.5*ones(16,1);1.0*ones(18,1);1.5*ones(17,1);2.0*ones(16,1); <span class="keyword">...</span>
+0035       2.5*ones(14,1);3.0*ones(13,1);3.5*ones(12,1);4.0*ones(11,1); <span class="keyword">...</span>
+0036       4.5*ones(10,1);5.0*ones(10,1);5.5*ones(9,1);6.0*ones(7,1);   <span class="keyword">...</span>
+0037       6.5*ones(7,1);7.0*ones(6,1);7.5*ones(5,1);8.0*ones(4,1);     <span class="keyword">...</span>
+0038       8.5*ones(4,1);9.0*ones(3,1)];
+0039 Tp = 1 + [[1:16]';[1:18]';[2:18]';[2:17]';   <span class="keyword">...</span>
+0040           [3:16]';[4:16]';[4:15]';[5:15]';   <span class="keyword">...</span>
+0041           [6:15]';[6:15]';[7:15]';[8:14]';   <span class="keyword">...</span>
+0042           [8:14]';[9:14]';[10:14]';[11:14]'; <span class="keyword">...</span>
+0043           [11:14]';[12:14]'];
+0044 
+0045 <span class="comment">%}</span>
+0046 
+0047 
+0048 
+0049 
+0050 <span class="comment">% A single analysis...</span>
+0051 Hs = 4.0;
+0052 Tp = 8.0;
+0053 Nf = 2^12;
+0054 df = 0.001;
+0055 rhow = 1025;
+0056 
+0057 
+0058 Nwave = size(Hs,1);
+0059 
+0060 <span class="comment">% Define elements for the surface pressure analysis, with the z</span>
+0061 <span class="comment">% coordinate relative to the still water line.  The coordinates</span>
+0062 <span class="comment">% specify the element centroids.  Theta is measured relative to</span>
+0063 <span class="comment">% the direction of wave propagation.</span>
+0064 z = [[-30:2:-16] [-14.5:1:-5.5] [-4.75:0.5:-0.25]]';
+0065 theta = (pi/180)*[0:10:180]';
+0066 
+0067 Nz = size(z,1);
+0068 Vc = zeros(2,Nz);
+0069 Vc(1,:) = 0;
+0070 Vc(2,:) = 0;
+0071 
+0072 T = 1/df;
+0073 dt = 1/(Nf*df);
+0074 f = [df:df:(Nf/2)*df]';  <span class="comment">% For sampling the one-sided wave spectrum.</span>
+0075 t = [0:dt:(Nf-1)*dt]';
+0076 
+0077 Niter = 20;
+0078 <span class="keyword">for</span> iw = 1:Nwave
+0079 
+0080 printf(<span class="string">'Case %6d of %6d\n'</span>,iw,Nwave);
+0081 fflush(stdout);
+0082 
+0083    <span class="comment">% Take the average over a fairly large number of iterations in order</span>
+0084    <span class="comment">% to smooth the spectrum.  Random numbers are employed in these</span>
+0085    <span class="comment">% calculations.</span>
+0086    <span class="keyword">for</span> iter = 1:Niter
+0087 
+0088 printf(<span class="string">'Iteration %6d of %6d\n'</span>,iter,Niter);
+0089 fflush(stdout);
+0090 
+0091       F = <a href="waveForce.html" class="code" title="function F = waveForce (Hs,Tp,Vc,d,rho,f,theta,z,t,znod,Dnod)">waveForce</a> (Hs(iw),Tp(iw),Vc,depth,rhow,f,theta,z,t,znod,Dnod);
+0092 
+0093 <span class="comment">% Fsum can be used for accumulating the forces to, for instance, the</span>
+0094 <span class="comment">% waterline, for simplified analysis.</span>
+0095 <span class="comment">%      Fsum = zeros(Nf,1);</span>
+0096 <span class="comment">%      for inod = 1:Nnod</span>
+0097 <span class="comment">%         iref = Nf*(inod-1);</span>
+0098 <span class="comment">%         Fsum = Fsum + F(iref+1:iref+Nf);</span>
+0099 <span class="comment">%      end</span>
+0100 
+0101       [Qij,Sij] = <a href="forceSpectra.html" class="code" title="function [Qij,Sij] = forceSpectra (F,Nf,dt,Nnod)">forceSpectra</a> (F,Nf,dt,Nnod);
+0102 <span class="comment">%      [Qij,Sij] = forceSpectra (Fsum,Nf,dt,1);</span>
+0103 
+0104       <span class="keyword">if</span> (iter == 1)
+0105          Qavg = Qij;
+0106          Savg = Sij;
+0107       <span class="keyword">else</span>
+0108          Qavg = (Qavg + Qij/(iter-1))*(iter-1)/iter;
+0109          Savg = (Savg + Sij/(iter-1))*(iter-1)/iter;
+0110       <span class="keyword">end</span>
+0111 
+0112    <span class="keyword">end</span>
+0113 
+0114 <span class="comment">%{</span>
+0115 
+0116    <span class="comment">% Additional smoothing may be employed, if desired, by uncommenting</span>
+0117    <span class="comment">% this for loop block.</span>
+0118    <span class="keyword">for</span> inod1 = 1:Nnod
+0119       <span class="keyword">for</span> inod2 = 1:Nnod
+0120          ind = Nnod*(inod1-1) + inod2;
+0121 
+0122          <span class="comment">% Do not smooth the zero frequency (mean).  Otherwise,</span>
+0123          <span class="comment">% apply a five-point moving average.</span>
+0124          Smoov = zeros(Nf,1);
+0125          Smoov(1) = Savg(1,ind);
+0126          Smoov(2) = 0.2*(3*Savg(2,ind) + Savg(3,ind) + Savg(4,ind));
+0127          Smoov(3) = 0.2*(2*Savg(2,ind) + Savg(3,ind) <span class="keyword">...</span>
+0128                   +      Savg(4,ind) + Savg(5,ind));
+0129          Smoov(Nf-1) = 0.2*(Savg(Nf-3,ind) + Savg(Nf-2,ind) <span class="keyword">...</span>
+0130                      +      Savg(Nf-1,ind) + 2*Savg(Nf,ind));
+0131          Smoov(Nf) = 0.2*(Savg(Nf-2,ind) + Savg(Nf-1,ind) <span class="keyword">...</span>
+0132                    +      3*Savg(Nf,ind));
+0133          Smoov(4:Nf-2) = 0.2*(Savg(2:Nf-4,ind) <span class="keyword">...</span>
+0134                        +      Savg(3:Nf-3,ind) <span class="keyword">...</span>
+0135                        +      Savg(4:Nf-2,ind) <span class="keyword">...</span>
+0136                        +      Savg(5:Nf-1,ind) <span class="keyword">...</span>
+0137                        +      Savg(6:Nf,ind));
+0138 
+0139          Savg(:,ind) = Smoov;
+0140 
+0141       <span class="keyword">end</span>
+0142    <span class="keyword">end</span>
+0143 
+0144 <span class="comment">%}</span>
+0145 
+0146    save(<span class="string">'-binary'</span>,[<span class="string">'Savg_Hs'</span> int2str(10*Hs(iw)) <span class="string">'_TP'</span> <span class="keyword">...</span>
+0147                    int2str(Tp(iw)) <span class="string">'.bin'</span>],<span class="string">'Savg'</span>);
+0148 
+0149 <span class="keyword">end</span>
+0150 
+0151 <span class="comment">%{</span>
+0152 
+0153 <span class="comment">% Some possible outputs ...</span>
+0154 
+0155 inod1 = 6;
+0156 iref1 = Nf*(inod1-1);
+0157 inod2 = 11;
+0158 iref2 = Nf*(inod2-1);
+0159 fid3 = fopen(<span class="string">'F.txt'</span>,<span class="string">'w'</span>);
+0160 <span class="keyword">for</span> it = 1:Nf
+0161 <span class="comment">%   fprintf(fid3,'%+5.4e %+5.4e %+5.4e\n', ...</span>
+0162 <span class="comment">%           t(it),F(iref1+it),F(iref2+it));</span>
+0163    fprintf(fid3,<span class="string">'%+5.4e %+5.4e\n'</span>, <span class="keyword">...</span>
+0164            t(it),Fsum(it));
+0165 <span class="keyword">end</span>
+0166 
+0167 fid = fopen(<span class="string">'Q.txt'</span>,<span class="string">'w'</span>);
+0168 inod1 = 1; <span class="comment">% 11;</span>
+0169 inod2 = 1; <span class="comment">% 11;</span>
+0170 ind = Nnod*(inod1-1) + inod2;
+0171 <span class="keyword">for</span> it = 1:Nf
+0172    fprintf(fid,<span class="string">'%+5.4e %+5.4e\n'</span>,t(it),real(Qavg(it,ind)));
+0173 <span class="keyword">end</span>
+0174 
+0175 fid2 = fopen(<span class="string">'S.txt'</span>,<span class="string">'w'</span>);
+0176 ind = 1; <span class="comment">% Nnod*(inod1-1) + inod2;</span>
+0177 <span class="keyword">for</span> ifreq = 1:Nf
+0178    fprintf(fid2,<span class="string">'%+5.4e %+5.4e\n'</span>,df*(ifreq-1),real(Savg(ifreq,ind)));
+0179 <span class="keyword">end</span>
+0180 
+0181 fclose(<span class="string">'all'</span>);
+0182 
+0183 <span class="comment">%}</span>
+0184 
+0185 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

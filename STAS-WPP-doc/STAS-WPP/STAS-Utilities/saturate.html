@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of saturate</title>
+  <meta name="keywords" content="saturate">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; saturate.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>saturate
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [y,Du,D2u] = saturate (u,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ A unit saturation function, with splined transitions.  The saturation region
+ is given a slight slope for reasons of numerical stability when integrated
+ with the larger code.
+
+ Version:        Changes:
+ --------        -------------
+ 11.01.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 11.01.2019      Inspected outputs.
+
+ Inputs:
+ -------
+ u               : x-axis values.
+ params          : xa,xb, the u intersections at the beginning and end of
+                   the transition curve.
+
+ Outputs:
+ --------
+ y, Du = dy/du, D2u = d^2y/du^2.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Actuator/buildDrive.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = buildDrive (Linflag,x,yin,params)">buildDrive</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Control/RSC.html" class="code" title="function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag)">RSC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/starBlock.html" class="code" title="function [eta,D] = starBlock (u,uLB,uUB,eps,weta,linFlag)">starBlock</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [y,Du,D2u] = saturate (u,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% A unit saturation function, with splined transitions.  The saturation region</span>
+0004 <span class="comment">% is given a slight slope for reasons of numerical stability when integrated</span>
+0005 <span class="comment">% with the larger code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 11.01.2019      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 11.01.2019      Inspected outputs.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% u               : x-axis values.</span>
+0018 <span class="comment">% params          : xa,xb, the u intersections at the beginning and end of</span>
+0019 <span class="comment">%                   the transition curve.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Outputs:</span>
+0022 <span class="comment">% --------</span>
+0023 <span class="comment">% y, Du = dy/du, D2u = d^2y/du^2.</span>
+0024 
+0025 Nu = size(u,1);
+0026 y = zeros(Nu,1);
+0027 Dvec = zeros(Nu,1);
+0028 D2vec = zeros(Nu,1);
+0029 
+0030 xa = params(1);
+0031 xb = params(2);
+0032 
+0033 xa2 = xa^2;
+0034 xa3 = xa2*xa;
+0035 xb2 = xb^2;
+0036 xb3 = xb2*xb;
+0037 
+0038 smin = 0.0;  <span class="comment">% 0.05;</span>
+0039 
+0040 ind = (real(u) &lt;= -xb);
+0041 y(ind) = -1 + smin*(u(ind) + xb);
+0042 Dvec(ind) = smin;
+0043 
+0044 ind = (real(u) &gt;= xb);
+0045 y(ind) = 1 + smin*(u(ind) - xb);
+0046 Dvec(ind) = smin;
+0047 
+0048 ind = (real(u) &gt;= -xa) &amp; (real(u) &lt;= xa);
+0049 y(ind) = u(ind);
+0050 Dvec(ind) = 1;
+0051 
+0052 ind = (real(u) &gt; xa) &amp; (real(u) &lt; xb);
+0053 M = [1   xa   xa2   xa3; <span class="keyword">...</span>
+0054      0   1   2*xa 3*xa2; <span class="keyword">...</span>
+0055      1   xb   xb2   xb3; <span class="keyword">...</span>
+0056      0   1   2*xb 3*xb2];
+0057 b = [xa;1;1;smin];             <span class="comment">% Give it a slight slope for numerical stability.</span>
+0058 c = M\b;
+0059 y(ind) = c(1) + u(ind).*(c(2) + u(ind).*(c(3) + u(ind)*c(4)));
+0060 Dvec(ind) = c(2) + u(ind).*(2*c(3) + u(ind)*3*c(4));
+0061 D2vec(ind) = 2*c(3) + u(ind)*6*c(4);
+0062 
+0063 ind = (real(u) &lt; -xa) &amp; (real(u) &gt; -xb);
+0064 y(ind) = -c(1) + u(ind).*(c(2) + u(ind).*(-c(3) + u(ind)*c(4)));
+0065 Dvec(ind) = c(2) + u(ind).*(-2*c(3) + u(ind)*3*c(4));
+0066 D2vec(ind) = -2*c(3) + u(ind)*6*c(4);
+0067 
+0068 ii = [1:Nu];
+0069 jj = [1:Nu];
+0070 Du = sparse(ii,jj,Dvec,Nu,Nu);
+0071 D2u = sparse(ii,jj,D2vec,Nu,Nu);
+0072 
+0073 
+0074 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

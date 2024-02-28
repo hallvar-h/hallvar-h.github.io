@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of solveNewt</title>
+  <meta name="keywords" content="solveNewt">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; solveNewt.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>solveNewt
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Control/RSC.html" class="code" title="function [dxdt,yout,A,B,C,D] = RSC (x,u,p,WVTab,WPTab,bminTab,KTables,mflag)">RSC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generatorEfficiency.html" class="code" title="">generatorEfficiency</a>	Run a set of steady-state calculations of generator efficiency, which is</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)</a>
+0002 
+0003 x = xg;
+0004 
+0005 <span class="comment">% Get the residual.</span>
+0006 [y,dy] = fun (x);
+0007 Res = y - ys;
+0008 Rval = (Res.')*Res;
+0009 
+0010 conv  = 0;
+0011 iter  = 0;
+0012 Niter = 0;
+0013 <span class="keyword">while</span> (((real(Rval) &gt; cnv) &amp;&amp; (iter &lt; Ns)) || (iter == 0))
+0014    iter = iter + 1;
+0015 
+0016    <span class="comment">% Compute the tangent function at the latest point.</span>
+0017    [y,dy] = fun (x);
+0018    dRdx = dy;
+0019 
+0020    <span class="comment">% Apply Newton's method on the equations.</span>
+0021    lam = 1;
+0022    dxr = -dRdx\Res;
+0023    lflg = 0;
+0024    liter = 0;
+0025    <span class="keyword">while</span> ((lflg == 0) &amp;&amp; (liter &lt; litmax))
+0026       liter = liter + 1;
+0027 
+0028       x1 = x + bta(iter)*lam*dxr;
+0029 
+0030 <span class="comment">%[bta(iter) lam]</span>
+0031 <span class="comment">%[x dxr x1]</span>
+0032 
+0033 
+0034       <span class="comment">% Compute the residual.</span>
+0035       [y1,dy1] = fun (x1);
+0036       Res1 = y1 - ys;
+0037       R1 = (Res1.')*Res1;
+0038 
+0039 <span class="comment">%[dxdt dx1dt]</span>
+0040 <span class="comment">%printf('%5d %5d  %+5.3e  %+5.3e\n',iter,liter,Rval,R1);</span>
+0041 
+0042       <span class="keyword">if</span> (real(R1) &lt; Rval)
+0043          <span class="comment">% OK!  Prepare for the next iteration.</span>
+0044          lflg = 1;
+0045          Res = Res1;
+0046          Rval = R1;
+0047          x = x1;
+0048       <span class="keyword">else</span>
+0049          <span class="comment">% Backtrack.</span>
+0050          lam = 0.5*lam;
+0051          <span class="keyword">if</span> (liter == litmax)
+0052             [iter R1 Rval]
+0053             printf(<span class="string">'Warning, proceeding without lambda convergence.\n'</span>);
+0054             lflg = 1;
+0055             Res = Res1;
+0056             Rval = R1;
+0057             x = x1;
+0058 <span class="keyword">return</span>
+0059          <span class="keyword">end</span>
+0060       <span class="keyword">end</span>
+0061 
+0062    <span class="keyword">end</span>  <span class="comment">% Newton inner.</span>
+0063 
+0064    <span class="keyword">if</span> (iter == Ns) &amp;&amp; (real(Rval) &gt; cnv)
+0065       Rval
+0066       printf(<span class="string">'Warning, max iterations, proceeding without Rval convergence.\n'</span>);
+0067 <span class="keyword">return</span>
+0068    <span class="keyword">end</span>
+0069 
+0070 <span class="keyword">end</span>  <span class="comment">% Newton outer.</span>
+0071 
+0072 xs = x;
+0073 dxs = pinv(dy1);
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

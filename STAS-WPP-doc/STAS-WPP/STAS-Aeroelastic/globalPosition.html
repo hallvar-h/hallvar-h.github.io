@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of globalPosition</title>
+  <meta name="keywords" content="globalPosition">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; globalPosition.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>globalPosition
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function xng = globalPosition (qB,PB,qn,Pn) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Position of nodes in global coordinates.
+
+ Version:        Changes:
+ --------        -------------
+ 14.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 14.12.2017      Checked output for a wind turbine model.
+
+ Inputs:
+ -------
+ qB,PB           : Reference nodes.
+ qn,Pn           : Nodes wrt reference.
+
+ Outputs:
+ --------
+ xng             : 3*Nnod vector of positions.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="projectElement.html" class="code" title="function [xeg,xnr1,xnr2,xer,r,Lp,Dy] = projectElement (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,xhg)">projectElement</a>	</li>
+<li><a href="projectElements.html" class="code" title="function [y,Dia,Dy,Dd] = projectElements (q,P,iq,idofs,idofm,Tn_y)">projectElements</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function xng = globalPosition (qB,PB,qn,Pn)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Position of nodes in global coordinates.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Version:        Changes:</span>
+0006 <span class="comment">% --------        -------------</span>
+0007 <span class="comment">% 14.12.2017      Original code.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Verification:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 14.12.2017      Checked output for a wind turbine model.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Inputs:</span>
+0014 <span class="comment">% -------</span>
+0015 <span class="comment">% qB,PB           : Reference nodes.</span>
+0016 <span class="comment">% qn,Pn           : Nodes wrt reference.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Outputs:</span>
+0019 <span class="comment">% --------</span>
+0020 <span class="comment">% xng             : 3*Nnod vector of positions.</span>
+0021 
+0022 Nnod = size(qn,1)/6;
+0023 
+0024 xng = zeros(3*Nnod,1);
+0025 
+0026 <span class="keyword">for</span> inod = 1:Nnod
+0027 
+0028    i6 = 6*(inod-1);
+0029    i3 = 3*(inod-1);
+0030 
+0031    TB0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(i6+[4:6]));
+0032    TBB0 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (qB(i6+[4:6]));
+0033 
+0034    xng(i3+[1:3]) = PB(i6+[1:3]) + qB(i6+[1:3]) <span class="keyword">...</span>
+0035                  + TB0g*TBB0*(Pn(i6+[1:3]) + qn(i6+[1:3]));
+0036 
+0037 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

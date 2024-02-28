@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of splineSMatrix</title>
+  <meta name="keywords" content="splineSMatrix">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; splineSMatrix.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>splineSMatrix
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [S,dSdx] = splineSMatrix (rhat,x) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ With splineCoefficients.m I compute a set of polynomial coefficients
+ in vector form, such that (if I knew the zhat's) k = A\B*zhat.
+ A point z can be related to the coefficients by
+ z = [... 1 s s^2 s^3 ...] k, where the sequence of s's is aligned
+ with the appropriate k's, according to which segment contains the
+ x coordinate.  Note that
+ s := (x - r_i)/(r_{i+1} - r_i).
+
+ Version:        Changes:
+ --------        -------------
+ 05.12.2016      Original code.
+ 04.07.2017      Adapted for complex step.
+ 08.08.2017      Added dS/dx as an output.
+
+ Version:        Verification:
+ --------        -------------
+ 05.12.2016      Memo AN 16.12.70
+ 04.07.2017      
+ 08.08.2017      
+
+ Inputs:
+ -------
+ rhat            : A list of x coordinates of the control points.
+ x               : A list of x coordinates of the points.
+
+ Outputs:
+ --------
+ S               : A matrix relating z(x) = S(x)*k.
+ dSdx            : dz/dx = dS/dx*k.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/airfoilCoefficientsSpline - twopi.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline - twopi</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/splineAero.html" class="code" title="function Psix = splineAero (bst,sind,icp,rel)">splineAero</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [S,dSdx] = splineSMatrix (rhat,x)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% With splineCoefficients.m I compute a set of polynomial coefficients</span>
+0004 <span class="comment">% in vector form, such that (if I knew the zhat's) k = A\B*zhat.</span>
+0005 <span class="comment">% A point z can be related to the coefficients by</span>
+0006 <span class="comment">% z = [... 1 s s^2 s^3 ...] k, where the sequence of s's is aligned</span>
+0007 <span class="comment">% with the appropriate k's, according to which segment contains the</span>
+0008 <span class="comment">% x coordinate.  Note that</span>
+0009 <span class="comment">% s := (x - r_i)/(r_{i+1} - r_i).</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 05.12.2016      Original code.</span>
+0014 <span class="comment">% 04.07.2017      Adapted for complex step.</span>
+0015 <span class="comment">% 08.08.2017      Added dS/dx as an output.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Version:        Verification:</span>
+0018 <span class="comment">% --------        -------------</span>
+0019 <span class="comment">% 05.12.2016      Memo AN 16.12.70</span>
+0020 <span class="comment">% 04.07.2017</span>
+0021 <span class="comment">% 08.08.2017</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Inputs:</span>
+0024 <span class="comment">% -------</span>
+0025 <span class="comment">% rhat            : A list of x coordinates of the control points.</span>
+0026 <span class="comment">% x               : A list of x coordinates of the points.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Outputs:</span>
+0029 <span class="comment">% --------</span>
+0030 <span class="comment">% S               : A matrix relating z(x) = S(x)*k.</span>
+0031 <span class="comment">% dSdx            : dz/dx = dS/dx*k.</span>
+0032 <span class="comment">%</span>
+0033 
+0034 Nr = size(rhat,1);
+0035 Nx = size(x,1);
+0036 
+0037 <span class="comment">% I can get just what I need from the interp1 function.  Let the X</span>
+0038 <span class="comment">% values be the rhat's, and the Y's be the indices.  The outputs</span>
+0039 <span class="comment">% are then floating point numbers, the integer part of which</span>
+0040 <span class="comment">% indicates the index of the interval (position in the S matrix),</span>
+0041 <span class="comment">% and the decimal part is precisely the value of s that I'm looking</span>
+0042 <span class="comment">% for.</span>
+0043 y = interp1(real(rhat),[1:Nr].',real(x),<span class="string">'extrap'</span>);
+0044 
+0045 inter = floor(y);
+0046 inter(inter&lt;1) = 1;            <span class="comment">% Prevent going outside the</span>
+0047 inter(inter&gt;Nr-1) = Nr - 1;    <span class="comment">% valid reference interval.</span>
+0048 ind = 4*(inter-1);
+0049 den = rhat(inter+1) - rhat(inter);
+0050 ss = (x - rhat(inter))./den;
+0051 
+0052 ii = [[1:Nx] [1:Nx] [1:Nx] [1:Nx]].';
+0053 jj = [ind.'+1 ind.'+2 ind.'+3 ind.'+4].';
+0054 
+0055 qq = [ones(1,Nx) ss.' (ss.').^2 (ss.').^3];
+0056 
+0057 S = sparse(ii,jj,qq,Nx,4*(Nr-1));
+0058 
+0059 qq = [zeros(1,Nx)./(den.') <span class="keyword">...</span>
+0060        ones(1,Nx)./(den.') <span class="keyword">...</span>
+0061          (2*ss.')./(den.') <span class="keyword">...</span>
+0062     (3*(ss.').^2)./(den.')];
+0063 
+0064 dSdx = sparse(ii,jj,qq,Nx,4*(Nr-1));
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

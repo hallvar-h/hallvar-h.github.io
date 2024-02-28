@@ -1,0 +1,458 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildTurbineElectric</title>
+  <meta name="keywords" content="buildTurbineElectric">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; buildTurbineElectric.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildTurbineElectric
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ NOTE, add no-load losses to the system: efficiencies at low powers are too high.
+
+ Build the unified state equations for a PMSG direct-drive generator with
+ full power conversion, transformer, and converter controls.
+
+   states:           y vector:
+ ------------------ External variables ---------------------
+                     wg         1     in
+                     we         2     in
+                     th_e       3     in
+                     vsd,q     4,5    in       yin
+                     ihgd,q    6,7    in
+                     Vhdc       8     in
+                     Qh         9     in
+                     Tg        10     out      yout
+                     isd,q    11,12   out
+
+ ------------------- Local variables -----------------------
+ ------------------------- PMSG ----------------------------
+   igd,q     1,2     vgd,q     1,2    in   (gen. current control)
+                     wg         3     in   (shaft)
+                     Tg         4     out
+ ------ 2 ------- Converters and DC link -------------------
+   Vdc        1      igd,q     1,2    in   (generator)
+                     vgd,q     3,4    in   (gen. current control)
+                     ipd,q     5,6    in   (transformer)
+                     vpd,q     7,8    in   (net. converter control)
+                     IIg        9     out
+                     IIn       10     out
+ ------ 3 ------------- Transformer ------------------------
+   ipd,q     1,2     vpd,q     1,2    in   (net. converter control)
+                     vsd,q     3,4    in   (grid)
+                     we         5     in   (grid)
+                     isd,q     6,7    out
+ ------ 5 --------- Gen. current control -------------------
+   imgd,q    1,2     wg         1     in   (shaft)
+   Psig      3,4     igd,q     2,3    in   (generator)
+   wemg       5      ihgd,q    4,5    in   (active power control)
+                     vgd,q     6,7    out
+ ----- 10 ----------------- PLL ----------------------------
+   th_m       1      th_e       1     in   (grid)
+   vmsd,q    2,3     vsd,q     2,3    in   (grid)
+   Psie       4      wem        4     out
+ ----- 14 -------- Reactive power control ------------------
+   impd,q    1,2     ipd,q     1,2    in   (transformer)
+   imsd,q    3,4     isd,q     3,4    in   (transformer)
+   vmsd,q    5,6     vsd,q     5,6    in   (grid)
+   Vmdc       7      Vdc        7     in   (converter)
+   PsiDC      8      Vhdc       8     in   (input)
+   PsiQ       9      Qh         9     in   (voltage control)
+   PsiP     10,11    wem       10     in   (PLL)
+                     vpd,q    11,12   out
+
+ Version:        Changes:
+ --------        -------------
+ 30.11.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 30.11.2018      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : States at the current time, from list above.
+ yin             : 1:    wg    (rad/s) Generator electrical speed.
+                   2:    we    (rad/s) Electrical speed.
+                   3:    th_e  (rad)   Electrical angle, integral of we.
+                   5-6:  vs    (V)     Network terminal voltage.
+                   7-8:  ihg   (A)     Commanded generator current.
+                   9:    Vhdc  (V)     Commanded DC link voltage.
+                   10:   Qh    (VA)    Commanded reactive power.
+ params          : --------------------- PMSG ------------------------
+                   1:    np    (-)     Number of poles.
+                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   6-9:  Lg    (H)     Nonlinear phase inductances.
+                   10:   Rg    (Ohms)  Phase resistance.
+                   11:   lamr  (Wb)    d-component flux linkage per phase.
+                   ------- 11 --------- DC link ----------------------
+                   1:    Cdc   (F)     DC link capacitance.
+                   2:    etac  (-)     Converter efficiency.
+                   ------- 13 ------- Transformer --------------------
+                   1:    a     (-)     Np/Ns turns ratio.
+                   2-5:  It    (A)     RMS phase currents for nonlinear inductance.
+                   6-9:  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.
+                   10:   Rt    (Ohms)  Phase resistance.
+                   ------- 23 --- Gen. current control ---------------
+                   1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.
+                   5-8:  Lg    (H)     Nonlinear phase inductances.
+                   9:    lamr  (Wb)    d-component flux linkage per phase.
+                   10:   KP    (1/s)   Proportional gain.
+                   11:   KI    (1/s^2) Integral gain.
+                   12:   KF    (-)     Feed-forward gain on flux linkage.
+                   13:   ag    (rad/s) Generator current filter frequency.
+                   14:   aw    (rad/s) Generator electric speed filter frequency.
+                   ------- 37 ------------ PLL -----------------------
+                   1:    av    (rad/s) Filter on voltage measurement.
+                   2:    KPe   (rad/s) Proportional gain.
+                   3:    KIe   (rad/s2) Integral gain.
+                   4:    weh   (rad/s) Reference frequency.
+                   ------- 41 -- Reactive power control --------------
+                   1:    ap    (rad/s) ip measurement filter.
+                   2:    ais   (rad/s) is measurement filter.
+                   3:    avs   (rad/s) vs measurement filter.
+                   4:    adc   (rad/s) Vdc measurement filter.
+                   5:    KpDC  (A/V)   Proportional gain on ipd control.
+                   6:    KiDC  (A/Vs)  Integral gain on ipd control.
+                   7:    KpQ   (1/V)   Proportional gain on ipq control.
+                   8:    KiQ   (1/Vs)  Integral gain on ipq control.
+                   9:    Kppd  (1/s)   Proportional gain on vpd control.
+                  10:    Kipd  (1/s^2) Integral gain on vpd control.
+                  11:    Kppq  (1/s)   Proportional gain on vpq control.
+                  12:    Kipq  (1/s^2) Integral gain on vpq control.
+                  13:    KFp   (-)     Feedforward gain on vms in vp control.
+                  14-17: It    (A)     RMS phase currents for nonlinear inductance.
+                  18-21: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.
+
+ Outputs:
+ --------
+ yout            : 1:    Tg    (Nm)    Generator air gap torque.
+                   2-3:  is    (A)     Network terminal currents.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="DCLink.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = DCLink (Linflag,x,yin,params)">DCLink</a>	</li>
+<li><a href="PMSG.html" class="code" title="function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params)">PMSG</a>	</li>
+<li><a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a>	</li>
+<li><a href="converterControlGen.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlGen (Linflag,x,yin,params)">converterControlGen</a>	</li>
+<li><a href="converterControlNet.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params)">converterControlNet</a>	</li>
+<li><a href="gridFrequency.html" class="code" title="function [dxdt,yout,A,By,C] = gridFrequency (Linflag,x,yin,params)">gridFrequency</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Main/BTEfun.html" class="code" title="function [dxdt,A] = BTEfun (x,yin,params);">BTEfun</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generatorEfficiency.html" class="code" title="">generatorEfficiency</a>	Run a set of steady-state calculations of generator efficiency, which is</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% NOTE, add no-load losses to the system: efficiencies at low powers are too high.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Build the unified state equations for a PMSG direct-drive generator with</span>
+0006 <span class="comment">% full power conversion, transformer, and converter controls.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">%   states:           y vector:</span>
+0009 <span class="comment">% ------------------ External variables ---------------------</span>
+0010 <span class="comment">%                     wg         1     in</span>
+0011 <span class="comment">%                     we         2     in</span>
+0012 <span class="comment">%                     th_e       3     in</span>
+0013 <span class="comment">%                     vsd,q     4,5    in       yin</span>
+0014 <span class="comment">%                     ihgd,q    6,7    in</span>
+0015 <span class="comment">%                     Vhdc       8     in</span>
+0016 <span class="comment">%                     Qh         9     in</span>
+0017 <span class="comment">%                     Tg        10     out      yout</span>
+0018 <span class="comment">%                     isd,q    11,12   out</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% ------------------- Local variables -----------------------</span>
+0021 <span class="comment">% ------------------------- PMSG ----------------------------</span>
+0022 <span class="comment">%   igd,q     1,2     vgd,q     1,2    in   (gen. current control)</span>
+0023 <span class="comment">%                     wg         3     in   (shaft)</span>
+0024 <span class="comment">%                     Tg         4     out</span>
+0025 <span class="comment">% ------ 2 ------- Converters and DC link -------------------</span>
+0026 <span class="comment">%   Vdc        1      igd,q     1,2    in   (generator)</span>
+0027 <span class="comment">%                     vgd,q     3,4    in   (gen. current control)</span>
+0028 <span class="comment">%                     ipd,q     5,6    in   (transformer)</span>
+0029 <span class="comment">%                     vpd,q     7,8    in   (net. converter control)</span>
+0030 <span class="comment">%                     IIg        9     out</span>
+0031 <span class="comment">%                     IIn       10     out</span>
+0032 <span class="comment">% ------ 3 ------------- Transformer ------------------------</span>
+0033 <span class="comment">%   ipd,q     1,2     vpd,q     1,2    in   (net. converter control)</span>
+0034 <span class="comment">%                     vsd,q     3,4    in   (grid)</span>
+0035 <span class="comment">%                     we         5     in   (grid)</span>
+0036 <span class="comment">%                     isd,q     6,7    out</span>
+0037 <span class="comment">% ------ 5 --------- Gen. current control -------------------</span>
+0038 <span class="comment">%   imgd,q    1,2     wg         1     in   (shaft)</span>
+0039 <span class="comment">%   Psig      3,4     igd,q     2,3    in   (generator)</span>
+0040 <span class="comment">%   wemg       5      ihgd,q    4,5    in   (active power control)</span>
+0041 <span class="comment">%                     vgd,q     6,7    out</span>
+0042 <span class="comment">% ----- 10 ----------------- PLL ----------------------------</span>
+0043 <span class="comment">%   th_m       1      th_e       1     in   (grid)</span>
+0044 <span class="comment">%   vmsd,q    2,3     vsd,q     2,3    in   (grid)</span>
+0045 <span class="comment">%   Psie       4      wem        4     out</span>
+0046 <span class="comment">% ----- 14 -------- Reactive power control ------------------</span>
+0047 <span class="comment">%   impd,q    1,2     ipd,q     1,2    in   (transformer)</span>
+0048 <span class="comment">%   imsd,q    3,4     isd,q     3,4    in   (transformer)</span>
+0049 <span class="comment">%   vmsd,q    5,6     vsd,q     5,6    in   (grid)</span>
+0050 <span class="comment">%   Vmdc       7      Vdc        7     in   (converter)</span>
+0051 <span class="comment">%   PsiDC      8      Vhdc       8     in   (input)</span>
+0052 <span class="comment">%   PsiQ       9      Qh         9     in   (voltage control)</span>
+0053 <span class="comment">%   PsiP     10,11    wem       10     in   (PLL)</span>
+0054 <span class="comment">%                     vpd,q    11,12   out</span>
+0055 <span class="comment">%</span>
+0056 <span class="comment">% Version:        Changes:</span>
+0057 <span class="comment">% --------        -------------</span>
+0058 <span class="comment">% 30.11.2018      Original code.</span>
+0059 <span class="comment">%</span>
+0060 <span class="comment">% Version:        Verification:</span>
+0061 <span class="comment">% --------        -------------</span>
+0062 <span class="comment">% 30.11.2018      Derivatives verified by complex step.</span>
+0063 <span class="comment">%</span>
+0064 <span class="comment">% Inputs:</span>
+0065 <span class="comment">% -------</span>
+0066 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0067 <span class="comment">% x               : States at the current time, from list above.</span>
+0068 <span class="comment">% yin             : 1:    wg    (rad/s) Generator electrical speed.</span>
+0069 <span class="comment">%                   2:    we    (rad/s) Electrical speed.</span>
+0070 <span class="comment">%                   3:    th_e  (rad)   Electrical angle, integral of we.</span>
+0071 <span class="comment">%                   5-6:  vs    (V)     Network terminal voltage.</span>
+0072 <span class="comment">%                   7-8:  ihg   (A)     Commanded generator current.</span>
+0073 <span class="comment">%                   9:    Vhdc  (V)     Commanded DC link voltage.</span>
+0074 <span class="comment">%                   10:   Qh    (VA)    Commanded reactive power.</span>
+0075 <span class="comment">% params          : --------------------- PMSG ------------------------</span>
+0076 <span class="comment">%                   1:    np    (-)     Number of poles.</span>
+0077 <span class="comment">%                   2-5:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0078 <span class="comment">%                   6-9:  Lg    (H)     Nonlinear phase inductances.</span>
+0079 <span class="comment">%                   10:   Rg    (Ohms)  Phase resistance.</span>
+0080 <span class="comment">%                   11:   lamr  (Wb)    d-component flux linkage per phase.</span>
+0081 <span class="comment">%                   ------- 11 --------- DC link ----------------------</span>
+0082 <span class="comment">%                   1:    Cdc   (F)     DC link capacitance.</span>
+0083 <span class="comment">%                   2:    etac  (-)     Converter efficiency.</span>
+0084 <span class="comment">%                   ------- 13 ------- Transformer --------------------</span>
+0085 <span class="comment">%                   1:    a     (-)     Np/Ns turns ratio.</span>
+0086 <span class="comment">%                   2-5:  It    (A)     RMS phase currents for nonlinear inductance.</span>
+0087 <span class="comment">%                   6-9:  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.</span>
+0088 <span class="comment">%                   10:   Rt    (Ohms)  Phase resistance.</span>
+0089 <span class="comment">%                   ------- 23 --- Gen. current control ---------------</span>
+0090 <span class="comment">%                   1-4:  Ig    (A)     RMS phase currents for nonlinear inductance.</span>
+0091 <span class="comment">%                   5-8:  Lg    (H)     Nonlinear phase inductances.</span>
+0092 <span class="comment">%                   9:    lamr  (Wb)    d-component flux linkage per phase.</span>
+0093 <span class="comment">%                   10:   KP    (1/s)   Proportional gain.</span>
+0094 <span class="comment">%                   11:   KI    (1/s^2) Integral gain.</span>
+0095 <span class="comment">%                   12:   KF    (-)     Feed-forward gain on flux linkage.</span>
+0096 <span class="comment">%                   13:   ag    (rad/s) Generator current filter frequency.</span>
+0097 <span class="comment">%                   14:   aw    (rad/s) Generator electric speed filter frequency.</span>
+0098 <span class="comment">%                   ------- 37 ------------ PLL -----------------------</span>
+0099 <span class="comment">%                   1:    av    (rad/s) Filter on voltage measurement.</span>
+0100 <span class="comment">%                   2:    KPe   (rad/s) Proportional gain.</span>
+0101 <span class="comment">%                   3:    KIe   (rad/s2) Integral gain.</span>
+0102 <span class="comment">%                   4:    weh   (rad/s) Reference frequency.</span>
+0103 <span class="comment">%                   ------- 41 -- Reactive power control --------------</span>
+0104 <span class="comment">%                   1:    ap    (rad/s) ip measurement filter.</span>
+0105 <span class="comment">%                   2:    ais   (rad/s) is measurement filter.</span>
+0106 <span class="comment">%                   3:    avs   (rad/s) vs measurement filter.</span>
+0107 <span class="comment">%                   4:    adc   (rad/s) Vdc measurement filter.</span>
+0108 <span class="comment">%                   5:    KpDC  (A/V)   Proportional gain on ipd control.</span>
+0109 <span class="comment">%                   6:    KiDC  (A/Vs)  Integral gain on ipd control.</span>
+0110 <span class="comment">%                   7:    KpQ   (1/V)   Proportional gain on ipq control.</span>
+0111 <span class="comment">%                   8:    KiQ   (1/Vs)  Integral gain on ipq control.</span>
+0112 <span class="comment">%                   9:    Kppd  (1/s)   Proportional gain on vpd control.</span>
+0113 <span class="comment">%                  10:    Kipd  (1/s^2) Integral gain on vpd control.</span>
+0114 <span class="comment">%                  11:    Kppq  (1/s)   Proportional gain on vpq control.</span>
+0115 <span class="comment">%                  12:    Kipq  (1/s^2) Integral gain on vpq control.</span>
+0116 <span class="comment">%                  13:    KFp   (-)     Feedforward gain on vms in vp control.</span>
+0117 <span class="comment">%                  14-17: It    (A)     RMS phase currents for nonlinear inductance.</span>
+0118 <span class="comment">%                  18-21: Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances.</span>
+0119 <span class="comment">%</span>
+0120 <span class="comment">% Outputs:</span>
+0121 <span class="comment">% --------</span>
+0122 <span class="comment">% yout            : 1:    Tg    (Nm)    Generator air gap torque.</span>
+0123 <span class="comment">%                   2-3:  is    (A)     Network terminal currents.</span>
+0124 
+0125 Nxs  = [2 1 2 5 4 11].';
+0126 Nyis = [3 8 5 5 3 10].';
+0127 Nyos = [1 2 2 2 1  2].';
+0128 Nys  = Nyis + Nyos;
+0129 Nps  = [11 2 10 14 4 21].';
+0130 nms  = [<span class="string">'g'</span>;<span class="string">'d'</span>;<span class="string">'t'</span>;<span class="string">'p'</span>;<span class="string">'l'</span>;<span class="string">'r'</span>];
+0131 
+0132 Nx  = size(x,1);
+0133 Nyi = size(yin,1);                  <span class="comment">% Size of yin.</span>
+0134 Nyo = 3;                            <span class="comment">% Size of yout.</span>
+0135 Ny  = Nyi + Nyo;                    <span class="comment">% Size of external [yin;yout].</span>
+0136 Nyy = Ny + sum(Nyis) + sum(Nyos);   <span class="comment">% Size of total: external plus local.</span>
+0137 
+0138 dxdt = zeros (Nx,1);
+0139 yout = zeros (Nyo,1);
+0140 
+0141 <span class="comment">% Define matrices for the internal un-linked y vector.</span>
+0142 aa  = spalloc (Nx, Nx, 0.2*Nx*Nx);
+0143 bby = spalloc (Nx, Nyy,0.2*Nx*Nyy);
+0144 cc  = spalloc (Nyy,Nx, 0.2*Nx*Nyy);
+0145 ddy = spalloc (Nyy,Nyy,0.1*Nyy*Nyy);
+0146 
+0147 <span class="comment">% Indices.</span>
+0148 ixg  = 0;
+0149 iye  = 0;
+0150 iyg  = Ny;
+0151 ipg  = 0;
+0152 <span class="keyword">for</span> inm = 2:size(nms,1)
+0153    eval([<span class="string">'ix'</span>  nms(inm) <span class="string">' = ix'</span>  nms(inm-1) <span class="string">' + Nxs(inm-1);'</span>]);
+0154    eval([<span class="string">'iy'</span>  nms(inm) <span class="string">' = iy'</span>  nms(inm-1) <span class="string">' + Nyis(inm-1) + Nyos(inm-1);'</span>]);
+0155    eval([<span class="string">'ip'</span>  nms(inm) <span class="string">' = ip'</span>  nms(inm-1) <span class="string">' + Nps(inm-1);'</span>]);
+0156 <span class="keyword">end</span>
+0157 <span class="keyword">for</span> inm = 1:size(nms,1)
+0158    eval([<span class="string">'x'</span>  nms(inm)       <span class="string">' = x(ix'</span>      nms(inm) <span class="string">' + [1:Nxs(inm)]);'</span>]);
+0159    eval([     nms(inm) <span class="string">'params = params(ip'</span> nms(inm) <span class="string">' + [1:Nps(inm)]);'</span>]);
+0160 <span class="keyword">end</span>
+0161 
+0162 wg   = yin(1);
+0163 we   = yin(2);
+0164 th_e = yin(3);
+0165 vs   = yin(4:5);
+0166 ihg  = yin(6:7);
+0167 Vhdc = yin(8);
+0168 Qh   = yin(9);
+0169 
+0170 ig   = xg;
+0171 ip   = xt;
+0172 Vdc  = xd;
+0173 
+0174 <span class="comment">% Build the individual components.  First the generator current control, as this</span>
+0175 <span class="comment">% depends only on the states x and external inputs yin.</span>
+0176 ypin = [wg; ig; ihg];
+0177 [dxpdt,vg,Ap,Byp,Cp,Dyp] = <a href="converterControlGen.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlGen (Linflag,x,yin,params)">converterControlGen</a> (Linflag,xp,ypin,pparams);
+0178 
+0179 <span class="comment">% Then the PMSG.</span>
+0180 ygin = [vg; wg];
+0181 [dxgdt,Tg,Ag,Byg,Cg]     = <a href="PMSG.html" class="code" title="function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params)">PMSG</a> (Linflag,xg,ygin,gparams);
+0182 
+0183 <span class="comment">% Then the PLL.</span>
+0184 ylin = [th_e; vs];
+0185 [dxldt,wem,Al,Byl,Cl]    = <a href="gridFrequency.html" class="code" title="function [dxdt,yout,A,By,C] = gridFrequency (Linflag,x,yin,params)">gridFrequency</a> (Linflag,xl,ylin,lparams);
+0186 
+0187 <span class="comment">% Then the reactive power control.</span>
+0188 is = tparams(1)*ip;
+0189 yrin = [ip; is; vs; Vdc; Vhdc; Qh; wem];
+0190 [dxrdt,vp,Ar,Byr,Cr,Dyr] = <a href="converterControlNet.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params)">converterControlNet</a> (Linflag,xr,yrin,rparams);
+0191 
+0192 <span class="comment">% Transformer.  The output 'is' has been computed above based on the transformer</span>
+0193 <span class="comment">% state variable.</span>
+0194 ytin = [vp; vs; we];
+0195 [dxtdt,ist,At,Byt,Ct]  = <a href="Transformer.html" class="code" title="function [dxdt,yout,A,By,C] = Transformer (LinFlag,x,yin,params)">Transformer</a> (Linflag,xt,ytin,tparams);
+0196 
+0197 <span class="comment">% Finally the DC link.</span>
+0198 ydin = [ig; vg; ip; vp];
+0199 [dxddt,II,Ad,Byd,Cd,Dyd] = <a href="DCLink.html" class="code" title="function [dxdt,yout,A,By,C,Dy] = DCLink (Linflag,x,yin,params)">DCLink</a> (Linflag,xd,ydin,dparams);
+0200 
+0201 <span class="comment">% Load into the dx/dt vector.</span>
+0202 <span class="keyword">for</span> inm = 1:size(nms,1)
+0203    eval([<span class="string">'dxdt(ix'</span> nms(inm) <span class="string">' + [1:Nxs(inm)]) = dx'</span> nms(inm) <span class="string">'dt;'</span>]);
+0204 <span class="keyword">end</span>
+0205 
+0206 <span class="comment">% External outputs:</span>
+0207 yout(1)   = Tg;
+0208 yout(2:3) = ist;
+0209 
+0210 <span class="keyword">if</span> (Linflag == 1)
+0211 
+0212    <span class="comment">% Linearized matrices.  First assemble the un-linked matrices.</span>
+0213    <span class="keyword">for</span> inm = 1:size(nms,1)
+0214       eval([<span class="string">'aa(ix'</span> nms(inm) <span class="string">'+[1:Nxs(inm)],ix'</span> nms(inm) <span class="keyword">...</span>
+0215             <span class="string">'+[1:Nxs(inm)]) = A'</span> nms(inm) <span class="string">';'</span>]);
+0216       eval([<span class="string">'bby(ix'</span> nms(inm) <span class="string">'+[1:Nxs(inm)],iy'</span> nms(inm) <span class="keyword">...</span>
+0217             <span class="string">'+[1:Nys(inm)]) = By'</span> nms(inm) <span class="string">';'</span>]);
+0218       eval([<span class="string">'cc(iy'</span> nms(inm) <span class="string">'+[1:Nys(inm)],ix'</span> nms(inm) <span class="keyword">...</span>
+0219             <span class="string">'+[1:Nxs(inm)]) = C'</span> nms(inm) <span class="string">';'</span>]);
+0220    <span class="keyword">end</span>
+0221 
+0222    ddy(iyd+[1:size(Dyd,1)],iyd+[1:size(Dyd,2)]) = Dyd;
+0223    ddy(iyp+[1:size(Dyp,1)],iyp+[1:size(Dyp,2)]) = Dyp;
+0224    ddy(iyr+[1:size(Dyr,1)],iyr+[1:size(Dyr,2)]) = Dyr;
+0225 
+0226    <span class="comment">% Fill in the connections with the cc and ddy matrices.</span>
+0227    ddy(iyg+[1:2],iyp+[6:7]) = speye(2);     <span class="comment">% PMSG vg to gen. cont. vg.</span>
+0228    ddy(iyg+3,iye+1) = 1;                    <span class="comment">% PMSG wg to external wg.</span>
+0229    cc(iyd+[1:2],ixg+[1:2]) = speye(2);      <span class="comment">% DC link ig to PMSG ig.</span>
+0230    ddy(iyd+[3:4],iyp+[6:7]) = speye(2);     <span class="comment">% DC link vg to gen. cont. vg.</span>
+0231    cc(iyd+[5:6],ixt+[1:2]) = speye(2);      <span class="comment">% DC link ip to trans. ip.</span>
+0232    ddy(iyd+[7:8],iyr+[11:12]) = speye(2);   <span class="comment">% DC link vp to Q cont. vp.</span>
+0233    ddy(iyt+[1:2],iyr+[11:12]) = speye(2);   <span class="comment">% Trans. vp to Q cont. vp.</span>
+0234    ddy(iyt+[3:4],iye+[4:5]) = speye(2);     <span class="comment">% Trans. vs to external vs.</span>
+0235    ddy(iyt+5,iye+2) = 1;                    <span class="comment">% Trans. we to external we.</span>
+0236    ddy(iyp+1,iye+1) = 1;                    <span class="comment">% gen. cont. wg to external wg.</span>
+0237    cc(iyp+[2:3],ixg+[1:2]) = speye(2);      <span class="comment">% gen. cont. ig to PMSG ig.</span>
+0238    ddy(iyp+[4:5],iye+[6:7]) = speye(2);     <span class="comment">% gen. cont. ihg to external ihg.</span>
+0239    ddy(iyl+1,iye+3) = 1;                    <span class="comment">% PLL th_e to external th_e.</span>
+0240    ddy(iyl+[2:3],iye+[4:5]) = speye(2);     <span class="comment">% PLL vs to external vs.</span>
+0241    cc(iyr+[1:2],ixt+[1:2]) = speye(2);      <span class="comment">% Q cont. ip to trans. ip.</span>
+0242    ddy(iyr+[3:4],iyt+[6:7]) = speye(2);     <span class="comment">% Q cont. is to trans. is.</span>
+0243    ddy(iyr+[5:6],iye+[4:5]) = speye(2);     <span class="comment">% Q cont. vs to external vs.</span>
+0244    cc(iyr+7,ixd+1) = 1;                     <span class="comment">% Q cont. Vdc to DC link Vdc.</span>
+0245    ddy(iyr+8,iye+8) = 1;                    <span class="comment">% Q cont. Vhdc to external Vhdc.</span>
+0246    ddy(iyr+9,iye+9) = 1;                    <span class="comment">% Q cont. Qh to external Qh.</span>
+0247    ddy(iyr+10,iyl+4) = 1;                   <span class="comment">% Q cont. wem to PLL wem.</span>
+0248 
+0249    <span class="comment">% External outputs.</span>
+0250    ddy(iye+Nyi+1,iyg+4) = 1;                <span class="comment">% Ext. Tg to PMSG Tg.</span>
+0251    ddy(iye+Nyi+[2:3],iyt+[6:7]) = speye(2); <span class="comment">% Ext. is to trans. is.</span>
+0252 
+0253    <span class="comment">% Rearrange the matrices in terms of a 'u' vector consisting of the external</span>
+0254    <span class="comment">% inputs, and the remaining 'y' vector.</span>
+0255    indu = [1:Nyi].';
+0256    indy = [Nyi+1:Nyy].';
+0257    bbu  = bby(:,indu);
+0258    ddu  = ddy(indy,indu);
+0259    bby  = bby(:,indy);
+0260    ddy  = ddy(indy,indy);
+0261    cc   = cc(indy,:);
+0262 
+0263    Dnorm = ones(Nyy-Nyi,1);
+0264    [A,B,C,D] = <a href="../../STAS-WPP/STAS-Utilities/modularToUnifiedStateSpace.html" class="code" title="function [A,B,C,D] = modularToUnifiedStateSpace(Am,Bu,By,Cm,Du,Dy,Dnorm)">modularToUnifiedStateSpace</a> (aa,bbu,bby,cc,ddu,ddy,Dnorm);
+0265 
+0266 <span class="keyword">else</span>
+0267 
+0268    Nyr = Nyy - Nyi;
+0269    A = sparse(Nx,Nx);
+0270    B = sparse(Nx,Nyr);
+0271    C = sparse(Nyr,Nx);
+0272    D = sparse(Nyr,Nyr);
+0273 
+0274 <span class="keyword">end</span>
+0275 
+0276 
+0277 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of constraints</title>
+  <meta name="keywords" content="constraints">
+  <meta name="description" content="function Lambda = constraints (qB,PB,Tbh,idofs,idofm)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; constraints.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>constraints
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">function Lambda = constraints (qB,PB,Tbh,idofs,idofm)
+
+ Build the constraint matrix L, then partition and compute Lambda, which
+ is used to reduce the equations of motion.  After introducing redundant
+ (and covenient) degrees-of-freedom at each joint, there are 6x6 + 3 = 39 
+ slave degrees-of-freedom, 6 each at the tower-nacelle, rear bearing,
+ and three pitch bearings, as well as 3 positional DOFs at the front 
+ bearing.
+
+ Version:        Changes:
+ --------        -------------
+ 21.10.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.10.2017      L = dC/dq verified by complex step.  Equations for C
+                 verified by independent re-coding in a test program,
+                 and comparison with C output from this function, for
+                 a case of an operating wind turbine.
+
+ Inputs:
+ -------
+ qB              : Nodal DOFs augmented with yaw, azimuth, front bearing
+                   axial offset, and three blade pitch DOFs.
+ PB              : Nodal offsets and initial body orientation.
+ Tbh             : Blade-to-hub coordinate transform.
+ idofs,idofm     : Joint DOF references.
+
+ Outputs:
+ --------
+ Lambda          : Partitioned and inverted constraint matrix.
+ L               : Matrix of constraint equation variations, L(q) dq = 0.
+ C               : Vector of constraint equation values.
+ ret,slv         : Retained and slave DOFs.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTqhq.html" class="code" title="function [q,qd,qdd,T,dTdq,dTdqd] = buildTqhq (linFlag,s,qh,qhd,qhdd,P,ret,slv)">buildTqhq</a>	</li>
+<li><a href="qFromx.html" class="code" title="function [q,dqdt] = qFromx (x,s,P,shape,ret,slv,qg)">qFromx</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)</a>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Build the constraint matrix L, then partition and compute Lambda, which</span>
+0005 <span class="comment">% is used to reduce the equations of motion.  After introducing redundant</span>
+0006 <span class="comment">% (and covenient) degrees-of-freedom at each joint, there are 6x6 + 3 = 39</span>
+0007 <span class="comment">% slave degrees-of-freedom, 6 each at the tower-nacelle, rear bearing,</span>
+0008 <span class="comment">% and three pitch bearings, as well as 3 positional DOFs at the front</span>
+0009 <span class="comment">% bearing.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Changes:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 21.10.2017      Original code.</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Verification:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 21.10.2017      L = dC/dq verified by complex step.  Equations for C</span>
+0018 <span class="comment">%                 verified by independent re-coding in a test program,</span>
+0019 <span class="comment">%                 and comparison with C output from this function, for</span>
+0020 <span class="comment">%                 a case of an operating wind turbine.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Inputs:</span>
+0023 <span class="comment">% -------</span>
+0024 <span class="comment">% qB              : Nodal DOFs augmented with yaw, azimuth, front bearing</span>
+0025 <span class="comment">%                   axial offset, and three blade pitch DOFs.</span>
+0026 <span class="comment">% PB              : Nodal offsets and initial body orientation.</span>
+0027 <span class="comment">% Tbh             : Blade-to-hub coordinate transform.</span>
+0028 <span class="comment">% idofs,idofm     : Joint DOF references.</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% Outputs:</span>
+0031 <span class="comment">% --------</span>
+0032 <span class="comment">% Lambda          : Partitioned and inverted constraint matrix.</span>
+0033 <span class="comment">% L               : Matrix of constraint equation variations, L(q) dq = 0.</span>
+0034 <span class="comment">% C               : Vector of constraint equation values.</span>
+0035 <span class="comment">% ret,slv         : Retained and slave DOFs.</span>
+0036 
+0037 Ndof = size(qB,1) - 6;  <span class="comment">% Let Ndof = 6*Nnod in the unconstrained structure.</span>
+0038 
+0039 Nslv = 39;
+0040 L = spalloc (Nslv,Ndof+6,12*39);
+0041 C = zeros(Nslv,1);
+0042 
+0043 ijnt = Ndof + [1:6];
+0044 
+0045 yaw0 = PB(ijnt(1));
+0046 azi0 = PB(ijnt(2));
+0047 fbx0 = PB(ijnt(3));
+0048 bt10 = PB(ijnt(4));
+0049 bt20 = PB(ijnt(5));
+0050 bt30 = PB(ijnt(6));
+0051 
+0052 cy0  = cos(yaw0);
+0053 sy0  = sin(yaw0);
+0054 ca0  = cos(azi0);
+0055 sa0  = sin(azi0);
+0056 cb10 = cos(bt10);
+0057 sb10 = sin(bt10);
+0058 cb20 = cos(bt20);
+0059 sb20 = sin(bt20);
+0060 cb30 = cos(bt30);
+0061 sb30 = sin(bt30);
+0062 
+0063 yaw  = qB(ijnt(1));
+0064 azi  = qB(ijnt(2));
+0065 fbx  = qB(ijnt(3));
+0066 bt1  = qB(ijnt(4));
+0067 bt2  = qB(ijnt(5));
+0068 bt3  = qB(ijnt(6));
+0069 
+0070 cy   = cos(yaw + yaw0);
+0071 sy   = sin(yaw + yaw0);
+0072 ca   = cos(azi + azi0);
+0073 sa   = sin(azi + azi0);
+0074 cb1  = cos(bt1 + bt10);
+0075 sb1  = sin(bt1 + bt10);
+0076 cb2  = cos(bt2 + bt20);
+0077 sb2  = sin(bt2 + bt20);
+0078 cb3  = cos(bt3 + bt30);
+0079 sb3  = sin(bt3 + bt30);
+0080 
+0081 <span class="comment">% Foundation-tower joint.  This is rigid, so all the tower reference</span>
+0082 <span class="comment">% (slave) DOFs are constrained.</span>
+0083 TF0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(1)+[4:6]));
+0084 [TFF0,dTFF0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(1)+[4:6]));
+0085 Tm0F         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(2)+[4:6]));
+0086 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(2)+[4:6]));
+0087 TTm          = [0 0 1;1 0 0;0 1 0];
+0088 TT0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(2)+[4:6]));
+0089 [TTT0,dTTT0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(2)+[4:6]));
+0090 TTg_T        = TT0g*TTT0;
+0091 TTg_F        = TF0g*TFF0*Tm0F*Tmm0*TTm;  <span class="comment">% Necessary for complex step.</span>
+0092 TgT          = TTg_T.';
+0093 TgF          = Tm0F*Tmm0*TTm*TgT;
+0094 Tm0g         = TF0g*TFF0*Tm0F;
+0095 Tgm          = TTm*TgT;
+0096 
+0097 ir = 0;
+0098 C(ir+[1:3]) = TF0g*TFF0*(PB(idofm(2)+[1:3]) + qB(idofm(2)+[1:3])) <span class="keyword">...</span>
+0099             + PB(idofs(1)+[1:3]) + qB(idofs(1)+[1:3])             <span class="keyword">...</span>
+0100             - PB(idofs(2)+[1:3]) - qB(idofs(2)+[1:3]);
+0101 L(ir+[1:3],idofs(1)+[1:3]) = eye(3);
+0102 L(ir+[1:3],idofm(2)+[1:3]) = TF0g*TFF0;
+0103 <span class="keyword">for</span> idof = 1:3
+0104    ic3 = 3*(idof-1);
+0105    L(ir+[1:3],idofs(1)+idof+3) = TF0g*dTFF0(:,ic3+[1:3]) <span class="keyword">...</span>
+0106                                * (PB(idofm(2)+[1:3]) + qB(idofm(2)+[1:3]));
+0107 <span class="keyword">end</span>
+0108 L(ir+[1:3],idofs(2)+[1:3]) = -eye(3);
+0109 
+0110 ir = ir + 3;
+0111 mat = TTg_F*TgT;                <span class="comment">% &lt;== order here is very important.</span>
+0112 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0113 <span class="keyword">for</span> idof = 1:3
+0114    ic3 = 3*(idof-1);
+0115 
+0116    S = TF0g*dTFF0(:,ic3+[1:3])*TgF;
+0117    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0118    L(ir+[1:3],idofs(1)+idof+3) = v;
+0119 
+0120    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0121    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0122    L(ir+[1:3],idofm(2)+idof+3) = v;
+0123 
+0124    S = TTg_F*((TT0g*dTTT0(:,ic3+[1:3])).');
+0125    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0126    L(ir+[1:3],idofs(2)+idof+3) = v;
+0127 
+0128 <span class="keyword">end</span>
+0129 
+0130 <span class="comment">% Tower-nacelle joint.</span>
+0131 Tm0T         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(3)+[4:6]));
+0132 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(3)+[4:6]));
+0133 Tym          = [0 0 1;1 0 0;0 1 0]*[cy -sy 0;sy cy 0;0 0 1];
+0134 dTym         = [0 0 1;1 0 0;0 1 0]*[-sy -cy 0;cy -sy 0;0 0 0];
+0135 Ty0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(3)+[4:6]));
+0136 [Tyy0,dTyy0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(3)+[4:6]));
+0137 Tyg_Y        = Ty0g*Tyy0;
+0138 Tyg_T        = TT0g*TTT0*Tm0T*Tmm0*Tym;  <span class="comment">% Necessary for complex step.</span>
+0139 Tgy          = Tyg_Y.';
+0140 Tm0g         = TT0g*TTT0*Tm0T;
+0141 Tgm          = Tym*Tgy;
+0142 Tmg          = TT0g*TTT0*Tm0T*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0143 
+0144 ir = ir + 3;
+0145 C(ir+[1:3]) = TT0g*TTT0*(PB(idofm(3)+[1:3]) + qB(idofm(3)+[1:3])) <span class="keyword">...</span>
+0146             + PB(idofs(2)+[1:3]) + qB(idofs(2)+[1:3])             <span class="keyword">...</span>
+0147             - PB(idofs(3)+[1:3]) - qB(idofs(3)+[1:3]);
+0148 
+0149 L(ir+[1:3],idofs(2)+[1:3]) = eye(3);
+0150 L(ir+[1:3],idofm(3)+[1:3]) = TT0g*TTT0;
+0151 <span class="keyword">for</span> idof = 1:3
+0152    ic3 = 3*(idof-1);
+0153    L(ir+[1:3],idofs(2)+idof+3) = TT0g*dTTT0(:,ic3+[1:3]) <span class="keyword">...</span>
+0154                                * (PB(idofm(3)+[1:3]) + qB(idofm(3)+[1:3]));
+0155 <span class="keyword">end</span>
+0156 L(ir+[1:3],idofs(3)+[1:3]) = -eye(3);
+0157 
+0158 ir = ir + 3;
+0159 mat = Tyg_T*Tgy;
+0160 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0161 
+0162 <span class="keyword">for</span> idof = 1:3
+0163    ic3 = 3*(idof-1);
+0164 
+0165    S = TT0g*dTTT0(:,ic3+[1:3])*Tm0T*Tmm0*Tgm;
+0166    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0167    L(ir+[1:3],idofs(2)+idof+3) = v;
+0168 
+0169    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0170    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0171    L(ir+[1:3],idofm(3)+idof+3) = v;
+0172 
+0173    S = Tyg_T*((Ty0g*dTyy0(:,ic3+[1:3])).');
+0174    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0175    L(ir+[1:3],idofs(3)+idof+3) = v;
+0176 
+0177 <span class="keyword">end</span>
+0178 S = Tmg*dTym*Tgy;
+0179 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0180 L(ir+[1:3],ijnt(1)) = v;
+0181 
+0182 <span class="comment">%{</span>
+0183 ijnt(1)
+0184 Tmg
+0185 dTym
+0186 Tgy
+0187 Tmg*dTym*Tgy
+0188 L(ir+[1:3],ijnt(1))
+0189 <span class="string">'---------------------'</span>
+0190 <span class="comment">%}</span>
+0191 
+0192 <span class="comment">% Rear bearing.</span>
+0193 Tm0y         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(4)+[4:6]));
+0194 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(4)+[4:6]));
+0195 Tdm          = [0 0 -1;-1 0 0;0 1 0]*[ca -sa 0;sa ca 0;0 0 1];
+0196 dTdm         = [0 0 -1;-1 0 0;0 1 0]*[-sa -ca 0;ca -sa 0;0 0 0];
+0197 Td0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(4)+[4:6]));
+0198 [Tdd0,dTdd0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(4)+[4:6]));
+0199 Tdg_D        = Td0g*Tdd0;
+0200 Tdg_Y        = Ty0g*Tyy0*Tm0y*Tmm0*Tdm;  <span class="comment">% Necessary for complex step.</span>
+0201 Tgd          = Tdg_D.';
+0202 Tm0g         = Ty0g*Tyy0*Tm0y;
+0203 Tgm          = Tdm*Tgd;
+0204 Tmg          = Ty0g*Tyy0*Tm0y*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0205 
+0206 ir = ir + 3;
+0207 C(ir+[1:3]) = Ty0g*Tyy0*(PB(idofm(4)+[1:3]) + qB(idofm(4)+[1:3])) <span class="keyword">...</span>
+0208             + PB(idofs(3)+[1:3]) + qB(idofs(3)+[1:3])             <span class="keyword">...</span>
+0209             - PB(idofs(4)+[1:3]) - qB(idofs(4)+[1:3]);
+0210 
+0211 L(ir+[1:3],idofs(3)+[1:3]) = eye(3);
+0212 L(ir+[1:3],idofm(4)+[1:3]) = Ty0g*Tyy0;
+0213 <span class="keyword">for</span> idof = 1:3
+0214    ic3 = 3*(idof-1);
+0215    L(ir+[1:3],idofs(3)+idof+3) = Ty0g*dTyy0(:,ic3+[1:3]) <span class="keyword">...</span>
+0216                                * (PB(idofm(4)+[1:3]) + qB(idofm(4)+[1:3]));
+0217 <span class="keyword">end</span>
+0218 L(ir+[1:3],idofs(4)+[1:3]) = -eye(3);
+0219 
+0220 ir = ir + 3;
+0221 mat = Tdg_Y*Tgd;
+0222 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0223 <span class="keyword">for</span> idof = 1:3
+0224    ic3 = 3*(idof-1);
+0225 
+0226    S = Ty0g*dTyy0(:,ic3+[1:3])*Tm0y*Tmm0*Tgm;
+0227    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0228    L(ir+[1:3],idofs(3)+idof+3) = v;
+0229 
+0230    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0231    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0232    L(ir+[1:3],idofm(4)+idof+3) = v;
+0233 
+0234    S = Tdg_Y*((Td0g*dTdd0(:,ic3+[1:3])).');
+0235    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0236    L(ir+[1:3],idofs(4)+idof+3) = v;
+0237 
+0238 <span class="keyword">end</span>
+0239 S = Tmg*dTdm*Tgd;
+0240 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0241 L(ir+[1:3],ijnt(2)) = v;
+0242 
+0243 <span class="comment">% Front bearing.</span>
+0244 Tm0y         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(5)+[4:6]));
+0245 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(5)+[4:6]));
+0246 
+0247 ir = ir + 3;
+0248 C(ir+[1:3]) = Ty0g*Tyy0*(PB(idofm(5)+[1:3]) + qB(idofm(5)+[1:3])  <span class="keyword">...</span>
+0249             +            Tm0y*Tmm0*[fbx+fbx0;0;0])                <span class="keyword">...</span>
+0250             - Td0g*Tdd0*(PB(idofs(5)+[1:3]) + qB(idofs(5)+[1:3])) <span class="keyword">...</span>
+0251             + PB(idofs(3)+[1:3]) + qB(idofs(3)+[1:3])             <span class="keyword">...</span>
+0252             - PB(idofs(4)+[1:3]) - qB(idofs(4)+[1:3]);
+0253 L(ir+[1:3],idofs(3)+[1:3]) = eye(3);
+0254 L(ir+[1:3],idofm(5)+[1:3]) = Tyg_Y;
+0255 L(ir+[1:3],idofs(4)+[1:3]) = -eye(3);
+0256 L(ir+[1:3],idofs(5)+[1:3]) = -Tdg_D;
+0257 L(ir+[1:3],ijnt(3)) = Tyg_Y*Tm0y*Tmm0*[1;0;0];
+0258 <span class="keyword">for</span> idof = 1:3
+0259    ic3 = 3*(idof-1);
+0260    L(ir+[1:3],idofs(3)+idof+3) = Ty0g*dTyy0(:,ic3+[1:3])                  <span class="keyword">...</span>
+0261                                * (PB(idofm(5)+[1:3]) + qB(idofm(5)+[1:3]) <span class="keyword">...</span>
+0262                                +  Tm0y*Tmm0*[fbx+fbx0;0;0]);
+0263    L(ir+[1:3],idofm(5)+idof+3) = Tyg_Y*Tm0y*dTmm0(:,ic3+[1:3])*[fbx+fbx0;0;0];
+0264    L(ir+[1:3],idofs(4)+idof+3) = -Td0g*dTdd0(:,ic3+[1:3]) <span class="keyword">...</span>
+0265                                * (PB(idofs(5)+[1:3]) + qB(idofs(5)+[1:3]));
+0266 <span class="keyword">end</span>
+0267 
+0268 <span class="comment">% Blade 1.</span>
+0269 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(6)+[4:6]));
+0270 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(6)+[4:6]));
+0271 Tpm          = Tbh*[1 0 0;0 cb1 sb1;0 -sb1 cb1];
+0272 dTpm         = Tbh*[0 0 0;0 -sb1 cb1;0 -cb1 -sb1];
+0273 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(6)+[4:6]));
+0274 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(6)+[4:6]));
+0275 Tpg_P        = Tp0g*Tpp0;
+0276 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0277 Tgp          = Tpg_P.';
+0278 Tm0g         = Td0g*Tdd0*Tm0d;
+0279 Tgm          = Tpm*Tgp;
+0280 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0281 
+0282 ir = ir + 3;
+0283 C(ir+[1:3]) = Td0g*Tdd0*(PB(idofm(6)+[1:3]) + qB(idofm(6)+[1:3])) <span class="keyword">...</span>
+0284             + PB(idofs(4)+[1:3]) + qB(idofs(4)+[1:3])             <span class="keyword">...</span>
+0285             - PB(idofs(6)+[1:3]) - qB(idofs(6)+[1:3]);
+0286 L(ir+[1:3],idofs(4)+[1:3]) = eye(3);
+0287 L(ir+[1:3],idofm(6)+[1:3]) = Td0g*Tdd0;
+0288 <span class="keyword">for</span> idof = 1:3
+0289    ic3 = 3*(idof-1);
+0290    L(ir+[1:3],idofs(4)+idof+3) = Td0g*dTdd0(:,ic3+[1:3]) <span class="keyword">...</span>
+0291                                * (PB(idofm(6)+[1:3]) + qB(idofm(6)+[1:3]));
+0292 <span class="keyword">end</span>
+0293 L(ir+[1:3],idofs(6)+[1:3]) = -eye(3);
+0294 
+0295 ir = ir + 3;
+0296 mat = Tpg_D*Tgp;
+0297 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0298 <span class="keyword">for</span> idof = 1:3
+0299    ic3 = 3*(idof-1);
+0300 
+0301    S = Td0g*dTdd0(:,ic3+[1:3])*Tm0d*Tmm0*Tgm;
+0302    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0303    L(ir+[1:3],idofs(4)+idof+3) = v;
+0304 
+0305    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0306    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0307    L(ir+[1:3],idofm(6)+idof+3) = v;
+0308 
+0309    S = Tpg_D*((Tp0g*dTpp0(:,ic3+[1:3])).');
+0310    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0311    L(ir+[1:3],idofs(6)+idof+3) = v;
+0312 
+0313 <span class="keyword">end</span>
+0314 S = Tmg*dTpm*Tgp;
+0315 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0316 L(ir+[1:3],ijnt(4)) = v;
+0317 
+0318 <span class="comment">% Blade 2.</span>
+0319 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(7)+[4:6]));
+0320 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(7)+[4:6]));
+0321 Tpm          = Tbh*[1 0 0;0 cb2 sb2;0 -sb2 cb2];
+0322 dTpm         = Tbh*[0 0 0;0 -sb2 cb2;0 -cb2 -sb2];
+0323 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(7)+[4:6]));
+0324 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(7)+[4:6]));
+0325 Tpg_P        = Tp0g*Tpp0;
+0326 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0327 Tgp          = Tpg_P.';
+0328 Tm0g         = Td0g*Tdd0*Tm0d;
+0329 Tgm          = Tpm*Tgp;
+0330 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0331 
+0332 ir = ir + 3;
+0333 C(ir+[1:3]) = Td0g*Tdd0*(PB(idofm(7)+[1:3]) + qB(idofm(7)+[1:3])) <span class="keyword">...</span>
+0334             + PB(idofs(4)+[1:3]) + qB(idofs(4)+[1:3])             <span class="keyword">...</span>
+0335             - PB(idofs(7)+[1:3]) - qB(idofs(7)+[1:3]);
+0336 L(ir+[1:3],idofs(4)+[1:3]) = eye(3);
+0337 L(ir+[1:3],idofm(7)+[1:3]) = Td0g*Tdd0;
+0338 <span class="keyword">for</span> idof = 1:3
+0339    ic3 = 3*(idof-1);
+0340    L(ir+[1:3],idofs(4)+idof+3) = Td0g*dTdd0(:,ic3+[1:3]) <span class="keyword">...</span>
+0341                                * (PB(idofm(7)+[1:3]) + qB(idofm(7)+[1:3]));
+0342 <span class="keyword">end</span>
+0343 L(ir+[1:3],idofs(7)+[1:3]) = -eye(3);
+0344 
+0345 ir = ir + 3;
+0346 mat = Tpg_D*Tgp;
+0347 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0348 <span class="keyword">for</span> idof = 1:3
+0349    ic3 = 3*(idof-1);
+0350 
+0351    S = Td0g*dTdd0(:,ic3+[1:3])*Tm0d*Tmm0*Tgm;
+0352    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0353    L(ir+[1:3],idofs(4)+idof+3) = v;
+0354 
+0355    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0356    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0357    L(ir+[1:3],idofm(7)+idof+3) = v;
+0358 
+0359    S = Tpg_D*((Tp0g*dTpp0(:,ic3+[1:3])).');
+0360    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0361    L(ir+[1:3],idofs(7)+idof+3) = v;
+0362 
+0363 <span class="keyword">end</span>
+0364 S = Tmg*dTpm*Tgp;
+0365 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0366 L(ir+[1:3],ijnt(5)) = v;
+0367 
+0368 <span class="comment">% Blade 3.</span>
+0369 Tm0d         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofm(8)+[4:6]));
+0370 [Tmm0,dTmm0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofm(8)+[4:6]));
+0371 Tpm          = Tbh*[1 0 0;0 cb3 sb3;0 -sb3 cb3];
+0372 dTpm         = Tbh*[0 0 0;0 -sb3 cb3;0 -cb3 -sb3];
+0373 Tp0g         = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(idofs(8)+[4:6]));
+0374 [Tpp0,dTpp0] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>      (qB(idofs(8)+[4:6]));
+0375 Tpg_P        = Tp0g*Tpp0;
+0376 Tpg_D        = Td0g*Tdd0*Tm0d*Tmm0*Tpm;  <span class="comment">% Necessary for complex step.</span>
+0377 Tgp          = Tpg_P.';
+0378 Tm0g         = Td0g*Tdd0*Tm0d;
+0379 Tgm          = Tpm*Tgp;
+0380 Tmg          = Td0g*Tdd0*Tm0d*Tmm0;      <span class="comment">% Necessary for complex step.</span>
+0381 
+0382 ir = ir + 3;
+0383 C(ir+[1:3]) = Td0g*Tdd0*(PB(idofm(8)+[1:3]) + qB(idofm(8)+[1:3])) <span class="keyword">...</span>
+0384             + PB(idofs(4)+[1:3]) + qB(idofs(4)+[1:3])             <span class="keyword">...</span>
+0385             - PB(idofs(8)+[1:3]) - qB(idofs(8)+[1:3]);
+0386 L(ir+[1:3],idofs(4)+[1:3]) = eye(3);
+0387 L(ir+[1:3],idofm(8)+[1:3]) = Td0g*Tdd0;
+0388 <span class="keyword">for</span> idof = 1:3
+0389    ic3 = 3*(idof-1);
+0390    L(ir+[1:3],idofs(4)+idof+3) = Td0g*dTdd0(:,ic3+[1:3]) <span class="keyword">...</span>
+0391                                * (PB(idofm(8)+[1:3]) + qB(idofm(8)+[1:3]));
+0392 <span class="keyword">end</span>
+0393 L(ir+[1:3],idofs(8)+[1:3]) = -eye(3);
+0394 
+0395 ir = ir + 3;
+0396 mat = Tpg_D*Tgp;
+0397 C(ir+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (mat);
+0398 <span class="keyword">for</span> idof = 1:3
+0399    ic3 = 3*(idof-1);
+0400 
+0401    S = Td0g*dTdd0(:,ic3+[1:3])*Tm0d*Tmm0*Tgm;
+0402    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0403    L(ir+[1:3],idofs(4)+idof+3) = v;
+0404 
+0405    S = Tm0g*dTmm0(:,ic3+[1:3])*Tgm;
+0406    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0407    L(ir+[1:3],idofm(8)+idof+3) = v;
+0408 
+0409    S = Tpg_D*((Tp0g*dTpp0(:,ic3+[1:3])).');
+0410    v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0411    L(ir+[1:3],idofs(8)+idof+3) = v;
+0412 
+0413 <span class="keyword">end</span>
+0414 S = Tmg*dTpm*Tgp;
+0415 v = <a href="../../STAS-WPP/STAS-Utilities/spinToVecU.html" class="code" title="function vec = spinToVecU (sp)">spinToVecU</a> (S);
+0416 L(ir+[1:3],ijnt(6)) = v;
+0417 
+0418 slv = <a href="slaveDOFs.html" class="code" title="function slv = slaveDOFs (idofs)">slaveDOFs</a>(idofs);
+0419 [Lp,rr,ret] = <a href="../../STAS-WPP/STAS-Utilities/partitionMatrix.html" class="code" title="function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)">partitionMatrix</a>(L,[],slv);
+0420 Nret = size(ret,1);
+0421 Nslv = size(slv,1);
+0422 
+0423 Lambda = sparse([eye(Nret);-(Lp(:,Nret+[1:Nslv])\Lp(:,[1:Nret]))]);
+0424 
+0425 <span class="comment">%cond(Lp(:,Nret+[1:Nslv]))</span>
+0426 <span class="comment">%Lp(:,Nret+[1:Nslv])</span>
+0427 <span class="comment">%Lp(:,[1:Nret])</span>
+0428 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

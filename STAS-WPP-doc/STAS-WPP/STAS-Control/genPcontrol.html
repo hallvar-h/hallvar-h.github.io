@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of genPcontrol</title>
+  <meta name="keywords" content="genPcontrol">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Control</a> &gt; genPcontrol.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Control&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>genPcontrol
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Feedback control on active power, taking the measured and commanded
+ power as inputs, and outputting a q-axis generator current command
+ to be fed to the electrical controls.
+
+   states:             y vector:           u vector:
+   Pem     1           igq     1           Phat    1  (Turbine control)
+   PsiP    2                               Pe      2  (Electrical power)
+   nd     3,4
+    
+ Version:        Changes:
+ --------        -------------
+ 25.01.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.01.2019      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ params          : 1: Kp    (A/W)      Proportional gain.
+                   2: Ki    (A/Ws)     Integral gain.
+                   3: ap    (rad/s)    LP filter on power.
+                   4: anp   (rad/s)    Notch filter frequency.
+                   5: z1np  (-)        Notch filter numerator.
+                   6: z2np  (-)        Notch filter denominator.
+
+ Outputs:
+ --------
+ State matrices.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="turbineControl.html" class="code" title="function [dxdt,yout,AA,BB,CC,DD,blydof,bludof] =turbineControl (linFlag,x,u,p,cpct,KeTab,WVTab,WPTab,bminTab,KTables,KFTab,KSTab,KSqTab,KpiTab,KiiTab,RSCFlag)">turbineControl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,B,C,D] = genPcontrol (x,u,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Feedback control on active power, taking the measured and commanded</span>
+0004 <span class="comment">% power as inputs, and outputting a q-axis generator current command</span>
+0005 <span class="comment">% to be fed to the electrical controls.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">%   states:             y vector:           u vector:</span>
+0008 <span class="comment">%   Pem     1           igq     1           Phat    1  (Turbine control)</span>
+0009 <span class="comment">%   PsiP    2                               Pe      2  (Electrical power)</span>
+0010 <span class="comment">%   nd     3,4</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Changes:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 25.01.2019      Original code.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 25.01.2019      Derivatives verified by complex step.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Inputs:</span>
+0021 <span class="comment">% -------</span>
+0022 <span class="comment">% params          : 1: Kp    (A/W)      Proportional gain.</span>
+0023 <span class="comment">%                   2: Ki    (A/Ws)     Integral gain.</span>
+0024 <span class="comment">%                   3: ap    (rad/s)    LP filter on power.</span>
+0025 <span class="comment">%                   4: anp   (rad/s)    Notch filter frequency.</span>
+0026 <span class="comment">%                   5: z1np  (-)        Notch filter numerator.</span>
+0027 <span class="comment">%                   6: z2np  (-)        Notch filter denominator.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">% State matrices.</span>
+0032 
+0033 Pem  = x(1);
+0034 PsiP = x(2);
+0035 nd   = x(3:4);
+0036 Phat = u(1);
+0037 Pe   = u(2);
+0038 Kp   = params(1);
+0039 Ki   = params(2);
+0040 ap   = params(3);
+0041 anp  = params(4);
+0042 z1np = params(5);
+0043 z2np = params(6);
+0044 
+0045 tz2a = 2*z2np*anp;
+0046 tzza = 2*(z1np - z2np)*anp;
+0047 a2   = anp^2;
+0048 
+0049 dxdt = zeros(4,1);
+0050 dxdt(1) = -ap*Pem + ap*Pe;
+0051 
+0052 epsP = Phat - Pem;
+0053 dxdt(3) = nd(2);
+0054 dxdt(4) = -a2*nd(1) - tz2a*nd(2) + epsP;
+0055 
+0056 yfilt = tzza*nd(2) + epsP;
+0057 
+0058 dxdt(2) = Ki*yfilt;
+0059 
+0060 yout = Kp*yfilt + PsiP;
+0061 
+0062 A  = [-ap, 0, 0, 0;    <span class="keyword">...</span>
+0063       -Ki, 0, 0, Ki*tzza; <span class="keyword">...</span>
+0064        0, 0, 0, 1;     <span class="keyword">...</span>
+0065       -1, 0, -a2, -tz2a];
+0066 B  = [0, ap; <span class="keyword">...</span>
+0067       Ki, 0; <span class="keyword">...</span>
+0068       0, 0;  <span class="keyword">...</span>
+0069       1, 0];
+0070 C  = [-Kp, 1, 0, Kp*tzza];
+0071 D  = [Kp, 0];
+0072 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

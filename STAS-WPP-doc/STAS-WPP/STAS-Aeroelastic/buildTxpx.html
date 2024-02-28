@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildTxpx</title>
+  <meta name="keywords" content="buildTxpx">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; buildTxpx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildTxpx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Transform of state variables from MBC to body coordinates.  Also
+ computes the values of the states in body coordinates.
+
+ By definition, [eta;etad] = T_psi^B [eta^psi;etad^psi].  Then,
+ dx/dt = T_xp^x dx^psi/dt.
+
+ Version:        Changes:
+ --------        -------------
+ 14.01.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 14.01.2020      Derivatives of Txpx verified by complex step.
+
+ Inputs:
+ -------
+ xpsi            : State vector in MBC coordinates.
+ dxpsi           : d xpsi/dt, only used for dT, not for T.
+ b1,b2,b3        : DOFs corresponding to blades 1,2,3.
+ psi0            : Reference azimuth angle for transform (should be
+                   independent of this).
+ iazi            : The index of the rotor azimuth DOF in x^psi.
+
+ Outputs:
+ --------
+ x               : x in body coordinates.
+ T               : T_xpsi^x.
+ dT              : = (dT_xpsi^x)*dxpsi. 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/secondDerivMBC.html" class="code" title="function [d2TpsiB,d2TBpsi] = secondDerivMBC (N,b1,b2,b3,psi)">secondDerivMBC</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCCLT.html" class="code" title="function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCCLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Transform of state variables from MBC to body coordinates.  Also</span>
+0004 <span class="comment">% computes the values of the states in body coordinates.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% By definition, [eta;etad] = T_psi^B [eta^psi;etad^psi].  Then,</span>
+0007 <span class="comment">% dx/dt = T_xp^x dx^psi/dt.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Changes:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 14.01.2020      Original code.</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% Version:        Verification:</span>
+0014 <span class="comment">% --------        -------------</span>
+0015 <span class="comment">% 14.01.2020      Derivatives of Txpx verified by complex step.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% xpsi            : State vector in MBC coordinates.</span>
+0020 <span class="comment">% dxpsi           : d xpsi/dt, only used for dT, not for T.</span>
+0021 <span class="comment">% b1,b2,b3        : DOFs corresponding to blades 1,2,3.</span>
+0022 <span class="comment">% psi0            : Reference azimuth angle for transform (should be</span>
+0023 <span class="comment">%                   independent of this).</span>
+0024 <span class="comment">% iazi            : The index of the rotor azimuth DOF in x^psi.</span>
+0025 <span class="comment">%</span>
+0026 <span class="comment">% Outputs:</span>
+0027 <span class="comment">% --------</span>
+0028 <span class="comment">% x               : x in body coordinates.</span>
+0029 <span class="comment">% T               : T_xpsi^x.</span>
+0030 <span class="comment">% dT              : = (dT_xpsi^x)*dxpsi.</span>
+0031 
+0032 azi = xpsi(iazi);
+0033 
+0034 Nx = size(xpsi,1);
+0035 [TpsiB,TBpsi]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nx,b1,b2,b3,azi);
+0036 [dTpsiB,dTBpsi]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nx,b1,b2,b3,azi);
+0037 [d2TpsiB,d2TBpsi] = <a href="../../STAS-WPP/STAS-Utilities/secondDerivMBC.html" class="code" title="function [d2TpsiB,d2TBpsi] = secondDerivMBC (N,b1,b2,b3,psi)">secondDerivMBC</a> (Nx,b1,b2,b3,azi);
+0038 
+0039 x = TpsiB*xpsi;
+0040 
+0041 dTx = dTpsiB*xpsi;
+0042 T = TpsiB;
+0043 T(:,iazi) = T(:,iazi) + dTx;
+0044 
+0045 W   = dxpsi(iazi);
+0046 dT  = W*dTpsiB;
+0047 dT(:,iazi) = dT(:,iazi) + dTpsiB*dxpsi + W*d2TpsiB*xpsi;
+0048 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

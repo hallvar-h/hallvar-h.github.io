@@ -1,0 +1,205 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of waveVelocity</title>
+  <meta name="keywords" content="waveVelocity">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; waveVelocity.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>waveVelocity
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [phi,vt,vz,vx] = waveVelocity (f,zeta0,k,eps,Dia,d,theta,z) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This function computes the complex amplitudes of the potential,
+ and the tangential and vertical velocity components at the
+ surface of a cylinder in regular waves.
+
+ Version:        Changes:
+ --------        -------------
+ 24.03.2015      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 24.03.2015      
+
+ Inputs:
+ -------
+ f               : Frequencies.
+ zeta0           : Wave amplitudes, one per frequency.
+ k               : Wave number, one per frequency.
+ eps             : Random phases, one per frequency.
+ Dia             : Cylinder diameter.  Assumed to be a scalar.
+ d               : Water depth.
+ theta           : Location about the cylinder, theta = 0 is
+                   on the lee side relative to the waves.
+ z               : Depth coordinates relative to the free surface.
+ Nm              : Number of series terms to retain.
+
+ Outputs:
+ --------
+ phi             : Complex amplitude of the velocity potential.
+ vt,vz           : Complex amplitudes of the theta- and z-
+                   direction velocities at the given points on
+                   the cylinder surface.
+ vx              : Complex amplitude of the INCIDENT x-direction
+                   velocity at the centerplane of the cylinder.
+                   
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="potentialWave.html" class="code" title="function [p,zeta,vx,ax] = potentialWave (Hs,Tp,d,Dia,rho,f,theta,z,t)">potentialWave</a>	</li>
+<li><a href="potentialWave_lin.html" class="code" title="function [p,zeta,vx,ax] = potentialWave_lin (Hs,Tp,d,Dia,rho,f,theta,z,t)">potentialWave_lin</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [phi,vt,vz,vx] = waveVelocity (f,zeta0,k,eps,Dia,d,theta,z)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This function computes the complex amplitudes of the potential,</span>
+0004 <span class="comment">% and the tangential and vertical velocity components at the</span>
+0005 <span class="comment">% surface of a cylinder in regular waves.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 24.03.2015      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 24.03.2015</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% f               : Frequencies.</span>
+0018 <span class="comment">% zeta0           : Wave amplitudes, one per frequency.</span>
+0019 <span class="comment">% k               : Wave number, one per frequency.</span>
+0020 <span class="comment">% eps             : Random phases, one per frequency.</span>
+0021 <span class="comment">% Dia             : Cylinder diameter.  Assumed to be a scalar.</span>
+0022 <span class="comment">% d               : Water depth.</span>
+0023 <span class="comment">% theta           : Location about the cylinder, theta = 0 is</span>
+0024 <span class="comment">%                   on the lee side relative to the waves.</span>
+0025 <span class="comment">% z               : Depth coordinates relative to the free surface.</span>
+0026 <span class="comment">% Nm              : Number of series terms to retain.</span>
+0027 <span class="comment">%</span>
+0028 <span class="comment">% Outputs:</span>
+0029 <span class="comment">% --------</span>
+0030 <span class="comment">% phi             : Complex amplitude of the velocity potential.</span>
+0031 <span class="comment">% vt,vz           : Complex amplitudes of the theta- and z-</span>
+0032 <span class="comment">%                   direction velocities at the given points on</span>
+0033 <span class="comment">%                   the cylinder surface.</span>
+0034 <span class="comment">% vx              : Complex amplitude of the INCIDENT x-direction</span>
+0035 <span class="comment">%                   velocity at the centerplane of the cylinder.</span>
+0036 <span class="comment">%</span>
+0037 
+0038 g = 9.807;
+0039 R = 0.5*Dia;
+0040 omega = 2*pi*f;
+0041 kR = k*R;
+0042 kd = k*d;
+0043 
+0044 Nf = size(f,1);
+0045 Nz = size(z,1);
+0046 Nt = size(theta,1);
+0047 Nm = 10;
+0048 
+0049 m = [0:Nm-1]';
+0050 
+0051 phi = zeros(Nf*Nt*Nz,1);
+0052 vt  = zeros(Nf*Nt*Nz,1);
+0053 vz  = zeros(Nf*Nt*Nz,1);
+0054 vx  = zeros(Nf*Nz,1);
+0055 
+0056 <span class="comment">% Terms which are not dependent on z, t, or m, only f.</span>
+0057 gzw = g*zeta0./omega;
+0058 eieps = exp(i*eps);
+0059 
+0060 <span class="keyword">for</span> im = 1:Nm
+0061 
+0062    <span class="keyword">if</span> (m(im) ~= 0)
+0063       em = 2;
+0064    <span class="keyword">else</span>
+0065       em = 1;
+0066    <span class="keyword">end</span>
+0067 
+0068    <span class="comment">% Depend only on m, f.</span>
+0069    iepst = (i^(m(im)+1))*((-1)^(m(im)+1))*em*m(im)*sin(m(im)*theta);
+0070    iepsv = (i^(m(im)+1))*((-1)^m(im))*em*cos(m(im)*theta);
+0071 
+0072     jmR = besselj(m(im),  kR);
+0073    jm1R = besselj(m(im)+1,kR);
+0074     ymR = bessely(m(im),  kR);
+0075    ym1R = bessely(m(im)+1,kR);
+0076 
+0077    jj = -k.*jm1R + (m(im)/R)*jmR;
+0078    yy = -k.*ym1R + (m(im)/R)*ymR;
+0079    fmR = jj./(jj - i*yy);
+0080 
+0081    <span class="keyword">for</span> iz = 1:Nz
+0082       indz = (Nf*Nt)*(iz-1);
+0083 
+0084       kzd = k*(z(iz) + d);
+0085       csh = (exp(kzd - kd) + exp(-(kzd + kd)))./(1 + exp(-2*kd));
+0086        sh = (exp(kzd - kd) - exp(-(kzd + kd)))./(1 + exp(-2*kd));
+0087 
+0088       jfy = (jmR - fmR.*(jmR - i*ymR));
+0089        ge = gzw.*eieps;
+0090        pp = ge.*csh.*jfy;
+0091       vvt = pp/R;
+0092       vvz = k.*ge.*sh.*jfy;
+0093 
+0094       <span class="keyword">for</span> it = 1:Nt
+0095          ind = indz + Nf*(it-1);
+0096 
+0097          phi(ind+1:ind+Nf) = phi(ind+1:ind+Nf) +  pp*iepsv(it);
+0098           vt(ind+1:ind+Nf) =  vt(ind+1:ind+Nf) + vvt*iepst(it);
+0099           vz(ind+1:ind+Nf) =  vz(ind+1:ind+Nf) + vvz*iepsv(it);
+0100 <span class="comment">%[theta(it) z(iz) (vvz*iepsv(it))(60)]</span>
+0101 <span class="comment">%if (iz == 6) &amp;&amp; (it == 1)</span>
+0102 <span class="comment">%[m(im) phi(ind+60)]</span>
+0103 <span class="comment">%end</span>
+0104       <span class="keyword">end</span>
+0105 
+0106    <span class="keyword">end</span>
+0107 
+0108 <span class="keyword">end</span>
+0109 
+0110 <span class="comment">% Compute the undisturbed velocity on the z section, at a</span>
+0111 <span class="comment">% location corresponding to the cylinder centerplane, x=0.</span>
+0112 <span class="keyword">for</span> iz = 1:Nz
+0113    indz = Nf*(iz-1);
+0114    kzd = k*(z(iz) + d);
+0115    csh = (exp(kzd - kd) + exp(-(kzd + kd)))./(1 + exp(-2*kd));
+0116    vx(indz+1:indz+Nf) = k.*gzw.*csh.*eieps;
+0117 <span class="keyword">end</span>
+0118 
+0119 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

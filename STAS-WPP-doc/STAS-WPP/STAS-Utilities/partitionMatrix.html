@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of partitionMatrix</title>
+  <meta name="keywords" content="partitionMatrix">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; partitionMatrix.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>partitionMatrix
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ This function reorders the rows and columns of a matrix
+ such that a specified list of DOFs is placed at the end.
+
+ Version:        Changes:
+ --------        -------------
+ 11.12.2014      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 11.12.2014      Verified on simple test cases.
+
+ Inputs:
+ -------
+ M              : The matrix.
+ rDOFs,cDOFs    : A vector of row and column DOFs to place
+                  at the end.  (Square matrix, identical
+                  reordering, set rDOFs=cDOFs.)  They must
+                  be in increasing order.
+
+ Outputs:
+ --------
+ Mp             : The partitioned matrix.  Sparse.
+ rr,cr          : Row and column ID lists of the DOFs which
+                  are retained.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices_Nret.html" class="code" title="function [b1,b2,b3] = MBCindices_Nret (Ndj,idofs,ret,slv)">MBCindices_Nret</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/aeroelastic.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy] =aeroelastic (linFlag,s,a,x,u,P,shape,mdamp,grav,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroelastic</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/constraints.html" class="code" title="function [Lambda,L,C,ret,slv] = constraints (qB,PB,Tbh,idofs,idofm)">constraints</a>	function Lambda = constraints (qB,PB,Tbh,idofs,idofm)</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/initialDOFVelocity.html" class="code" title="function [x0,dq0dt,ret,slv] = initialDOFVelocity (s,q,P,Omega)">initialDOFVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/structure.html" class="code" title="function [Lmat,Rvec,y,A,Bu,By,C,Du,Dy,ret,slv] =structure (linFlag,Tflag,s,x,dx,P,F,shape,mdamp,grav)">structure</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/TCD42grid.html" class="code" title="">TCD42grid</a>	Newton-Raphson solution of the TC RWP grid with turbines, and</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildWPPgrid.html" class="code" title="function [dxdt,A,B] = buildWPPgrid (linFlag,x,u,gpar,xpar,nod,nsub)">buildWPPgrid</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/getPsia.html" class="code" title="function Psia = getPsia (modalAero,s,a,azi,q,qd,P,shape0)">getPsia</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/buildOpenLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildOpenLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildOpenLoopTurbine</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Mp,rr,cr] = partitionMatrix (M,rDOFs,cDOFs)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% This function reorders the rows and columns of a matrix</span>
+0004 <span class="comment">% such that a specified list of DOFs is placed at the end.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 11.12.2014      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 11.12.2014      Verified on simple test cases.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% M              : The matrix.</span>
+0017 <span class="comment">% rDOFs,cDOFs    : A vector of row and column DOFs to place</span>
+0018 <span class="comment">%                  at the end.  (Square matrix, identical</span>
+0019 <span class="comment">%                  reordering, set rDOFs=cDOFs.)  They must</span>
+0020 <span class="comment">%                  be in increasing order.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">% Mp             : The partitioned matrix.  Sparse.</span>
+0025 <span class="comment">% rr,cr          : Row and column ID lists of the DOFs which</span>
+0026 <span class="comment">%                  are retained.</span>
+0027 
+0028 <span class="comment">% Here we can take advantage of the convention that</span>
+0029 <span class="comment">% M(vec1,vec2) returns a matrix consisting of the</span>
+0030 <span class="comment">% outer product of the rows listed in vec1 and the</span>
+0031 <span class="comment">% columns of vec2.</span>
+0032 [Nr,Nc] = size(M);
+0033 Mp = sparse(Nr,Nc);
+0034 
+0035 Nrdof = length(rDOFs);
+0036 Ncdof = length(cDOFs);
+0037 
+0038 rr = zeros(Nr-Nrdof,1);
+0039 cr = zeros(Nc-Ncdof,1);
+0040 Nrr = Nr - Nrdof;
+0041 Ncr = Nc - Ncdof;
+0042 
+0043 j = 1;
+0044 k = 1;
+0045 <span class="keyword">for</span> idof = 1:Nr
+0046    <span class="keyword">if</span> (j &lt;= Nrdof)
+0047       <span class="keyword">if</span> (idof == rDOFs(j))
+0048          j++;
+0049       <span class="keyword">else</span>
+0050          <span class="comment">% Add to the list of non-reordered rows.</span>
+0051          rr(k) = idof;
+0052          k++;
+0053       <span class="keyword">end</span>
+0054    <span class="keyword">else</span>
+0055       <span class="comment">% Add to the list of non-reordered rows.</span>
+0056       rr(k) = idof;
+0057       k++;
+0058    <span class="keyword">end</span>
+0059 <span class="keyword">end</span>
+0060 
+0061 j = 1;
+0062 k = 1;
+0063 <span class="keyword">for</span> idof = 1:Nc
+0064    <span class="keyword">if</span> (j &lt;= Ncdof)
+0065       <span class="keyword">if</span> (idof == cDOFs(j))
+0066          j++;
+0067       <span class="keyword">else</span>
+0068          <span class="comment">% Add to the list of non-reordered rows.</span>
+0069          cr(k) = idof;
+0070          k++;
+0071       <span class="keyword">end</span>
+0072    <span class="keyword">else</span>
+0073       <span class="comment">% Add to the list of non-reordered rows.</span>
+0074       cr(k) = idof;
+0075       k++;
+0076    <span class="keyword">end</span>
+0077 <span class="keyword">end</span>
+0078 
+0079 Mp(1:Nrr,1:Ncr) = M(rr,cr);
+0080 Mp(1:Nrr,Ncr+1:Nc) = M(rr,cDOFs);
+0081 Mp(Nrr+1:Nr,1:Ncr) = M(rDOFs,cr);
+0082 Mp(Nrr+1:Nr,Ncr+1:Nc) = M(rDOFs,cDOFs);
+0083 
+0084 
+0085 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

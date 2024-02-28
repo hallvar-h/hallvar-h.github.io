@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of SSDiscreteTime</title>
+  <meta name="keywords" content="SSDiscreteTime">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Main</a> &gt; SSDiscreteTime.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Main&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>SSDiscreteTime
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [A,B,dt] = SSDiscreteTime (meth,aa,bb,dti) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Creates a set of discrete-time state matrices based on continuous-time
+ input matrices.
+
+ Version:        Changes:
+ --------        -------------
+ 06.10.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 06.10.2020      
+
+ Inputs:
+ -------
+ meth            : 1 = RK2.
+                   2 = implicit trapezoidal.
+ aa,bb,cc,dd     : Continuous-time state matrices.
+ dti             : Prescribed timestep.  Set this to a negative number
+                   if you want the timestep generated automatically.
+
+ Outputs:
+ --------
+ A, B, C, D      : Discrete-time state matrices.
+ dt              : Timestep.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/eigVal_silent.html" class="code" title="function [slap,shp,ifrq] = eigVal_silent (A)">eigVal_silent</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkplantcontrol.html" class="code" title="">linkplantcontrol</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [A,B,dt] = SSDiscreteTime (meth,aa,bb,dti)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Creates a set of discrete-time state matrices based on continuous-time</span>
+0004 <span class="comment">% input matrices.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 06.10.2020      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 06.10.2020</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% meth            : 1 = RK2.</span>
+0017 <span class="comment">%                   2 = implicit trapezoidal.</span>
+0018 <span class="comment">% aa,bb,cc,dd     : Continuous-time state matrices.</span>
+0019 <span class="comment">% dti             : Prescribed timestep.  Set this to a negative number</span>
+0020 <span class="comment">%                   if you want the timestep generated automatically.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">% A, B, C, D      : Discrete-time state matrices.</span>
+0025 <span class="comment">% dt              : Timestep.</span>
+0026 
+0027 <span class="keyword">if</span> (dti &lt;= 0)
+0028    <span class="comment">% Generate the maximum frequency and timestep.</span>
+0029    [slap,shp,ifrq] = <a href="../../STAS-WPP/STAS-Utilities/eigVal_silent.html" class="code" title="function [slap,shp,ifrq] = eigVal_silent (A)">eigVal_silent</a> (aa);
+0030    fmax = abs(imag(slap(1)))/(2*pi);
+0031    dt = 0.125/fmax;
+0032 <span class="keyword">else</span>
+0033    dt = dti;
+0034 <span class="keyword">end</span>
+0035 
+0036 <span class="comment">% Generate discrete-time matrices by applying the selected integration</span>
+0037 <span class="comment">% method.</span>
+0038 Nx = size(aa,1);
+0039 II = speye(Nx);
+0040 aadt = aa*dt;
+0041 bbdt = bb*dt;
+0042 <span class="keyword">if</span> (meth == 1)
+0043    A = II + (II + 0.5*aadt)*aadt;
+0044    B = (II + 0.5*aadt)*bbdt;
+0045 <span class="keyword">elseif</span> (meth == 2)
+0046    IAp = II + 0.5*aadt;
+0047    IAm = II - 0.5*aadt;
+0048    A = IAm\IAp;
+0049    B = IAm\bbdt;
+0050 <span class="keyword">end</span>
+0051 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

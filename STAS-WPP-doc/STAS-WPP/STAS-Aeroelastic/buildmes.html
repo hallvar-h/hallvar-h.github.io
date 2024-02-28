@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildmes</title>
+  <meta name="keywords" content="buildmes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; buildmes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildmes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function mes = buildmes (rhos,L) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Ordering of DOFs is
+ wxs1,wys1,wzs1,txs1,tys1,tzs1,wxs2,wys2,wzs2,txs2,tys2,tzs2
+
+ rhos is a 6-by-6 matrix, rhos = int{rho (R^T)R}dA}.  See
+ Merz KO.  Enhanced finite beam elements for wind turbine blades.
+ Memo AN 16.12.18, SINTEF Energy Research, 2016.
+
+ Version:        Changes:
+ --------        -------------
+ 30.10.2014      Original code.
+ 15.04.2016      Modified section properties to matrix format.
+ 30.06.2017      Adapted for complex step.
+
+ Version:        Verification:
+ --------        -------------
+ 30.10.2014      Verified natural frequencies in bending, axial,
+                 and torsion against analytical solutions, using
+                 one and two elements.
+ 15.04.2016      Reproduces results of previous version.
+ 30.06.2017      
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/STASTurbine_DTU10MW.html" class="code" title="function [s,a] = STASTurbine_DTU10MW ()">STASTurbine_DTU10MW</a>	-------------------------------------</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function mes = buildmes (rhos,L)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Ordering of DOFs is</span>
+0004 <span class="comment">% wxs1,wys1,wzs1,txs1,tys1,tzs1,wxs2,wys2,wzs2,txs2,tys2,tzs2</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% rhos is a 6-by-6 matrix, rhos = int{rho (R^T)R}dA}.  See</span>
+0007 <span class="comment">% Merz KO.  Enhanced finite beam elements for wind turbine blades.</span>
+0008 <span class="comment">% Memo AN 16.12.18, SINTEF Energy Research, 2016.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 30.10.2014      Original code.</span>
+0013 <span class="comment">% 15.04.2016      Modified section properties to matrix format.</span>
+0014 <span class="comment">% 30.06.2017      Adapted for complex step.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Version:        Verification:</span>
+0017 <span class="comment">% --------        -------------</span>
+0018 <span class="comment">% 30.10.2014      Verified natural frequencies in bending, axial,</span>
+0019 <span class="comment">%                 and torsion against analytical solutions, using</span>
+0020 <span class="comment">%                 one and two elements.</span>
+0021 <span class="comment">% 15.04.2016      Reproduces results of previous version.</span>
+0022 <span class="comment">% 30.06.2017</span>
+0023 <span class="comment">%</span>
+0024 
+0025 <span class="comment">% Define coefficients on S polynomial.</span>
+0026 
+0027 S3 = spalloc(6,12,8);
+0028 S2 = spalloc(6,12,16);
+0029 S1 = spalloc(6,12,14);
+0030 S0 = spalloc(6,12,6);
+0031 
+0032 S3(2,2)  = 2/(L^3);
+0033 S3(2,6)  = 1/(L^2);
+0034 S3(2,8)  = -2/(L^3);
+0035 S3(2,12) = 1/(L^2);
+0036 S3(3,3)  = S3(2,2);
+0037 S3(3,5)  = -S3(2,6);
+0038 S3(3,9)  = S3(2,8);
+0039 S3(3,11) = -S3(2,12);
+0040 
+0041 S2(2,2)  = -3/(L^2);
+0042 S2(2,6)  = -2/L;
+0043 S2(2,8)  = 3/(L^2);
+0044 S2(2,12) = -1/L;
+0045 S2(3,3)  = S2(2,2);
+0046 S2(3,5)  = -S2(2,6);
+0047 S2(3,9)  = S2(2,8);
+0048 S2(3,11) = -S2(2,12);
+0049 S2(5,3)  = -6/(L^3);
+0050 S2(5,5)  = 3/(L^2);
+0051 S2(5,9)  = -S2(5,3);
+0052 S2(5,11) = 3/(L^2);
+0053 S2(6,2)  = -S2(5,3);
+0054 S2(6,6)  = S2(5,5);
+0055 S2(6,8)  = S2(5,3);
+0056 S2(6,12) = S2(5,11);
+0057 
+0058 S1(1,1)  = -1/L;
+0059 S1(1,7)  = 1/L;
+0060 S1(2,6)  = 1;
+0061 S1(3,5)  = -S1(2,6);
+0062 S1(4,4)  = S1(1,1);
+0063 S1(4,10) = S1(1,7);
+0064 S1(5,3)  = 6/(L^2);
+0065 S1(5,5)  = -4/L;
+0066 S1(5,9)  = -S1(5,3);
+0067 S1(5,11) = -2/L;
+0068 S1(6,2)  = -S1(5,3);
+0069 S1(6,6)  = S1(5,5);
+0070 S1(6,8)  = S1(5,3);
+0071 S1(6,12) = S1(5,11);
+0072 
+0073 S0(1,1)  = 1;
+0074 S0(2,2)  = 1;
+0075 S0(3,3)  = S0(2,2);
+0076 S0(4,4)  = S0(1,1);
+0077 S0(5,5)  = 1;
+0078 S0(6,6)  = S0(5,5);
+0079 
+0080 <span class="comment">% Multiply to get the new coefficients.</span>
+0081 SRS6 = (S3.')*rhos*S3;
+0082 SRS5 = (S2.')*rhos*S3 + (S3.')*rhos*S2;
+0083 SRS4 = (S2.')*rhos*S2 + (S3.')*rhos*S1 + (S1.')*rhos*S3;
+0084 SRS3 = (S2.')*rhos*S1 + (S1.')*rhos*S2 + (S3.')*rhos*S0 + (S0.')*rhos*S3;
+0085 SRS2 = (S2.')*rhos*S0 + (S0.')*rhos*S2 + (S1.')*rhos*S1;
+0086 SRS1 = (S1.')*rhos*S0 + (S0.')*rhos*S1;
+0087 SRS0 = (S0.')*rhos*S0;
+0088 
+0089 <span class="comment">% Integrate and evaluate at L.</span>
+0090 mes = L*(SRS0 + L*((SRS1/2) + L*((SRS2/3) + L*((SRS3/4) <span class="keyword">...</span>
+0091     + L*((SRS4/5) + L*((SRS5/6) + L*(SRS6/7)))))));
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

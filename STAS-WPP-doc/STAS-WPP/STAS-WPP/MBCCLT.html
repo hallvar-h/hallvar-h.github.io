@@ -1,0 +1,333 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of MBCCLT</title>
+  <meta name="keywords" content="MBCCLT">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-WPP</a> &gt; MBCCLT.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-WPP&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>MBCCLT
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Return the multi-blade coordinate transformed version of the dynamic
+ closed-loop turbine equations.
+
+ Note that d2eta/dt2 is an element of the input dxpsi, and is therefore
+ excluded from the upsi vector; however, the indexing of the upsi
+ DOFs in the matrices include the d2eta/dt2 entries.
+
+   States:              y vector:                u vector:
+                                                 F       Ndj   (Env)
+                                              d2eta/dt2  Neta  (sol'n)
+                                                 Vg    3*Nae   (Env)
+                                                 we        1   (Grid)
+                                                 th_e      2   (Grid)
+                                                 vsd,q   3,4   (Grid)
+                                                 Pc        5   (Pl.cont.)
+                                                 Qc        6   (Pl.cont.)
+ ----------------------- Structure --------------------------
+   eta        N         q         Ndj            F       Ndj   (u)
+   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (u) (NOT in upsi)
+                        d2q/dt2   Ndj
+                        F         Ndj
+
+ ---------------------- Aerodynamic -------------------------
+   ad         1                                  Vg        3   (u)
+   a1,a2     2:3
+   Vih z,t   4:5
+   Vi z,t    6:7
+
+ ------------------------ Actuators --------------------------
+ (Repeat for each blade and yaw system.)
+   ba         1         b,dbdt    (-)  (Turb)     bhat      1   (Cont)
+   dbadt      2         Ta         1
+
+ ----------------------- Electrical --------------------------
+   igd,q     1,2        wg        (-)  (Turb)     we        1   (u)
+   Vdc        3         Tg         1              th_e      2   (u)
+   ipd,q     4,5        isd,q     2,3             vsd,q    3,4  (u)
+   imgd,q    6,7                                  ihgd,q   5,6  (Cont)
+   Psig      8,9                                  Vhdc      7   (cpar)
+   wemg      10                                   Qh        8   (u)
+   th_m      11
+   vmsd,q   12,13
+   Psie      14
+   impd,q   15,16
+   imsd,q   17,18
+   vmsd,q   19,20
+   Vmdc      21
+   PsiDC     22
+   PsiQ      23
+   PsiP     24,25
+
+ ------------------------- Control ---------------------------
+   W*         1         bhat      1:3             Pc        1   (u)
+   V*         2         ihgd,q    4:5             azi       2   (turbine)
+   Wm         3         yhat       6              W         3   (turbine)
+   betm       4                                   bet      4:6  (turbine)
+   PsiWb      5                                   Pe        7   (turbine)
+   Pf         6                                   vT       8:9  (turbine)
+   PehRSC     7                                   Mbl     10:12 (turbine)(moment or th_nod)
+   ntw       8,9                                  wang     13   (turbine)(derived?)
+   ntb      10,11
+   blp       12
+   wgm       13  
+   iwg       14
+   Pem       15
+   PsiP      16
+   nd       17,18
+   vmF       19
+   ivmF      20
+   vdF       21
+   vmS       22
+   ivmS      23
+   vdS       24
+   vmS       25
+   ivmS      26
+   vdS       27
+   Mpsim    28,29
+   PsiM     30,31
+
+ Version:        Changes:
+ --------        -------------
+ 14.02.2019      Original code.
+ 23.01.2020      Updated to accommodate revised equations-of-motion
+                 and u vector.
+
+ Version:        Verification:
+ --------        -------------
+ 14.02.2019      
+ 23.01.2020      A,C matrix derivatives verified by complex step
+                 with L,R outputs.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices.html" class="code" title="function [blxdof,bludof,blydof] =MBCindices (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs)">MBCindices</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/buildTxpx.html" class="code" title="function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi)">buildTxpx</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a>	</li>
+<li><a href="buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Lpsi,Rpsi,ypsi,Apsi,Bpsi,Cpsi,Dpsi] =                   </a><span class="keyword">...</span>
+0002                   MBCCLT (linFlag,xpsi,dxpsi,upsi,s,a,            <span class="keyword">...</span>
+0003                           epar,ppar,ypar,c,grav,P,shape0,mdamp0,  <span class="keyword">...</span>
+0004                           Tas,Try,ch,Lel,foilwt,aoaz,aoast,       <span class="keyword">...</span>
+0005                           xas,yas,Psi0,igen,ipit,iyaw)
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Return the multi-blade coordinate transformed version of the dynamic</span>
+0008 <span class="comment">% closed-loop turbine equations.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Note that d2eta/dt2 is an element of the input dxpsi, and is therefore</span>
+0011 <span class="comment">% excluded from the upsi vector; however, the indexing of the upsi</span>
+0012 <span class="comment">% DOFs in the matrices include the d2eta/dt2 entries.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%   States:              y vector:                u vector:</span>
+0015 <span class="comment">%                                                 F       Ndj   (Env)</span>
+0016 <span class="comment">%                                              d2eta/dt2  Neta  (sol'n)</span>
+0017 <span class="comment">%                                                 Vg    3*Nae   (Env)</span>
+0018 <span class="comment">%                                                 we        1   (Grid)</span>
+0019 <span class="comment">%                                                 th_e      2   (Grid)</span>
+0020 <span class="comment">%                                                 vsd,q   3,4   (Grid)</span>
+0021 <span class="comment">%                                                 Pc        5   (Pl.cont.)</span>
+0022 <span class="comment">%                                                 Qc        6   (Pl.cont.)</span>
+0023 <span class="comment">% ----------------------- Structure --------------------------</span>
+0024 <span class="comment">%   eta        N         q         Ndj            F       Ndj   (u)</span>
+0025 <span class="comment">%   deta/dt    N         dq/dt     Ndj         d2eta/dt2  Neta  (u) (NOT in upsi)</span>
+0026 <span class="comment">%                        d2q/dt2   Ndj</span>
+0027 <span class="comment">%                        F         Ndj</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% ---------------------- Aerodynamic -------------------------</span>
+0030 <span class="comment">%   ad         1                                  Vg        3   (u)</span>
+0031 <span class="comment">%   a1,a2     2:3</span>
+0032 <span class="comment">%   Vih z,t   4:5</span>
+0033 <span class="comment">%   Vi z,t    6:7</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% ------------------------ Actuators --------------------------</span>
+0036 <span class="comment">% (Repeat for each blade and yaw system.)</span>
+0037 <span class="comment">%   ba         1         b,dbdt    (-)  (Turb)     bhat      1   (Cont)</span>
+0038 <span class="comment">%   dbadt      2         Ta         1</span>
+0039 <span class="comment">%</span>
+0040 <span class="comment">% ----------------------- Electrical --------------------------</span>
+0041 <span class="comment">%   igd,q     1,2        wg        (-)  (Turb)     we        1   (u)</span>
+0042 <span class="comment">%   Vdc        3         Tg         1              th_e      2   (u)</span>
+0043 <span class="comment">%   ipd,q     4,5        isd,q     2,3             vsd,q    3,4  (u)</span>
+0044 <span class="comment">%   imgd,q    6,7                                  ihgd,q   5,6  (Cont)</span>
+0045 <span class="comment">%   Psig      8,9                                  Vhdc      7   (cpar)</span>
+0046 <span class="comment">%   wemg      10                                   Qh        8   (u)</span>
+0047 <span class="comment">%   th_m      11</span>
+0048 <span class="comment">%   vmsd,q   12,13</span>
+0049 <span class="comment">%   Psie      14</span>
+0050 <span class="comment">%   impd,q   15,16</span>
+0051 <span class="comment">%   imsd,q   17,18</span>
+0052 <span class="comment">%   vmsd,q   19,20</span>
+0053 <span class="comment">%   Vmdc      21</span>
+0054 <span class="comment">%   PsiDC     22</span>
+0055 <span class="comment">%   PsiQ      23</span>
+0056 <span class="comment">%   PsiP     24,25</span>
+0057 <span class="comment">%</span>
+0058 <span class="comment">% ------------------------- Control ---------------------------</span>
+0059 <span class="comment">%   W*         1         bhat      1:3             Pc        1   (u)</span>
+0060 <span class="comment">%   V*         2         ihgd,q    4:5             azi       2   (turbine)</span>
+0061 <span class="comment">%   Wm         3         yhat       6              W         3   (turbine)</span>
+0062 <span class="comment">%   betm       4                                   bet      4:6  (turbine)</span>
+0063 <span class="comment">%   PsiWb      5                                   Pe        7   (turbine)</span>
+0064 <span class="comment">%   Pf         6                                   vT       8:9  (turbine)</span>
+0065 <span class="comment">%   PehRSC     7                                   Mbl     10:12 (turbine)(moment or th_nod)</span>
+0066 <span class="comment">%   ntw       8,9                                  wang     13   (turbine)(derived?)</span>
+0067 <span class="comment">%   ntb      10,11</span>
+0068 <span class="comment">%   blp       12</span>
+0069 <span class="comment">%   wgm       13</span>
+0070 <span class="comment">%   iwg       14</span>
+0071 <span class="comment">%   Pem       15</span>
+0072 <span class="comment">%   PsiP      16</span>
+0073 <span class="comment">%   nd       17,18</span>
+0074 <span class="comment">%   vmF       19</span>
+0075 <span class="comment">%   ivmF      20</span>
+0076 <span class="comment">%   vdF       21</span>
+0077 <span class="comment">%   vmS       22</span>
+0078 <span class="comment">%   ivmS      23</span>
+0079 <span class="comment">%   vdS       24</span>
+0080 <span class="comment">%   vmS       25</span>
+0081 <span class="comment">%   ivmS      26</span>
+0082 <span class="comment">%   vdS       27</span>
+0083 <span class="comment">%   Mpsim    28,29</span>
+0084 <span class="comment">%   PsiM     30,31</span>
+0085 <span class="comment">%</span>
+0086 <span class="comment">% Version:        Changes:</span>
+0087 <span class="comment">% --------        -------------</span>
+0088 <span class="comment">% 14.02.2019      Original code.</span>
+0089 <span class="comment">% 23.01.2020      Updated to accommodate revised equations-of-motion</span>
+0090 <span class="comment">%                 and u vector.</span>
+0091 <span class="comment">%</span>
+0092 <span class="comment">% Version:        Verification:</span>
+0093 <span class="comment">% --------        -------------</span>
+0094 <span class="comment">% 14.02.2019</span>
+0095 <span class="comment">% 23.01.2020      A,C matrix derivatives verified by complex step</span>
+0096 <span class="comment">%                 with L,R outputs.</span>
+0097 <span class="comment">%</span>
+0098 
+0099 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0100 Ndj  = Ndof + 6;
+0101 [imdofs,Neta] = <a href="../../STAS-WPP/STAS-Aeroelastic/getmdofRefs.html" class="code" title="function [imdofs,Nmd] = getmdofRefs (s)">getmdofRefs</a> (s);
+0102 Neb  = s.blade(1).Nel;
+0103 Nxa  = size(Psi0,2);
+0104 Nxp  = 6;
+0105 Nx1  = 2*Neta + Nxa;
+0106 Nx   = size(xpsi,1);
+0107 
+0108 Nun  = size(upsi,1);
+0109 Nu   = Nun + Neta;
+0110 Ny   = 4*Ndj + 4 + 3 + 6;
+0111 
+0112 iW   = 2*Neta - 4;
+0113 iazi = Neta - 4;
+0114 azi  = xpsi(iazi);
+0115 
+0116 [blxdof,bludof,blydof] = <a href="../../STAS-WPP/STAS-Aeroelastic/MBCindices.html" class="code" title="function [blxdof,bludof,blydof] =MBCindices (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs)">MBCindices</a> (Nxa,Nxp,Neta,Ndj,Neb,imdofs,idofs);
+0117 
+0118 [x,Txpx,dTxpx]  = <a href="../../STAS-WPP/STAS-Aeroelastic/buildTxpx.html" class="code" title="function [x,T,dT] = buildTxpx (xpsi,dxpsi,b1,b2,b3,iazi)">buildTxpx</a> (xpsi,dxpsi,blxdof(:,1),blxdof(:,2),blxdof(:,3),iazi);
+0119 [TpBx,TBpx]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nx,blxdof(:,1),blxdof(:,2),blxdof(:,3),azi);
+0120 [TpBu,TBpu]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Nu,bludof(:,1),bludof(:,2),bludof(:,3),azi);
+0121 [TpBy,TBpy]     = <a href="../../STAS-WPP/STAS-Utilities/MBC.html" class="code" title="function [TpsiB,TBpsi] = MBC (N,b1,b2,b3,psi)">MBC</a> (Ny,blydof(:,1),blydof(:,2),blydof(:,3),azi);
+0122 
+0123 <span class="comment">% Don't neet extra azimuth-column terms or complex-step gradients</span>
+0124 <span class="comment">% in the premultiplying transform.  This stems from the fact that</span>
+0125 <span class="comment">% the azimuth and rotor speed states are the same in body and MBC</span>
+0126 <span class="comment">% coordinates.  So the state equation dPsi/dt = Omega must hold,</span>
+0127 <span class="comment">% nothing fancy.</span>
+0128 <span class="comment">%TT = real(Txpx.');</span>
+0129 TT = real(TpBx.');
+0130 
+0131 <span class="comment">% Transform the input upsi to body coordinates and augment it with</span>
+0132 <span class="comment">% d2eta/dt2.</span>
+0133 ixeta = Neta+[1:Neta].';
+0134 iueta = Ndj+[1:Neta].';  <span class="comment">% Indices for d2eta/dt2 in u vector.</span>
+0135 niueta = [[1:Ndj] Ndj+Neta+1:Nu].';
+0136 u = zeros(Nu,1);
+0137 u(niueta) = TpBu(niueta,niueta)*upsi;
+0138 u(iueta) = Txpx(ixeta,:)*dxpsi;
+0139 
+0140 <span class="comment">% Call the CLT function in body coordinates.</span>
+0141 [L,R,y,A,B,C,D] =                                               <span class="keyword">...</span>
+0142      <a href="buildClosedLoopTurbine.html" class="code" title="function [L,R,yout,A,B,C,D] =buildClosedLoopTurbine (linFlag,x,u,s,a,epar,ppar,ypar,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">buildClosedLoopTurbine</a> (linFlag,x,u,s,a,epar,ppar,ypar,c,  <span class="keyword">...</span>
+0143                              grav,P,shape0,mdamp0,              <span class="keyword">...</span>
+0144                              Tas,Try,ch,Lel,foilwt,aoaz,aoast,  <span class="keyword">...</span>
+0145                              xas,yas,Psi0,igen,ipit,iyaw);
+0146 
+0147 W = xpsi(iW);
+0148 
+0149 <span class="comment">% (Think about using TT instead of real(TT) for term-by-term investigation.)</span>
+0150 
+0151 Lpsi = real(TT)*L*Txpx;  <span class="comment">% real(TT) for comparing NL/Lin via complex step.</span>
+0152 Rpsi = real(TT)*R;
+0153 ypsi = TBpy*y;
+0154 
+0155 <span class="keyword">if</span> (linFlag == 1)
+0156 
+0157    <span class="comment">% Special consideration is needed when transforming d2eta/dt2.</span>
+0158    
+0159    [dTpBx,dTBpx]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nx,blxdof(:,1),blxdof(:,2),blxdof(:,3),azi);
+0160    [dTpBu,dTBpu]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Nu,bludof(:,1),bludof(:,2),bludof(:,3),azi);
+0161    [dTpBy,dTBpy]   = <a href="../../STAS-WPP/STAS-Utilities/derivMBC.html" class="code" title="function [dTpsiB,dTBpsi] = derivMBC (N,b1,b2,b3,psi)">derivMBC</a> (Ny,blydof(:,1),blydof(:,2),blydof(:,3),azi);
+0162 
+0163    Apsi = real(TT)*(A*Txpx - L*dTxpx + B(:,iueta)*dTxpx(ixeta,:));
+0164    Apsi(:,iazi) = Apsi(:,iazi) <span class="keyword">...</span>
+0165                 + real(TT)*B(:,niueta)*dTpBu(niueta,niueta)*upsi;
+0166 
+0167    Bpsi = real(TT)*B*TpBu;
+0168    Bpsi(:,iueta) = real(TT)*B(:,iueta)*Txpx(ixeta,ixeta);  <span class="comment">% Overwrite OK.</span>
+0169 
+0170    Cpsi = TBpy*(C*Txpx + D(:,iueta)*dTxpx(ixeta,:));
+0171    Cpsi(:,iazi) = Cpsi(:,iazi) + dTBpy*y <span class="keyword">...</span>
+0172                 + TBpy*D(:,niueta)*dTpBu(niueta,niueta)*upsi;
+0173 
+0174    Dpsi = TBpy*D*TpBu;
+0175    Dpsi(:,iueta) = TBpy*D(:,iueta)*Txpx(ixeta,ixeta);
+0176 
+0177 <span class="keyword">else</span>
+0178 
+0179    Apsi = sparse(size(A,1),size(A,2));
+0180    Bpsi = sparse(size(B,1),size(B,2));
+0181    Cpsi = sparse(size(C,1),size(C,2));
+0182    Dpsi = sparse(size(D,1),size(D,2));
+0183 
+0184 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of BEMprepTransforms</title>
+  <meta name="keywords" content="BEMprepTransforms">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; BEMprepTransforms.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>BEMprepTransforms
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] =BEMprepTransforms (s,a,q,dqdt,P,Tas) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Define transforms that are updated on each call to BEMNL or BEMlin
+ for dx/dt.  This needs to be called on each timestep if the blades
+ are flexible.
+
+ Version:        Changes:
+ --------        -------------
+ 03.03.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 03.03.2018      
+
+ Inputs:
+ -------
+ aoas,kfoils     : Splined airfoil coefficient tables.
+
+ Outputs:
+ --------
+ Tar             : Transform from airfoil to rotorplane coordinates.
+                   3-by-3*Nel.
+ Trg             : Transform from rotorplane to global coordinates.
+ TsB             : Transform from section to body coordinates.
+                   3-by-3*Nel.
+ TBB0            : Transform from deformed to undeformed body coordinates.
+                   3-by-3*Nel, because we don't assume upfront the
+                   association between element and body.
+ dTar            : Derivatives of transform from airfoil to rotorplane.
+                   3-by-3*24*Nel.  qy,qB,qn1,qn2.
+ dTsB            : Derivatives of setion-to-body transform.
+                   3-by-3*12*Nel.  qn1,qn2.
+ dTBB0           : Derivatives of body reference transform.
+                   3-by-9*Nel.
+ wg              : 3*Nel, element structural velocity, global coordinates.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a>	</li>
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a>	</li>
+<li><a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a>	</li>
+<li><a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a>	</li>
+<li><a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroLin.html" class="code" title="function [dxadt,A,By,C,Dy,Psi] = aeroLin (psiFlag,xa,Vg,s,a,q,dqdt,P,bsh)">aeroLin</a>	</li>
+<li><a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/asymWind.html" class="code" title="">asymWind</a>	Run a Newton's method solution of the closed-loop turbine, and check the</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/getPsia.html" class="code" title="function Psia = getPsia (modalAero,s,a,azi,q,qd,P,shape0)">getPsia</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [Tar,Trg,TB0g,TsB,TBB0,dTar,dTsB,dTBB0,wg] = </a><span class="keyword">...</span>
+0002                       BEMprepTransforms (s,a,q,dqdt,P,Tas)
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Define transforms that are updated on each call to BEMNL or BEMlin</span>
+0005 <span class="comment">% for dx/dt.  This needs to be called on each timestep if the blades</span>
+0006 <span class="comment">% are flexible.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Version:        Changes:</span>
+0009 <span class="comment">% --------        -------------</span>
+0010 <span class="comment">% 03.03.2018      Original code.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 03.03.2018</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Inputs:</span>
+0017 <span class="comment">% -------</span>
+0018 <span class="comment">% aoas,kfoils     : Splined airfoil coefficient tables.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">% --------</span>
+0022 <span class="comment">% Tar             : Transform from airfoil to rotorplane coordinates.</span>
+0023 <span class="comment">%                   3-by-3*Nel.</span>
+0024 <span class="comment">% Trg             : Transform from rotorplane to global coordinates.</span>
+0025 <span class="comment">% TsB             : Transform from section to body coordinates.</span>
+0026 <span class="comment">%                   3-by-3*Nel.</span>
+0027 <span class="comment">% TBB0            : Transform from deformed to undeformed body coordinates.</span>
+0028 <span class="comment">%                   3-by-3*Nel, because we don't assume upfront the</span>
+0029 <span class="comment">%                   association between element and body.</span>
+0030 <span class="comment">% dTar            : Derivatives of transform from airfoil to rotorplane.</span>
+0031 <span class="comment">%                   3-by-3*24*Nel.  qy,qB,qn1,qn2.</span>
+0032 <span class="comment">% dTsB            : Derivatives of setion-to-body transform.</span>
+0033 <span class="comment">%                   3-by-3*12*Nel.  qn1,qn2.</span>
+0034 <span class="comment">% dTBB0           : Derivatives of body reference transform.</span>
+0035 <span class="comment">%                   3-by-9*Nel.</span>
+0036 <span class="comment">% wg              : 3*Nel, element structural velocity, global coordinates.</span>
+0037 
+0038 <span class="comment">%id = tic();</span>
+0039 
+0040 [idofs,idofm,inods,inodm,Ndof] = <a href="getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0041 
+0042 Nel = 0;
+0043 <span class="keyword">for</span> ib = 1:s.Nb
+0044    Nel = Nel + s.blade(ib).Nel;
+0045 <span class="keyword">end</span>
+0046 
+0047 <span class="comment">% Coordinate transform matrices.</span>
+0048 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0049 Try = Tn_y;
+0050 Tyy0 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (q(idofs(3)+[4:6]));
+0051 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(idofs(3)+[4:6]));
+0052 Trg = Ty0g*Tyy0*Try;
+0053 Tgr = Trg.';
+0054 
+0055 <span class="comment">% Yaw bearing DOFs, needed as a reference for the rotorplane orientation.</span>
+0056 qy  = q(idofs(3)+[1:6]);
+0057 Py  = P(idofs(3)+[1:6]);
+0058 
+0059 TB0g    = zeros(3,3*Nel);
+0060 Tar     = zeros(3,3*Nel);
+0061 dTar    = zeros(3,72*Nel);
+0062 TsB     = zeros(3,3*Nel);
+0063 dTsB    = zeros(3,36*Nel);
+0064 TBB0    = zeros(3,3*Nel);
+0065 dTBB0   = zeros(3,9*Nel);
+0066 wg      = zeros(3*Nel,1);
+0067 <span class="keyword">for</span> ibod = 5:7
+0068 
+0069    jb3 = 3*(ibod-1);
+0070 
+0071    <span class="keyword">if</span> (ibod == 5)
+0072       idref = idofs(6);
+0073       Neb   = s.blade(1).Nel;
+0074       conns = s.blade(1).conn;
+0075       elref = 0;
+0076    <span class="keyword">elseif</span> (ibod == 6)
+0077       idref = idofs(7);
+0078       Neb   = s.blade(2).Nel;
+0079       conns = s.blade(2).conn;
+0080       elref = elref + s.blade(1).Nel;
+0081    <span class="keyword">elseif</span> (ibod == 7)
+0082       idref = idofs(8);
+0083       Neb   = s.blade(3).Nel;
+0084       conns = s.blade(3).conn;
+0085       elref = elref + s.blade(2).Nel;
+0086    <span class="keyword">end</span>
+0087 
+0088    qB    = q(idref+[1:6]);
+0089    dqBdt = dqdt(idref+[1:6]);
+0090    PB    = P(idref+[1:6]);
+0091 
+0092    <span class="keyword">for</span> iel = 1:Neb
+0093 <span class="comment">%[ibod iel]</span>
+0094       jel = elref + iel;
+0095 <span class="comment">%id2 = tic();</span>
+0096       jc72  = 72*(jel-1);
+0097       jc36  = 36*(jel-1);
+0098       jc9   =  9*(jel-1);
+0099       jc3   =  3*(jel-1);
+0100 
+0101       conn  = conns(:,iel);
+0102       rdof  = idref + 6*(conn(1)-1);
+0103       n1dof = idref + 6*(conn(2)-1);
+0104       n2dof = idref + 6*(conn(3)-1);
+0105 
+0106       qn1    = q(n1dof+[1:6]);
+0107       dqn1dt = dqdt(n1dof+[1:6]);
+0108       qn2    = q(n2dof+[1:6]);
+0109       dqn2dt = dqdt(n2dof+[1:6]);
+0110       Pn1    = P(n1dof+[1:6]);
+0111       Pn2    = P(n2dof+[1:6]);
+0112 
+0113       <span class="keyword">if</span> (n1dof == rdof)
+0114 
+0115          qn1 = zeros(6,1);
+0116          Pn1(1:3) = zeros(3,1);
+0117 
+0118          dqn1dt = zeros(6,1);
+0119 
+0120          <span class="comment">% Give the reference node the same undeformed orientation</span>
+0121          <span class="comment">% as the second node.</span>
+0122          Pn1(4:6) = P(n1dof+6+[4:6]);  
+0123 
+0124       <span class="keyword">end</span>
+0125 
+0126       TB0g(:,jc3+[1:3]) = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (PB(4:6));
+0127 
+0128       [Tar(:,jc3+[1:3]),dTar(:,jc72+[1:72])] = <span class="keyword">...</span>
+0129               <a href="airfoilToRotor.html" class="code" title="function [Tar,dTar] = airfoilToRotor (qy,qp,qn1,qn2,Py,Pp,Pn1,Pn2,Try,Tas)">airfoilToRotor</a> (qy,qB,qn1,qn2,Py,PB,Pn1,Pn2,Try,Tas(:,jc3+[1:3]));
+0130 <span class="comment">%'a2r'</span>
+0131 <span class="comment">%toc(id)</span>
+0132       [xe,TsB(:,jc3+[1:3])] = <a href="elementCSFromNodes.html" class="code" title="function [xe,TsB] = elementCSFromNodes (qn1,qn2,Pn1,Pn2)">elementCSFromNodes</a> (qn1,qn2,Pn1,Pn2);
+0133       dTsB(:,jc36+[1:36]) = <a href="derivElementCS.html" class="code" title="function dTsB = derivElementCS (qn1,qn2,Pn1,Pn2,TsB)">derivElementCS</a> (qn1,qn2,Pn1,Pn2,TsB(:,jc3+[1:3]));
+0134 <span class="comment">%'elcs'</span>
+0135 <span class="comment">%toc(id)</span>
+0136       [TBB0(:,jc3+[1:3]),dTBB0(:,jc9+[1:9])] = <a href="dTdth.html" class="code" title="function [T,dT] = dTdth (th)">dTdth</a> (qB(4:6));
+0137 
+0138       [vng1,ddy] = <a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn1,qB,Pn1,PB,dqn1dt,dqBdt); 
+0139       [vng2,ddy] = <a href="globalVelocity.html" class="code" title="function [vg0,Dy] = globalVelocity (qn,qB,Pn,PB,dqndt,dqBdt)">globalVelocity</a> (qn2,qB,Pn2,PB,dqn2dt,dqBdt); 
+0140       wg(jc3+[1:3]) = 0.5*(vng1(1:3) + vng2(1:3));
+0141 
+0142 <span class="comment">%'wg'</span>
+0143 <span class="comment">%toc(id)</span>
+0144 
+0145    <span class="keyword">end</span>
+0146 
+0147 <span class="keyword">end</span>
+0148 
+0149 <span class="comment">%'end BEMprepTransforms'</span>
+0150 <span class="comment">%toc(id)</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

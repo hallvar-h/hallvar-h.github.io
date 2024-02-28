@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of buildSij</title>
+  <meta name="keywords" content="buildSij">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wind</a> &gt; buildSij.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wind&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>buildSij
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute the correlation functions or spectra associated with
+ turbulence, in either rotating or MBC coordinates.
+
+ Version:        Changes:
+ --------        -------------
+ 12.12.2019      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 12.12.2019      This vectorized version has been compared against
+                 a slower but simpler version with nested &quot;for&quot; 
+                 loops.  Agreement was precise.
+
+ Inputs:
+ -------
+ s,a             : Input data structures from STASTurbine.
+ q               : Vector of displacements from a static analysis.
+ P               : Vector of undeformed nodal positions.
+
+ Outputs:
+ --------
+ 
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a>	Version:        Changes:</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/diagmat.html" class="code" title="function Ts = diagmat (Nmat,T)">diagmat</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function Sij = buildSij (QSflag,MBCflag,s,a,nnf,df,Vinf,TI,Lu,q,dqdt,P)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute the correlation functions or spectra associated with</span>
+0004 <span class="comment">% turbulence, in either rotating or MBC coordinates.</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Version:        Changes:</span>
+0007 <span class="comment">% --------        -------------</span>
+0008 <span class="comment">% 12.12.2019      Original code.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Verification:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 12.12.2019      This vectorized version has been compared against</span>
+0013 <span class="comment">%                 a slower but simpler version with nested &quot;for&quot;</span>
+0014 <span class="comment">%                 loops.  Agreement was precise.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% Inputs:</span>
+0017 <span class="comment">% -------</span>
+0018 <span class="comment">% s,a             : Input data structures from STASTurbine.</span>
+0019 <span class="comment">% q               : Vector of displacements from a static analysis.</span>
+0020 <span class="comment">% P               : Vector of undeformed nodal positions.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% Outputs:</span>
+0023 <span class="comment">% --------</span>
+0024 <span class="comment">%</span>
+0025 
+0026 Nf = 4*nnf;
+0027 
+0028 [idofs,idofm,inods,inodm,Ndof] = <a href="../../STAS-WPP/STAS-Aeroelastic/getDOFRefs.html" class="code" title="function [idofs,idofm,inods,inodm,Ndof] = getDOFRefs (s)">getDOFRefs</a> (s);
+0029 
+0030 dt = 1/(Nf*df);
+0031 taus = dt*[[0:(Nf/2)-1] [-Nf/2:-1]].';
+0032 
+0033 Vmag = sqrt(Vinf(1)^2 + Vinf(2)^2 + Vinf(3)^2);
+0034 sig = TI*Vmag;
+0035 sig2 = sig^2;
+0036 third = 1/3;
+0037 twosiggam = 2*(sig^2)/gamma(third);
+0038 oneLu = 1.34*Lu;
+0039 
+0040 iW = idofs(4) + 6;
+0041 psis = dqdt(iW)*taus;
+0042 
+0043 cp  = cos (psis);
+0044 sp  = sin (psis);
+0045 
+0046 <span class="comment">% Get the P vector specifying undeformed nodal positions and</span>
+0047 <span class="comment">% orientations.</span>
+0048 Pin = <a href="../../STAS-WPP/STAS-Aeroelastic/assemblePin.html" class="code" title="function Pin = assemblePin (s)">assemblePin</a> (s);
+0049 [Tn_y,Th_d,Tb_h] = <a href="../../STAS-WPP/STAS-Aeroelastic/basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (s.nacelle.delta,s.driveshaft.phi);
+0050 
+0051 <span class="comment">% Get some transforms, and call the routine from STAS Aeroelastic</span>
+0052 <span class="comment">% that computes global blade element positions and projections</span>
+0053 <span class="comment">% onto the rotorplane.</span>
+0054 Try = Tn_y;
+0055 Tyy0 = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (q(idofs(3)+[4:6]));
+0056 Ty0g = <a href="../../STAS-WPP/STAS-Utilities/TFromTheta.html" class="code" title="function T = TFromTheta (th)">TFromTheta</a> (P(idofs(3)+[4:6]));
+0057 Trg = Ty0g*Tyy0*Try;
+0058 Tyg = Ty0g*Tyy0;
+0059 [zr,Area,Dp,r,Lp,xeg,xhg,xyg] = <a href="../../STAS-WPP/STAS-Aeroelastic/BEMprepProjections.html" class="code" title="function [zr,Area,Dp,r,Lp,xeg,xhg,xyg] =BEMprepProjections (s,a,q,P,Try,Trg)">BEMprepProjections</a> (s,a,q,P,Try,Trg);
+0060 
+0061 Tdn = zeros (Nf,9);
+0062 Tdn(:,1) =  cp;
+0063 Tdn(:,2) =  sp;
+0064 Tdn(:,4) = -sp;
+0065 Tdn(:,5) =  cp;
+0066 Tdn(:,9) = ones(Nf,1);
+0067 
+0068 Tdn0 = reshape (Tdn(1,:),3,3);
+0069 
+0070 TBpsi = zeros (Nf,9);
+0071 <span class="keyword">if</span> (MBCflag == 1)
+0072    cp2 = cos (psis + 2*pi/3);
+0073    sp2 = sin (psis + 2*pi/3);
+0074    cp3 = cos (psis + 4*pi/3);
+0075    sp3 = sin (psis + 4*pi/3);
+0076    TBpsi(:,1) = third;
+0077    TBpsi(:,2) = 2*third*cp;
+0078    TBpsi(:,3) = 2*third*sp;
+0079    TBpsi(:,4) = third;
+0080    TBpsi(:,5) = 2*third*cp2;
+0081    TBpsi(:,6) = 2*third*sp2;
+0082    TBpsi(:,7) = third;
+0083    TBpsi(:,8) = 2*third*cp3;
+0084    TBpsi(:,9) = 2*third*sp3;
+0085 <span class="keyword">else</span>
+0086    TBpsi(:,1) = 1;
+0087    TBpsi(:,5) = 1;
+0088    TBpsi(:,9) = 1;
+0089 <span class="keyword">end</span>
+0090 
+0091 Nel = size(xeg,1)/3;
+0092 Nel3 = 3*Nel;
+0093 Nel2 = 2*Nel;
+0094 oNel = ones(Nel,1);
+0095 Neb = Nel/3;
+0096 
+0097 i3x = [1:3:Nel3-2].';
+0098 i3y = [2:3:Nel3-1].';
+0099 i3z = [3:3:Nel3].';
+0100 
+0101 ibl = [ones(Neb,1);2*ones(Neb,1);3*ones(Neb,1)];
+0102 
+0103 <span class="comment">% Find the constant element coordinates in the driveshaft</span>
+0104 <span class="comment">% or hub coordinate system.</span>
+0105 Tgrs = <a href="../../STAS-WPP/STAS-Utilities/diagmat.html" class="code" title="function Ts = diagmat (Nmat,T)">diagmat</a> (Nel,Trg.');
+0106 rg0 = xeg - repmat(xhg,Nel,1);
+0107 rd = Tgrs*rg0;
+0108 
+0109 Qij = zeros (Nf,(3*Nel)^2);
+0110 <span class="keyword">for</span> iel1 = 1:Nel
+0111 
+0112 <span class="comment">%printf('%5d\n',iel1);</span>
+0113 <span class="comment">%fflush(stdout);</span>
+0114 
+0115    ic1 = 9*Nel*(iel1-1);
+0116    i1r3 = 3*(iel1-1);
+0117 
+0118    ibel1 = mod(iel1-1,Neb)+1;
+0119    itrip1 = [ibel1, ibel1+Neb, ibel1+2*Neb].';
+0120    ic1s = 9*Nel*(itrip1 - 1);
+0121 
+0122    rnp1 = Tdn0*rd(i1r3+[1:3]);
+0123 
+0124    Tmbc0 = TBpsi(1,3*(ibl(iel1)-1)+[1:3]);
+0125 
+0126    <span class="keyword">for</span> iel2 = 1:Nel
+0127 
+0128       icol = ic1 + 9*(iel2-1);
+0129       ir3 = 3*(iel2-1);
+0130       ibel2 = mod(iel2-1,Neb)+1;
+0131       itrip2 = [ibel2, ibel2+Neb, ibel2+2*Neb].';
+0132 
+0133       icols = [ic1s(1) + 9*(itrip2 - 1); <span class="keyword">...</span>
+0134                ic1s(2) + 9*(itrip2 - 1); <span class="keyword">...</span>
+0135                ic1s(3) + 9*(itrip2 - 1)];
+0136 
+0137       TmbcT = TBpsi(:,3*(ibl(iel2)-1)+[1:3]);
+0138 
+0139       r12 = zeros(Nf,3);
+0140       r12(:,1) = Tdn(:,1)*rd(ir3+1) + Tdn(:,4)*rd(ir3+2) + Tdn(:,7)*rd(ir3+3) - rnp1(1);
+0141       r12(:,2) = Tdn(:,2)*rd(ir3+1) + Tdn(:,5)*rd(ir3+2) + Tdn(:,8)*rd(ir3+3) - rnp1(2);
+0142       r12(:,3) = Tdn(:,3)*rd(ir3+1) + Tdn(:,6)*rd(ir3+2) + Tdn(:,9)*rd(ir3+3) - rnp1(3);
+0143 
+0144       sg = zeros(Nf,3);
+0145       sg(:,1) = Trg(1,1)*r12(:,1) + Trg(1,2)*r12(:,2) + Trg(1,3)*r12(:,3) - Vinf(1)*taus;
+0146       sg(:,2) = Trg(2,1)*r12(:,1) + Trg(2,2)*r12(:,2) + Trg(2,3)*r12(:,3) - Vinf(2)*taus;
+0147       sg(:,3) = Trg(3,1)*r12(:,1) + Trg(3,2)*r12(:,2) + Trg(3,3)*r12(:,3) - Vinf(3)*taus;
+0148 
+0149       s = sqrt(sg(:,1).^2 + sg(:,2).^2 + sg(:,3).^2);
+0150       sLu = s/oneLu;
+0151 
+0152       ind = (s &gt; eps^0.25);
+0153       sjs = zeros (Nf,3);
+0154       sjs(ind,1) = sg(ind,1)./s(ind);
+0155       sjs(ind,2) = sg(ind,2)./s(ind);
+0156       sjs(ind,3) = sg(ind,3)./s(ind);
+0157       sjs(~ind,:) = 1;
+0158 
+0159       Qss = zeros(Nf,1);
+0160       Qss(ind) = twosiggam*((0.5*sLu(ind)).^third).*besselk(third,sLu(ind));
+0161       Qss(~ind) = sig2;
+0162 
+0163       <span class="comment">% This limit as s-&gt;0 is actually infinity, but this limit times any of</span>
+0164       <span class="comment">% the s components is zero, so it's safe to set it to zero.</span>
+0165       dQss = zeros(Nf,1);
+0166       dQss(ind) = -(twosiggam/oneLu)*((0.5*sLu(ind)).^third) <span class="keyword">...</span>
+0167                .* besselk(-2*third,sLu(ind));
+0168       dQss(~ind) = 0;
+0169 
+0170       QsdQss2 = Qss + 0.5*s.*dQss;
+0171 
+0172       QQ = zeros(Nf,9);
+0173       QQ(:,1) = QsdQss2 - 0.5*sjs(:,1).*sg(:,1).*dQss;
+0174       QQ(:,2) = -0.5*sjs(:,1).*sg(:,2).*dQss;
+0175       QQ(:,3) = -0.5*sjs(:,1).*sg(:,3).*dQss;
+0176       QQ(:,4) = QQ(:,2);
+0177       QQ(:,5) = QsdQss2 - 0.5*sjs(:,2).*sg(:,2).*dQss;
+0178       QQ(:,6) = -0.5*sjs(:,2).*sg(:,3).*dQss;
+0179       QQ(:,7) = QQ(:,3);
+0180       QQ(:,8) = QQ(:,6);
+0181       QQ(:,9) = QsdQss2 - 0.5*sjs(:,3).*sg(:,3).*dQss;
+0182 
+0183       Qij(:,icols(1)+[1:9]) = Qij(:,icols(1)+[1:9]) <span class="keyword">...</span>
+0184                              + Tmbc0(1)*QQ.*TmbcT(:,1);
+0185       Qij(:,icols(2)+[1:9]) = Qij(:,icols(2)+[1:9]) <span class="keyword">...</span>
+0186                              + Tmbc0(1)*QQ.*TmbcT(:,2);
+0187       Qij(:,icols(3)+[1:9]) = Qij(:,icols(3)+[1:9]) <span class="keyword">...</span>
+0188                              + Tmbc0(1)*QQ.*TmbcT(:,3);
+0189       Qij(:,icols(4)+[1:9]) = Qij(:,icols(4)+[1:9]) <span class="keyword">...</span>
+0190                              + Tmbc0(2)*QQ.*TmbcT(:,1);
+0191       Qij(:,icols(5)+[1:9]) = Qij(:,icols(5)+[1:9]) <span class="keyword">...</span>
+0192                              + Tmbc0(2)*QQ.*TmbcT(:,2);
+0193       Qij(:,icols(6)+[1:9]) = Qij(:,icols(6)+[1:9]) <span class="keyword">...</span>
+0194                              + Tmbc0(2)*QQ.*TmbcT(:,3);
+0195       Qij(:,icols(7)+[1:9]) = Qij(:,icols(7)+[1:9]) <span class="keyword">...</span>
+0196                              + Tmbc0(3)*QQ.*TmbcT(:,1);
+0197       Qij(:,icols(8)+[1:9]) = Qij(:,icols(8)+[1:9]) <span class="keyword">...</span>
+0198                              + Tmbc0(3)*QQ.*TmbcT(:,2);
+0199       Qij(:,icols(9)+[1:9]) = Qij(:,icols(9)+[1:9]) <span class="keyword">...</span>
+0200                              + Tmbc0(3)*QQ.*TmbcT(:,3);
+0201 
+0202    <span class="keyword">end</span>
+0203 
+0204 <span class="keyword">end</span>
+0205 
+0206 <span class="keyword">if</span> (QSflag ~= 1)
+0207 
+0208    <span class="comment">% Perform the Fourier transform to obtain the spectra.  Do this</span>
+0209    <span class="comment">% in chunks to save memory.</span>
+0210    M = Nel;
+0211    Nch = size(Qij,2)/M;
+0212    <span class="keyword">for</span> ich = 1:Nch
+0213       icol = M*(ich-1);
+0214       Qij(:,icol+[1:M]) = dt*fft(Qij(:,icol+[1:M]));
+0215    <span class="keyword">end</span>
+0216 
+0217 <span class="keyword">end</span>
+0218 
+0219 Sij = Qij;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

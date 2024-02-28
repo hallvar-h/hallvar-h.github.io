@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of modes</title>
+  <meta name="keywords" content="modes">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; modes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>modes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [shape,freq] = modes (Nmod,M,K) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Version:        Changes:
+ --------        -------------
+ 04.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 04.12.2017      Used in bodyModes, same verification status.
+                 Experience indicates that this code produces the 
+                 correct results.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="bodyModes.html" class="code" title="function [shape,freq,mdamp] = bodyModes (s,M,K,ret,slv)">bodyModes</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [shape,freq] = modes (Nmod,M,K)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Version:        Changes:</span>
+0004 <span class="comment">% --------        -------------</span>
+0005 <span class="comment">% 04.12.2017      Original code.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Verification:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 04.12.2017      Used in bodyModes, same verification status.</span>
+0010 <span class="comment">%                 Experience indicates that this code produces the</span>
+0011 <span class="comment">%                 correct results.</span>
+0012 <span class="comment">%</span>
+0013 
+0014 shape = zeros(size(M,1),Nmod);
+0015 freq  = zeros(Nmod,1);
+0016 
+0017 [shp,lam] = eig(K,M);
+0018 f1 = diag(lam);
+0019 [w2,ifreq] = sort(f1);
+0020 shp = shp(:,ifreq(1:Nmod));
+0021 w2 = w2(1:Nmod);
+0022 
+0023 <span class="comment">%[shp,lam] = eigs(K,M,Nmod,'sm');</span>
+0024 <span class="comment">%w2 = diag(lam);</span>
+0025 
+0026 <span class="keyword">for</span> ieig = 1:Nmod
+0027    <span class="comment">% &quot;max&quot; here is OK for complex step, as it is used only to get</span>
+0028    <span class="comment">% the index imax.</span>
+0029    <span class="comment">%</span>
+0030    <span class="comment">% Arrange things such that the maximum magnitude entry in the</span>
+0031    <span class="comment">% normalized shape is positive.</span>
+0032    [scale,imax] = max(real(<a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>(shp(:,ieig))));
+0033    smax = sign(real(shp(imax,ieig)));
+0034 <span class="comment">%   shape(:,ieig) = shp(:,ieig)/shp(imax,ieig);</span>
+0035    shape(:,ieig) = smax*shp(:,ieig)/sqrt((shp(:,ieig).')*shp(:,ieig));
+0036    freq(ieig) = sqrt(w2(ieig))/(2*pi);
+0037 
+0038 <span class="comment">%f = sqrt(w2(ieig))/(2*pi)</span>
+0039 <span class="comment">%printVec(shape(:,ieig))</span>
+0040 
+0041 <span class="keyword">end</span>
+0042 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

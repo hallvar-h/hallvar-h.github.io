@@ -1,0 +1,141 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of starBlock</title>
+  <meta name="keywords" content="starBlock">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Test</a> &gt; starBlock.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Test&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>starBlock
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [eta,D] = starBlock (u,uLB,uUB,eps,weta,linFlag) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Soft saturation block.
+
+ Version:        Changes:
+ --------        -------------
+ 19.10.2020      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 19.10.2020      Sample output checked.  Derivatives verified using
+                 complex step.
+
+ Inputs:
+ -------
+ u,uLB,uUB       : The saturating signal and its saturation bounds.
+ eps             : The error input to the PI.
+ weta            : Width of the transition region in the saturations.
+ linFlag         : Set to 1 if linearized D output is desired.
+
+ Outputs:
+ --------
+ eta             : Anti-windup output.
+ D               : = d eta / d[u, uLB, uUB, eps].
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="plantControl.html" class="code" title="function [dxdt,Phat,A,B,C,D] = plantControl (x,u,p,atables,cpct,linFlag)">plantControl</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [eta,D] = starBlock (u,uLB,uUB,eps,weta,linFlag)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Soft saturation block.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Version:        Changes:</span>
+0006 <span class="comment">% --------        -------------</span>
+0007 <span class="comment">% 19.10.2020      Original code.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Version:        Verification:</span>
+0010 <span class="comment">% --------        -------------</span>
+0011 <span class="comment">% 19.10.2020      Sample output checked.  Derivatives verified using</span>
+0012 <span class="comment">%                 complex step.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Inputs:</span>
+0015 <span class="comment">% -------</span>
+0016 <span class="comment">% u,uLB,uUB       : The saturating signal and its saturation bounds.</span>
+0017 <span class="comment">% eps             : The error input to the PI.</span>
+0018 <span class="comment">% weta            : Width of the transition region in the saturations.</span>
+0019 <span class="comment">% linFlag         : Set to 1 if linearized D output is desired.</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Outputs:</span>
+0022 <span class="comment">% --------</span>
+0023 <span class="comment">% eta             : Anti-windup output.</span>
+0024 <span class="comment">% D               : = d eta / d[u, uLB, uUB, eps].</span>
+0025 
+0026 
+0027 del = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a> (uUB - u, u - uLB);          <span class="comment">% minc: for complex step.</span>
+0028 kap = sign (real(u - (uUB + uLB)/2));   <span class="comment">% real: for complex step.</span>
+0029 
+0030 p = [0;1 + 0.1/weta];
+0031 [ye,dye,d2ye] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> (-(kap*eps)/weta,p);
+0032 [yd,dyd,d2yd] = <a href="../../STAS-WPP/STAS-Utilities/saturate.html" class="code" title="function [y,Du,D2u] = saturate (u,params)">saturate</a> (del/weta,p);
+0033 
+0034 ne = 0.5*(1 + ye);
+0035 nd = 0.5*(1 + yd);
+0036 
+0037 eta = nd + ne*(1 - nd);
+0038 
+0039 <span class="comment">%[kap eps -(kap*eps)/weta ye del del/weta yd ne nd eta]</span>
+0040 
+0041 D = zeros(1,4);
+0042 <span class="keyword">if</span> (linFlag == 1)
+0043 
+0044    detadnd = 1 - ne;
+0045    detadne = 1 - nd;
+0046    dnddyd = 0.5;
+0047    dnedye = 0.5;
+0048 
+0049    <span class="keyword">if</span> (real(uUB-u) &lt;= real(u-uLB))      <span class="comment">% real: for complex step.</span>
+0050       ddeldu = -1;
+0051       ddelduUB = 1;
+0052       ddelduLB = 0;
+0053    <span class="keyword">else</span>
+0054       ddeldu = 1;
+0055       ddelduUB = 0;
+0056       ddelduLB = -1;
+0057    <span class="keyword">end</span>
+0058 
+0059    ddd = detadnd*dnddyd*dyd;
+0060 
+0061    D(1) = ddd*ddeldu/weta;
+0062    D(2) = ddd*ddelduLB/weta;
+0063    D(3) = ddd*ddelduUB/weta;
+0064    D(4) = -detadne*dnedye*dye*kap/weta;
+0065 
+0066 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

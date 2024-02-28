@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of atan2c</title>
+  <meta name="keywords" content="atan2c">
+  <meta name="description" content="Works with complex step.  Protects against (0,0). The logical">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; atan2c.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>atan2c
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Works with complex step.  Protects against (0,0). The logical</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function phi = atan2c (y,x); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Works with complex step.  Protects against (0,0). The logical
+ branches follow the real part of x and y.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMNL.html" class="code" title="function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega)">BEMNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMinit.html" class="code" title="function x0 = BEMinit (psiFlag,Viguess,Tar,Trg,Vg,wg,zr,ch,Lel,aoast,rho,A,Dia,azi,omega)">BEMinit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/BEMlin.html" class="code" title="function [dxdt,A,By,C,Dy] = BEMlin (psiFlag,x,Tar,Tas,TsB,TBB0,TB0g,dTar,dTsB,dTBB0,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,Dp,rp,Lp,azi,Omega)">BEMlin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/alphaq.html" class="code" title="function [aq,Dy] = alphaq (Ua)">alphaq</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/bladeSectionTransformsFromNodes.html" class="code" title="function [TB_s,Ts_B] = bladeSectionTransformsFromNodes (Pin)">bladeSectionTransformsFromNodes</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/prandtl.html" class="code" title="function f = prandtl (Uz,Ut,r,Dia)">prandtl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/prandtlLin.html" class="code" title="function [f,z,Dy] = prandtlLin (Nb,r,Do,Uzts)">prandtlLin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/rotorSpeedAero.html" class="code" title="function [W,azi,Dy] = rotorSpeedAero (q,dqdt,P,Try,Ydof,Ddof,nodof)">rotorSpeedAero</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/rotorUZTS.html" class="code" title="function [psie,Uzts,Dy] = rotorUZTS (xer,Ur)">rotorUZTS</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/soilLin.html" class="code" title="function [F,dFdq,dFdqd] = soilLin (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilLin</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/soilNL.html" class="code" title="function F = soilNL (kx,ky,kz,kthz,cx,cy,cz,cthz,PF,qF,dqFdt)">soilNL</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Aeroelastic/ztsToxyz.html" class="code" title="function [psie,vxyz,Dy] = ztsToxyz (xer,vzts)">ztsToxyz</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/PMSG.html" class="code" title="function [dxdt,yout,LA,LBy,C] = PMSG (Linflag,x,yin,params)">PMSG</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/gridFrequency.html" class="code" title="function [dxdt,yout,A,By,C] = gridFrequency (Linflag,x,yin,params)">gridFrequency</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/fbem.html" class="code" title="function f = fbem (Vi,VV,DD,ri,WW,chord,aoas,kfoils,foilwt,xib)">fbem</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/speedyBEM2.html" class="code" title="function [Vir,Vmag,f,aoa,phi,Cl,Cd,dCl,dCd,Fld,Fas,Fap] =speedyBEM2 (Neb,Vinf,omega,psi,beta,xi,Dia,r,Lel,chord,xpc,aoas,kfoils,foilwt,density,viscosity)">speedyBEM2</a>	</li>
+<li><a href="../../STAS-WPP/STAS-WPP/MBCOLT.html" class="code" title="function [Lop,Rop,yop,Aop,Bop,Cop,Dop] =MBCOLT (linFlag,xop,dxop,uop,s,a,epar,bpar,ypar,m,c,grav,P,shape0,mdamp0,Tas,Try,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi0,igen,ipit,iyaw)">MBCOLT</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function phi = atan2c (y,x);</a>
+0002 <span class="comment">% Works with complex step.  Protects against (0,0). The logical</span>
+0003 <span class="comment">% branches follow the real part of x and y.</span>
+0004 
+0005 N = size(y,1);
+0006 phi = zeros(N,1);
+0007 ry = real(y);
+0008 rx = real(x);
+0009 ax = abs(x);      <span class="comment">% abs() is the correct operation in this case, used for logic.</span>
+0010 <span class="comment">%del = sqrt(eps);</span>
+0011 <span class="comment">%ind = (abs(ry) &gt; del) &amp; (abs(rx) &lt; del);  % (Inf handled OK by atan.)</span>
+0012 <span class="comment">%phi(ind) = sign(y(ind))*pi/2;</span>
+0013 ind = (ax ~= 0);
+0014 phi(ind) = atan(y(ind)./x(ind));
+0015 ind = (ry ~= 0) &amp; (ax == 0);
+0016 phi(ind) = sign(ry(ind))*0.5*pi;
+0017 inr = (rx &lt; 0);
+0018 i2 = (inr &amp; (ry &gt;= 0));
+0019 i3 = (inr &amp; (ry &lt; 0));
+0020 phi(i2) = phi(i2) + pi;
+0021 phi(i3) = phi(i3) - pi;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

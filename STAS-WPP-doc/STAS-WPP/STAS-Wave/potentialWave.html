@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of potentialWave</title>
+  <meta name="keywords" content="potentialWave">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Wave</a> &gt; potentialWave.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Wave&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>potentialWave
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [p,zeta,vx,ax] = potentialWave (Hs,Tp,d,Dia,rho,f,theta,z,t) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Simulates a wave about a monopile in the time domain.
+ Pressures are computed using first-order wave kinematics
+ but including the v^2 terms in Bernoulli's equation.
+
+ Version:        Changes:
+ --------        -------------
+ 25.03.2015      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 25.03.2015      Memo AN 15.12.19
+
+ Inputs:
+ -------
+ Hs              : Significant wave height.
+ Tp              : Characteristic wave period.
+ d               : Water depth.
+ Dia             : Cylinder diameter at each z point.
+ rho             : Water density.
+ f               : Frequencies to use when discretizing the wave
+                   amplitude spectrum.
+ theta           : Location about the cylinder, theta = 0 is
+                   on the lee side relative to the waves.
+ z               : Depth coordinates relative to the free surface.
+ t               : Vector of times.
+
+ Outputs:
+ --------
+ p               : Ntime*Nth*Nz vector of pressures.
+ zeta            : Ntime*Nth vector of surface elevations.
+ vx              : Ntime*Nz vector of incident velocities at the
+                   cylinder centerplane.
+ ax              : Ntime*Nz vector of incident accelerations at the
+                   cylinder centerplane.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="waveFourier.html" class="code" title="function [zeta0,eps,k,df] = waveFourier (depth,Hs,Tp,f)">waveFourier</a>	</li>
+<li><a href="waveVelocity.html" class="code" title="function [phi,vt,vz,vx] = waveVelocity (f,zeta0,k,eps,Dia,d,theta,z)">waveVelocity</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="waveForce.html" class="code" title="function F = waveForce (Hs,Tp,Vc,d,rho,f,theta,z,t,znod,Dnod)">waveForce</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [p,zeta,vx,ax] = potentialWave (Hs,Tp,d,Dia,rho,f,theta,z,t)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Simulates a wave about a monopile in the time domain.</span>
+0004 <span class="comment">% Pressures are computed using first-order wave kinematics</span>
+0005 <span class="comment">% but including the v^2 terms in Bernoulli's equation.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 25.03.2015      Original code.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% Version:        Verification:</span>
+0012 <span class="comment">% --------        -------------</span>
+0013 <span class="comment">% 25.03.2015      Memo AN 15.12.19</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Inputs:</span>
+0016 <span class="comment">% -------</span>
+0017 <span class="comment">% Hs              : Significant wave height.</span>
+0018 <span class="comment">% Tp              : Characteristic wave period.</span>
+0019 <span class="comment">% d               : Water depth.</span>
+0020 <span class="comment">% Dia             : Cylinder diameter at each z point.</span>
+0021 <span class="comment">% rho             : Water density.</span>
+0022 <span class="comment">% f               : Frequencies to use when discretizing the wave</span>
+0023 <span class="comment">%                   amplitude spectrum.</span>
+0024 <span class="comment">% theta           : Location about the cylinder, theta = 0 is</span>
+0025 <span class="comment">%                   on the lee side relative to the waves.</span>
+0026 <span class="comment">% z               : Depth coordinates relative to the free surface.</span>
+0027 <span class="comment">% t               : Vector of times.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">% p               : Ntime*Nth*Nz vector of pressures.</span>
+0032 <span class="comment">% zeta            : Ntime*Nth vector of surface elevations.</span>
+0033 <span class="comment">% vx              : Ntime*Nz vector of incident velocities at the</span>
+0034 <span class="comment">%                   cylinder centerplane.</span>
+0035 <span class="comment">% ax              : Ntime*Nz vector of incident accelerations at the</span>
+0036 <span class="comment">%                   cylinder centerplane.</span>
+0037 
+0038 g = 9.807;
+0039 
+0040 Nth = size(theta,1);
+0041 Nz = size(z,1);
+0042 Nf = size(f,1);
+0043 Ntime = size(t,1);
+0044 
+0045 zeta = zeros(Ntime*Nth,1);
+0046 p = zeros(Ntime*Nth*Nz,1);
+0047 vx = zeros(Ntime*Nz,1);
+0048 ax = zeros(Ntime*Nz,1);
+0049 
+0050 <span class="comment">% Dispersion relationship and decomposition of wave spectra</span>
+0051 <span class="comment">% into discrete amplitudes.</span>
+0052 [zeta0,eps,k,df] = <a href="waveFourier.html" class="code" title="function [zeta0,eps,k,df] = waveFourier (depth,Hs,Tp,f)">waveFourier</a> (d,Hs,Tp,f);
+0053 
+0054 <span class="comment">% Complex amplitude of velocity for each frequency bin.</span>
+0055 [phi0,vt0,vz0,vx0] = <a href="waveVelocity.html" class="code" title="function [phi,vt,vz,vx] = waveVelocity (f,zeta0,k,eps,Dia,d,theta,z)">waveVelocity</a> (f,zeta0,k,eps,Dia,d,theta,z);
+0056 
+0057 <span class="comment">% Matrix of cyclic phases.  Want f row-wise.</span>
+0058 eiwt = exp(i*2*pi*t*f');
+0059 
+0060 <span class="comment">% First get the wave elevation above the theta stations.</span>
+0061 <span class="keyword">for</span> ith = 1:Nth
+0062    indt = Ntime*(ith-1);
+0063    zeta(indt+1:indt+Ntime) = <span class="keyword">...</span>
+0064          real(eiwt*(exp(i*(-0.5*k*Dia*cos(theta(ith)) + eps)).*zeta0));
+0065 <span class="keyword">end</span>
+0066 
+0067 <span class="comment">%{</span>
+0068 fid = fopen(<span class="string">'zeta.txt'</span>,<span class="string">'w'</span>);
+0069 <span class="keyword">for</span> itime = 1:Ntime
+0070    fprintf(fid,<span class="string">'%+5.4e %+5.4e %+5.4e %+5.4e\n'</span>,      <span class="keyword">...</span>
+0071            t(itime),zeta(itime),zeta(9*Ntime+itime), <span class="keyword">...</span>
+0072            zeta(18*Ntime+itime));
+0073 <span class="keyword">end</span>
+0074 fclose(fid);
+0075 <span class="comment">%}</span>
+0076 
+0077 <span class="keyword">for</span> iz = 1:Nz
+0078    indzf = Nf*Nth*(iz-1);
+0079    indzt = Ntime*Nth*(iz-1);
+0080    indx0 = Nf*(iz-1);
+0081    indx = Ntime*(iz-1);
+0082 
+0083    <span class="keyword">for</span> ith = 1:Nth
+0084       indf = indzf + Nf*(ith-1);
+0085       indt = indzt + Ntime*(ith-1);
+0086       izet = Ntime*(ith-1);
+0087 
+0088       <span class="comment">% Get arrays at the current point and all times.</span>
+0089       dphidt = real(i*2*pi*eiwt*(f.*phi0(indf+1:indf+Nf)));
+0090       vt = real(eiwt*vt0(indf+1:indf+Nf));
+0091       vz = real(eiwt*vz0(indf+1:indf+Nf));
+0092 
+0093       <span class="comment">% Compute the pressure at the current point and all times.</span>
+0094       <span class="comment">% In the COMPUTATIONAL domain, the hydrostatic pressure</span>
+0095       <span class="comment">% does not change.  The dynamic free-surface boundary</span>
+0096       <span class="comment">% condition ensures that the surface fluctuations in gz</span>
+0097       <span class="comment">% pressure are captured.</span>
+0098       p(indt+1:indt+Ntime) = -rho*(dphidt + 0.5*(vt.^2 + vz.^2));
+0099 
+0100    <span class="keyword">end</span>
+0101 
+0102    <span class="comment">% Compute the incident x-direction flow velocity.</span>
+0103    vx(indx+1:indx+Ntime) = real(eiwt*vx0(indx0+1:indx0+Nf));
+0104    ax(indx+1:indx+Ntime) = real(eiwt*(i*2*pi*f.*vx0(indx0+1:indx0+Nf)));
+0105 
+0106 <span class="keyword">end</span>
+0107 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

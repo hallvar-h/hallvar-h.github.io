@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of converterControlNet</title>
+  <meta name="keywords" content="converterControlNet">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; converterControlNet.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>converterControlNet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The network-side converter is controlled so as to provide a commanded
+ reactive power, with the active power controlled so as to hold the DC
+ link voltage at its nominal value.
+
+ Note, could implement a PLL instead of the simple measurement delay on
+ the electrical frequency as implemented presently.  For this, let the
+ pll own vms (?) and move wem to the y vector as input.
+
+   states:           y vector:
+   impd,q    1,2     ipd,q     1,2    in   (transformer)
+   imsd,q    3,4     isd,q     3,4    in   (transformer)
+   vmsd,q    5,6     vsd,q     5,6    in   (grid)
+   Vmdc       7      Vdc        7     in   (converter)
+   PsiDC      8      Vhdc       8     in   (input)
+   PsiQ       9      Qh         9     in   (voltage control)
+   PsiP     10,11    wem       10     in   (PLL)
+                     vpd,q    11,12   out
+
+ Version:        Changes:
+ --------        -------------
+ 21.11.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 21.11.2018      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : 1,2   imp   (A)     Measured converter terminal current.
+                   3,4   ims   (A)     Measured transformer terminal current.
+                   5,6   vms   (V)     Measured transformer terminal voltage.
+                    7    Vmdc  (V)     Measured DC link voltage.
+                    8    PsiDC (A)     Integrated DC link voltage error (w/gain).
+                    9    PsiQ  (A)     Integrated reactive power error (w/gain).
+                  10,11  PsiP  (A/s)   Integrated current error (w/gain).
+ yin             : 1,2   ip    (A)     Converter terminal current.
+                   3,4   is    (A)     Transformer terminal current.
+                   5,6   vs    (A)     Transformer terminal voltage.
+                    7    Vdc   (V)     DC link voltage.
+                    8    Vhdc  (V)     DC link voltage command.
+                    9    Qh    (VA)    Reactive power command.
+                   10    wem   (rad/s) Measured electrical frequency.
+ params          :  1    ap    (rad/s) ip measurement filter.
+                    2    ais   (rad/s) is measurement filter.
+                    3    avs   (rad/s) vs measurement filter.
+                    4    adc   (rad/s) Vdc measurement filter.
+                    5    KpDC  (A/V)   Proportional gain on ipd control.
+                    6    KiDC  (A/Vs)  Integral gain on ipd control.
+                    7    KpQ   (1/V)   Proportional gain on ipq control.
+                    8    KiQ   (1/Vs)  Integral gain on ipq control.
+                    9    Kppd  (1/s)   Proportional gain on vpd control.
+                   10    Kipd  (1/s^2) Integral gain on vpd control.
+                   11    Kppq  (1/s)   Proportional gain on vpq control.
+                   12    Kipq  (1/s^2) Integral gain on vpq control.
+                   13    KFp   (-)     Feedforward gain on vms in vp control.
+                  14-17  It    (A)     RMS phase currents for nonlinear inductance
+                  18-21  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances
+
+ Outputs:
+ --------
+ yout            : 1,2   vp    (V)     Converter terminal voltage.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,yout,A,By,C,Dy] = converterControlNet (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The network-side converter is controlled so as to provide a commanded</span>
+0004 <span class="comment">% reactive power, with the active power controlled so as to hold the DC</span>
+0005 <span class="comment">% link voltage at its nominal value.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Note, could implement a PLL instead of the simple measurement delay on</span>
+0008 <span class="comment">% the electrical frequency as implemented presently.  For this, let the</span>
+0009 <span class="comment">% pll own vms (?) and move wem to the y vector as input.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   states:           y vector:</span>
+0012 <span class="comment">%   impd,q    1,2     ipd,q     1,2    in   (transformer)</span>
+0013 <span class="comment">%   imsd,q    3,4     isd,q     3,4    in   (transformer)</span>
+0014 <span class="comment">%   vmsd,q    5,6     vsd,q     5,6    in   (grid)</span>
+0015 <span class="comment">%   Vmdc       7      Vdc        7     in   (converter)</span>
+0016 <span class="comment">%   PsiDC      8      Vhdc       8     in   (input)</span>
+0017 <span class="comment">%   PsiQ       9      Qh         9     in   (voltage control)</span>
+0018 <span class="comment">%   PsiP     10,11    wem       10     in   (PLL)</span>
+0019 <span class="comment">%                     vpd,q    11,12   out</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Version:        Changes:</span>
+0022 <span class="comment">% --------        -------------</span>
+0023 <span class="comment">% 21.11.2018      Original code.</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Version:        Verification:</span>
+0026 <span class="comment">% --------        -------------</span>
+0027 <span class="comment">% 21.11.2018      Derivatives verified by complex step.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Inputs:</span>
+0030 <span class="comment">% -------</span>
+0031 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0032 <span class="comment">% x               : 1,2   imp   (A)     Measured converter terminal current.</span>
+0033 <span class="comment">%                   3,4   ims   (A)     Measured transformer terminal current.</span>
+0034 <span class="comment">%                   5,6   vms   (V)     Measured transformer terminal voltage.</span>
+0035 <span class="comment">%                    7    Vmdc  (V)     Measured DC link voltage.</span>
+0036 <span class="comment">%                    8    PsiDC (A)     Integrated DC link voltage error (w/gain).</span>
+0037 <span class="comment">%                    9    PsiQ  (A)     Integrated reactive power error (w/gain).</span>
+0038 <span class="comment">%                  10,11  PsiP  (A/s)   Integrated current error (w/gain).</span>
+0039 <span class="comment">% yin             : 1,2   ip    (A)     Converter terminal current.</span>
+0040 <span class="comment">%                   3,4   is    (A)     Transformer terminal current.</span>
+0041 <span class="comment">%                   5,6   vs    (A)     Transformer terminal voltage.</span>
+0042 <span class="comment">%                    7    Vdc   (V)     DC link voltage.</span>
+0043 <span class="comment">%                    8    Vhdc  (V)     DC link voltage command.</span>
+0044 <span class="comment">%                    9    Qh    (VA)    Reactive power command.</span>
+0045 <span class="comment">%                   10    wem   (rad/s) Measured electrical frequency.</span>
+0046 <span class="comment">% params          :  1    ap    (rad/s) ip measurement filter.</span>
+0047 <span class="comment">%                    2    ais   (rad/s) is measurement filter.</span>
+0048 <span class="comment">%                    3    avs   (rad/s) vs measurement filter.</span>
+0049 <span class="comment">%                    4    adc   (rad/s) Vdc measurement filter.</span>
+0050 <span class="comment">%                    5    KpDC  (A/V)   Proportional gain on ipd control.</span>
+0051 <span class="comment">%                    6    KiDC  (A/Vs)  Integral gain on ipd control.</span>
+0052 <span class="comment">%                    7    KpQ   (1/V)   Proportional gain on ipq control.</span>
+0053 <span class="comment">%                    8    KiQ   (1/Vs)  Integral gain on ipq control.</span>
+0054 <span class="comment">%                    9    Kppd  (1/s)   Proportional gain on vpd control.</span>
+0055 <span class="comment">%                   10    Kipd  (1/s^2) Integral gain on vpd control.</span>
+0056 <span class="comment">%                   11    Kppq  (1/s)   Proportional gain on vpq control.</span>
+0057 <span class="comment">%                   12    Kipq  (1/s^2) Integral gain on vpq control.</span>
+0058 <span class="comment">%                   13    KFp   (-)     Feedforward gain on vms in vp control.</span>
+0059 <span class="comment">%                  14-17  It    (A)     RMS phase currents for nonlinear inductance</span>
+0060 <span class="comment">%                  18-21  Lt    (H)     Lp + (a^2)Ls nonlinear phase inductances</span>
+0061 <span class="comment">%</span>
+0062 <span class="comment">% Outputs:</span>
+0063 <span class="comment">% --------</span>
+0064 <span class="comment">% yout            : 1,2   vp    (V)     Converter terminal voltage.</span>
+0065 
+0066 Nx    = size(x,1);
+0067 Nyi   = size(yin,1);
+0068 Nyo   = 2;
+0069 Ny    = Nyi + Nyo;
+0070 
+0071 dxdt  = zeros(Nx,1);
+0072 yout  = zeros(Nyo,1);
+0073 A     = zeros(Nx,Nx);
+0074 By    = zeros(Nx,Ny);
+0075 C     = zeros(Ny,Nx);
+0076 Dy    = zeros(Ny,Ny);
+0077 
+0078 sq3 = 1/sqrt(3);
+0079 
+0080 imp   = x(1:2);
+0081 ims   = x(3:4);
+0082 vms   = x(5:6);
+0083 Vmdc  = x(7);
+0084 PsiDC = x(8);
+0085 PsiQ  = x(9);
+0086 PsiP  = x(10:11);
+0087 ip    = yin(1:2);
+0088 is    = yin(3:4);
+0089 vs    = yin(5:6);
+0090 Vdc   = yin(7);
+0091 Vhdc  = yin(8);
+0092 Qh    = yin(9);
+0093 wem   = yin(10);
+0094 ap    = params(1);
+0095 ais   = params(2);
+0096 avs   = params(3);
+0097 adc   = params(4);
+0098 KpDC  = params(5);
+0099 KiDC  = params(6);
+0100 KpQ   = params(7);
+0101 KiQ   = params(8);
+0102 Kppd  = params(9);
+0103 Kipd  = params(10);
+0104 Kppq  = params(11);
+0105 Kipq  = params(12);
+0106 KFp   = params(13);
+0107 IIt   = params(14:17);
+0108 LLt   = params(18:21);
+0109 
+0110 Qms = vms(2)*ims(1) - vms(1)*ims(2);
+0111 edc = Vhdc - Vmdc;
+0112 eQ  = Qh - Qms;
+0113 ipd = KpDC*edc + PsiDC;
+0114 ipq = KpQ*eQ + PsiQ;
+0115 II  = <a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>(sq3*sqrt(imp(1)^2 + imp(2)^2),eps);
+0116 [L,dL] = <a href="inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a> (IIt,LLt,II);
+0117 
+0118 dxdt(1:2)   = -ap*imp + ap*ip;
+0119 dxdt(3:4)   = -ais*ims + ais*is;
+0120 dxdt(5:6)   = -avs*vms + avs*vs;
+0121 dxdt(7)     = -adc*Vmdc + adc*Vdc;
+0122 dxdt(8)     =  KiDC*edc;
+0123 dxdt(9)     =  KiQ*eQ;
+0124 dxdt(10:11) =  [Kipd 0;0 Kipq]*[ipd-imp(1);ipq-imp(2)];
+0125 
+0126 term = [Kppd 0;0 Kppq]*[ipd-imp(1);ipq-imp(2)] + PsiP + wem*[0 -1;1 0]*imp + KFp*vms;
+0127 yout = L*term;
+0128 
+0129 <span class="keyword">if</span> (Linflag == 1)
+0130 
+0131    A(1:2,1:2)    =  [-ap 0;0 -ap];
+0132    A(3:4,3:4)    =  [-ais 0;0 -ais];
+0133    A(5:6,5:6)    =  [-avs 0;0 -avs];
+0134    A(7,7)        = -adc;
+0135    A(8,7)        = -KiDC;
+0136    A(9,3:6)      = -KiQ*[vms(2), -vms(1), -ims(2), ims(1)];
+0137    A(10,1)       = -Kipd;
+0138    A(10,7)       = -Kipd*KpDC;
+0139    A(10,8)       =  Kipd;
+0140    A(11,2)       = -Kipq;
+0141    A(11,3:6)     = -Kipq*KpQ*[vms(2), -vms(1), -ims(2), ims(1)];
+0142    A(11,9)       =  Kipq;
+0143 
+0144    By(1:2,1:2)   =  [ap 0;0 ap];
+0145    By(3:4,3:4)   =  [ais 0;0 ais];
+0146    By(5:6,5:6)   =  [avs 0;0 avs];
+0147    By(7,7)       =  adc;
+0148    By(8,8)       =  KiDC;
+0149    By(9,9)       =  KiQ;
+0150    By(10,8)      =  Kipd*KpDC;
+0151    By(11,9)      =  Kipq*KpQ;
+0152 
+0153    C(Nyi+[1:2],1:2) =  L*wem*[0 -1;1 0]                 <span class="keyword">...</span>
+0154                     +  dL*term*[imp(1)/II, imp(2)/II]/3 <span class="keyword">...</span>
+0155                     -  L*[Kppd, 0;0, Kppq];
+0156    C(Nyi+[1:2],5:6) =  L*[KFp 0;0 KFp];
+0157    C(Nyi+1,7)    = -L*Kppd*KpDC;
+0158    C(Nyi+1,8)    =  L*Kppd;
+0159    C(Nyi+2,3:6)  =  C(Nyi+2,3:6) - L*Kppq*KpQ*[vms(2), -vms(1), -ims(2), ims(1)];
+0160    C(Nyi+2,9)    =  L*Kppq;
+0161    C(Nyi+[1:2],10:11) = L*eye(2);
+0162 
+0163    Dy(Nyi+1,8)   =  L*Kppd*KpDC;
+0164    Dy(Nyi+2,9)   =  L*Kppq*KpQ;
+0165    Dy(Nyi+[1:2],10) =  L*[0 -1;1 0]*imp;
+0166 
+0167 <span class="keyword">end</span>
+0168 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

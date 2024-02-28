@@ -1,0 +1,245 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of undeformedPosition</title>
+  <meta name="keywords" content="undeformedPosition">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; undeformedPosition.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>undeformedPosition
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [qB0,Pn0_B,Ts0_B,TB0_g] =undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx,idofs,idofm,inods,inodm) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Computes the undeformed nodal positions and orientations.
+
+ Version:        Changes:
+ --------        -------------
+ 02.10.2017      Original code.
+ 27.11.2017      Updated to include joint angles at the end of qB0, Pn0_B.
+
+ Version:        Verification:
+ --------        -------------
+ 02.10.2017      Visual check of outputs.
+ 27.11.2017      Visual check of outputs.
+
+ Inputs:
+ -------
+ Pin             : This is the vector of nodal coordinates that comes
+                   out of STASTurbine.  It contains pnB_B for each
+                   node, and then the structural twist angle.
+ yaw...pitch     : yaw, azimuth, and pitch (1-3) are joint angles.
+                   tilt is shaft tilt, and cone is blade cone.
+ edx             : Redundant DOF representing axial displacement of the
+                   driveshaft front bearing node with respect to the
+                   master node on the nacelle at this location.
+ idofs...inodm   : DOF and node references for slave and master nodes.
+
+ Outputs:
+ --------
+ qB0             : Since qB0 represents the deformation with respect
+                   to the undeformed shape, this is initialized to 
+                   zero.
+ Pn0_B           : For body reference nodes: this gives OBg_g and
+                   the exponential map parameters Theta that describe
+                   the orientation of the body in the global CS.  For
+                   other nodes, this gives pnB_B and theta of the 
+                   associated element section CS.
+ Ts0_B           : Transforms from element section to body coordinates.
+ TB0_g           : Transforms from body to global coordinates.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a>	This builds the basic 3-by-3 transform matrices,</li>
+<li><a href="bladeSectionTransformsFromNodes.html" class="code" title="function [TB_s,Ts_B] = bladeSectionTransformsFromNodes (Pin)">bladeSectionTransformsFromNodes</a>	</li>
+<li><a href="undeformedBodyToGlobal.html" class="code" title="function TB0_g = undeformedBodyToGlobal (yaw,tilt,azimuth,cone,pitch)">undeformedBodyToGlobal</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="structInit.html" class="code" title="function [xs,etas,q,qd,qdd,P,shape,freq,mdamp,ret,slv,Ndj,Nnod,Neta] = structInit (s,yaw,psi,betas,Omega)">structInit</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/generateCpCtTables.html" class="code" title="">generateCpCtTables</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateOLTfromCLT.html" class="code" title="">generateOLTfromCLT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/generateStressTFs.html" class="code" title="">generateStressTFs</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/internalLoadSpectra.html" class="code" title="">internalLoadSpectra</a>	Get spectra of internal loads at particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Test/linkobs.html" class="code" title="">linkobs</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/stressSpectra.html" class="code" title="">stressSpectra</a>	Get spectra of stresses from particular locations.</li>
+<li><a href="../../STAS-WPP/STAS-Wind/runWind.html" class="code" title="">runWind</a>	Generate turbulence spectra, including the effects of periodic</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [qB0,Pn0_B,Ts0_B,TB0_g] = </a><span class="keyword">...</span>
+0002                     undeformedPosition (Pin,yaw,tilt,azimuth,cone,pitch,edx, <span class="keyword">...</span>
+0003                                         idofs,idofm,inods,inodm)
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Computes the undeformed nodal positions and orientations.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Version:        Changes:</span>
+0008 <span class="comment">% --------        -------------</span>
+0009 <span class="comment">% 02.10.2017      Original code.</span>
+0010 <span class="comment">% 27.11.2017      Updated to include joint angles at the end of qB0, Pn0_B.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% Version:        Verification:</span>
+0013 <span class="comment">% --------        -------------</span>
+0014 <span class="comment">% 02.10.2017      Visual check of outputs.</span>
+0015 <span class="comment">% 27.11.2017      Visual check of outputs.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Inputs:</span>
+0018 <span class="comment">% -------</span>
+0019 <span class="comment">% Pin             : This is the vector of nodal coordinates that comes</span>
+0020 <span class="comment">%                   out of STASTurbine.  It contains pnB_B for each</span>
+0021 <span class="comment">%                   node, and then the structural twist angle.</span>
+0022 <span class="comment">% yaw...pitch     : yaw, azimuth, and pitch (1-3) are joint angles.</span>
+0023 <span class="comment">%                   tilt is shaft tilt, and cone is blade cone.</span>
+0024 <span class="comment">% edx             : Redundant DOF representing axial displacement of the</span>
+0025 <span class="comment">%                   driveshaft front bearing node with respect to the</span>
+0026 <span class="comment">%                   master node on the nacelle at this location.</span>
+0027 <span class="comment">% idofs...inodm   : DOF and node references for slave and master nodes.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% Outputs:</span>
+0030 <span class="comment">% --------</span>
+0031 <span class="comment">% qB0             : Since qB0 represents the deformation with respect</span>
+0032 <span class="comment">%                   to the undeformed shape, this is initialized to</span>
+0033 <span class="comment">%                   zero.</span>
+0034 <span class="comment">% Pn0_B           : For body reference nodes: this gives OBg_g and</span>
+0035 <span class="comment">%                   the exponential map parameters Theta that describe</span>
+0036 <span class="comment">%                   the orientation of the body in the global CS.  For</span>
+0037 <span class="comment">%                   other nodes, this gives pnB_B and theta of the</span>
+0038 <span class="comment">%                   associated element section CS.</span>
+0039 <span class="comment">% Ts0_B           : Transforms from element section to body coordinates.</span>
+0040 <span class="comment">% TB0_g           : Transforms from body to global coordinates.</span>
+0041 
+0042 Ndof = size(Pin,1);
+0043 
+0044 qB0   = zeros(Ndof+6,1);
+0045 Pn0_B = zeros(Ndof+6,1);
+0046 
+0047 <span class="comment">% Initialize Pn0_B with Pin.</span>
+0048 jj = [[1:6:Ndof-5] [2:6:Ndof-4] [3:6:Ndof-3]].';
+0049 Pn0_B(jj) = Pin(jj);
+0050 
+0051 <span class="comment">% Joint angles.</span>
+0052 Pn0_B(Ndof+1) = yaw;
+0053 Pn0_B(Ndof+2) = azimuth;
+0054 Pn0_B(Ndof+3) = edx;
+0055 Pn0_B(Ndof+4) = pitch(1);
+0056 Pn0_B(Ndof+5) = pitch(2);
+0057 Pn0_B(Ndof+6) = pitch(3);
+0058 
+0059 [Tn_y,Th_d,Tb_h] = <a href="basicTransforms.html" class="code" title="function [Tn_y,Th_d,Tb_h] = basicTransforms (delta,phi)">basicTransforms</a> (tilt,cone);
+0060 TB0_g = <a href="undeformedBodyToGlobal.html" class="code" title="function TB0_g = undeformedBodyToGlobal (yaw,tilt,azimuth,cone,pitch)">undeformedBodyToGlobal</a> (yaw,tilt,azimuth,cone,pitch);
+0061 
+0062 <span class="comment">% Foundation and tower.</span>
+0063 Pn0_B(idofs(1)+[1:3]) = zeros(3,1);
+0064 
+0065 T = [0  1  0; <span class="keyword">...</span>
+0066      0  0  1; <span class="keyword">...</span>
+0067      1  0  0];
+0068 Pn0_B(idofs(1)+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TB0_g(:,1:3));
+0069 
+0070 vT  = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (T);
+0071 
+0072 <span class="keyword">for</span> inod = inods(1)+1:inodm(2)
+0073    ir3 = 3*(inod-1);
+0074    ir6 = 6*(inod-1);
+0075    Pn0_B(ir6+[4:6]) = vT;
+0076 <span class="keyword">end</span>
+0077 
+0078 Pn0_B(idofs(2)+[1:3]) = Pn0_B(idofs(1)+[1:3]) <span class="keyword">...</span>
+0079                       + TB0_g(:,1:3)*Pn0_B(idofm(2)+[1:3]);
+0080 Pn0_B(idofs(2)+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TB0_g(:,4:6));
+0081 
+0082 <span class="keyword">for</span> inod = inods(2)+1:inodm(3)
+0083    ir3 = 3*(inod-1);
+0084    ir6 = 6*(inod-1);
+0085    Pn0_B(ir6+[4:6]) = vT;
+0086 <span class="keyword">end</span>
+0087 
+0088 <span class="comment">% Nacelle.</span>
+0089 Pn0_B(idofs(3)+[1:3]) = Pn0_B(idofs(2)+[1:3]) <span class="keyword">...</span>
+0090                       + TB0_g(:,4:6)*Pn0_B(idofm(3)+[1:3]);
+0091 Pn0_B(idofs(3)+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TB0_g(:,7:9));
+0092 
+0093 nod = [inods(3)+1:inods(4)].';
+0094 <span class="keyword">for</span> inod = 1:size(nod,1)-1
+0095    ir6 = idofs(3) + 6*(inod-1);
+0096    <span class="keyword">if</span> (inod == 1)
+0097       xs = Pn0_B(ir6+[7:9]);
+0098    <span class="keyword">else</span>
+0099       xs = Pn0_B(ir6+[7:9]) - Pn0_B(ir6+[1:3]);
+0100    <span class="keyword">end</span>
+0101    xs = xs/sqrt(xs.'*xs);
+0102    ys = [0;-1;0];
+0103    zs = cross(xs,ys);
+0104    zs = zs/sqrt(zs.'*zs);
+0105    T  = [xs ys zs];
+0106    Pn0_B(ir6+[10:12]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (T);
+0107 <span class="keyword">end</span>
+0108 
+0109 <span class="comment">% Driveshaft.</span>
+0110 T = [0 -1  0; <span class="keyword">...</span>
+0111      0  0  1; <span class="keyword">...</span>
+0112     -1  0  0];
+0113 Pn0_B(idofs(4)+[1:3]) = Pn0_B(idofs(3)+[1:3]) <span class="keyword">...</span>
+0114                       + TB0_g(:,7:9)*Pn0_B(idofm(4)+[1:3]);
+0115 Pn0_B(idofs(4)+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TB0_g(:,10:12));
+0116 
+0117 <span class="keyword">for</span> inod = inods(4)+1:inodm(6)-1
+0118    ir6 = 6*(inod-1);
+0119    Pn0_B(ir6+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (T);
+0120 <span class="keyword">end</span>
+0121 <span class="keyword">for</span> jj = 1:3
+0122    inod = inodm(5+jj);
+0123    ir3 = 3*(jj-1);
+0124    ir6 = 6*(inod-1);
+0125    Pn0_B(ir6+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (Th_d(:,ir3+[1:3]));
+0126 <span class="keyword">end</span>
+0127 
+0128 <span class="comment">% Blades.</span>
+0129 Nnb = inods(7) - inods(6);
+0130 <span class="keyword">for</span> ib = 1:3
+0131    Pn0_B(idofs(5+ib)+[1:3]) = Pn0_B(idofs(4)+[1:3]) <span class="keyword">...</span>
+0132                             + TB0_g(:,10:12)*Pn0_B(idofm(5+ib)+[1:3]);
+0133    Pn0_B(idofs(5+ib)+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (TB0_g(:,12+3*(ib-1)+[1:3]));
+0134 
+0135    [TB0_s,Ts0_B] = <span class="keyword">...</span>
+0136          <a href="bladeSectionTransformsFromNodes.html" class="code" title="function [TB_s,Ts_B] = bladeSectionTransformsFromNodes (Pin)">bladeSectionTransformsFromNodes</a> (Pin(idofs(5+ib)+[1:6*Nnb]));
+0137 
+0138    <span class="keyword">for</span> jj = 1:Nnb-1
+0139       inod = inods(5+ib) + jj;
+0140       ir3 = 3*(jj-1);
+0141       ir6 = 6*(inod-1);
+0142       Pn0_B(ir6+[4:6]) = <a href="../../STAS-WPP/STAS-Utilities/thetaFromT.html" class="code" title="function th = thetaFromT (T)">thetaFromT</a> (Ts0_B(:,ir3+[1:3]));
+0143    <span class="keyword">end</span>
+0144 
+0145 <span class="keyword">end</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

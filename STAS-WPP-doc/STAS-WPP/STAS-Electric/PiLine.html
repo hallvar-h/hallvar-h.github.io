@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of PiLine</title>
+  <meta name="keywords" content="PiLine">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Electric</a> &gt; PiLine.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Electric&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>PiLine
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,A,By] = PiLine (Linflag,x,yin,params) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ The state equations for a Pi segment of an AC transmission line.
+
+   states:           y vector:
+   iLd,q    1,2      i(k+1)d,q        in   (Next cable segment)
+   vkd,q    3,4      v(k-1)d,q        in   (Previous cable segment)
+                     we               in   (Reference synchronous gen.)
+
+ Version:        Changes:
+ --------        -------------
+ 29.08.2018      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 29.08.2018      Derivatives verified by complex step.
+
+ Inputs:
+ -------
+ Linflag         : Set to 1 for linearized equations.
+ x               : 1,2: iL    (A)     Line currents
+                   3,4: vk    (V)     Node k (RHS) voltage
+ yin             : 1,2: i_k+1 (A)     Next line segment current
+                   3,4: v_k-1 (V)     Node k-1 (LHS) voltage
+                   5:   we    (rad/s) Grid electrical frequency
+ params          : 1:   R     (Ohms)  Line resistance
+                   2:   L     (H)     Line inductance
+                   3:   C     (F)     Node k capacitance
+
+ Outputs:
+ --------
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="ACexport.html" class="code" title="function [dxdt,A,B] = ACexport (linFlag,x,u,p)">ACexport</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,A,By] = PiLine (Linflag,x,yin,params)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The state equations for a Pi segment of an AC transmission line.</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%   states:           y vector:</span>
+0006 <span class="comment">%   iLd,q    1,2      i(k+1)d,q        in   (Next cable segment)</span>
+0007 <span class="comment">%   vkd,q    3,4      v(k-1)d,q        in   (Previous cable segment)</span>
+0008 <span class="comment">%                     we               in   (Reference synchronous gen.)</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Version:        Changes:</span>
+0011 <span class="comment">% --------        -------------</span>
+0012 <span class="comment">% 29.08.2018      Original code.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Version:        Verification:</span>
+0015 <span class="comment">% --------        -------------</span>
+0016 <span class="comment">% 29.08.2018      Derivatives verified by complex step.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Inputs:</span>
+0019 <span class="comment">% -------</span>
+0020 <span class="comment">% Linflag         : Set to 1 for linearized equations.</span>
+0021 <span class="comment">% x               : 1,2: iL    (A)     Line currents</span>
+0022 <span class="comment">%                   3,4: vk    (V)     Node k (RHS) voltage</span>
+0023 <span class="comment">% yin             : 1,2: i_k+1 (A)     Next line segment current</span>
+0024 <span class="comment">%                   3,4: v_k-1 (V)     Node k-1 (LHS) voltage</span>
+0025 <span class="comment">%                   5:   we    (rad/s) Grid electrical frequency</span>
+0026 <span class="comment">% params          : 1:   R     (Ohms)  Line resistance</span>
+0027 <span class="comment">%                   2:   L     (H)     Line inductance</span>
+0028 <span class="comment">%                   3:   C     (F)     Node k capacitance</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">% Outputs:</span>
+0031 <span class="comment">% --------</span>
+0032 <span class="comment">%</span>
+0033 
+0034 Nx = 4;
+0035 Ny = 5;
+0036 
+0037 A = sparse(Nx,Nx);
+0038 By = sparse(Nx,Ny);
+0039 
+0040 R = params(1);
+0041 L = params(2);
+0042 C = params(3);
+0043 we = yin(5);
+0044 
+0045 RL = R/L;
+0046 L1 = 1/L;
+0047 C1 = 1/C;
+0048 
+0049 spn = [0 -1;1 0];
+0050 
+0051 dxdt = [-(RL*eye(2) + we*spn)*x(1:2) + (yin(3:4) - x(3:4))*L1; <span class="keyword">...</span>
+0052         -we*spn*x(3:4) + (x(1:2) - yin(1:2))*C1]; 
+0053 
+0054 <span class="keyword">if</span> (Linflag == 1)
+0055 
+0056    A(1:2,1:2)  = -RL*eye(2) - we*spn;
+0057    A(1:2,3:4)  = -L1*eye(2);
+0058    By(1:2,3:4) =  L1*eye(2);
+0059    By(1:2,5)   = -spn*x(1:2);
+0060 
+0061    A(3:4,3:4)  = -we*spn;
+0062    A(3:4,1:2)  =  C1*eye(2);
+0063    By(3:4,1:2) = -C1*eye(2);
+0064    By(3:4,5)   = -spn*x(3:4);
+0065 
+0066 <span class="keyword">end</span> 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

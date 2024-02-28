@@ -1,0 +1,388 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of BEMNL</title>
+  <meta name="keywords" content="BEMNL">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Aeroelastic</a> &gt; BEMNL.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Aeroelastic&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>BEMNL
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dxdt,y] = BEMNL (psiFlag,x,t,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,azi,omega) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ State-space equations for the blade element momentum method.  Vectorized
+ to the extent possible for multiple element inputs.
+
+   States:           y vector:
+   ad        1       Fa        1:6
+   a1,a2    2:3      
+   Vih z,t  4:5      
+   Vi z,t   6:7
+
+ Version:        Changes:
+ --------        -------------
+ 12.12.2017      Original code.
+
+ Version:        Verification:
+ --------        -------------
+ 12.12.2017      
+
+ Inputs:
+ -------
+ psiFlag         : Set to 1 to implement the dynamic wake in multi-blade
+                   coordinates.  Set to zero for blade-by-blade. 
+                   Regardless, dxdt is reported as blade-by-blade.
+                   If psiFlag = 1, then it is assumed that the elements
+                   are packed as Bl1 e1 e2 e3 ... eN, Bl2 e1 e2 ... for
+                   three blades.
+ x               : The vector of states.  For each element, these are
+                   ad, a1, a2, Virhz, Virht, Virz, and Virt.
+ Tar             : 3-by-3*Nel matrix of aero-to-rotorplane transforms.
+ Trg             : Transform from rotorplane to global coordinates.
+ Vg              : 3*Nel vector, incoming windspeed x,y,z in global
+                   coordinates.
+ wg              : 3*Nel vector, structural motion, including rotor
+                   speed, x,y,z in global coordinates.
+ zr              : 2*Nel vector, x,y projections of element positions
+                   onto the rotorplane.
+ ch              : Airfoil chord length.
+ aoas,kfoils     : Splined airfoil coefficient tables.
+ foilwt          : Nfoil-by-Nel table.  Weights to use when computing
+                   airfoil coefficients from splined tables.
+ aoaz            : Zero-lift angles-of-attack for each element. Should
+                   be computed precisely from the airfoil tables.
+ aoast           : 2*Nel vector, containing deep-stall angles-of-attack
+                   for each element.  Alternating positive, negative.
+ xas,yas         : X^a and Y^a coordinates of the reference section
+                   coordinate system.
+ rho             : Air density.
+ A               : Area of the projected element on the rotorplane.
+ Dia             : Diameter of the projected outer node on the rotorplane.
+ azi             : A measure of the rotor azimuth, such that 
+                   dpsi/dt = omega.
+ omega           : Rotor speed.
+
+ Outputs:
+ --------
+ dxdt            : Rate of change of states x.
+ y               : Vector of outputs which are to be passed to other
+                   modules.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="ViqsNL.html" class="code" title="function Viq = ViqsNL (Fr,Vr,Vir,r,D,rho,A,f)">ViqsNL</a>	</li>
+<li><a href="airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a>	</li>
+<li><a href="prandtl.html" class="code" title="function f = prandtl (Uz,Ut,r,Dia)">prandtl</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a>	Works with complex step.  Protects against (0,0). The logical</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aeroNL.html" class="code" title="function [dxadt,ya] = aeroNL (psiFlag,s,a,xa,t,q,dqdt,P,Tas,Try,Vg,ch,Lel,foilwt,aoaz,aoast,xas,yas,Psi)">aeroNL</a>	</li>
+<li><a href="parBEMNL.html" class="code" title="function x = parBEMNL (iel,psiFlag,x0,t0,Tar,Trg,Vg,wg,zr,ch,Lel,aoas,kfoils,foilwt,aoaz,aoast,xas,yas,rho,A,Dia,omega)">parBEMNL</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dxdt,y] = BEMNL (psiFlag,                       </a><span class="keyword">...</span>
+0002                            x,t,Tar,Trg,Vg,wg,zr,ch,Lel,   <span class="keyword">...</span>
+0003                            aoas,kfoils,foilwt,aoaz,aoast, <span class="keyword">...</span>
+0004                            xas,yas,rho,A,Dia,azi,omega)
+0005 <span class="comment">%</span>
+0006 <span class="comment">% State-space equations for the blade element momentum method.  Vectorized</span>
+0007 <span class="comment">% to the extent possible for multiple element inputs.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   States:           y vector:</span>
+0010 <span class="comment">%   ad        1       Fa        1:6</span>
+0011 <span class="comment">%   a1,a2    2:3</span>
+0012 <span class="comment">%   Vih z,t  4:5</span>
+0013 <span class="comment">%   Vi z,t   6:7</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% Version:        Changes:</span>
+0016 <span class="comment">% --------        -------------</span>
+0017 <span class="comment">% 12.12.2017      Original code.</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">% Version:        Verification:</span>
+0020 <span class="comment">% --------        -------------</span>
+0021 <span class="comment">% 12.12.2017</span>
+0022 <span class="comment">%</span>
+0023 <span class="comment">% Inputs:</span>
+0024 <span class="comment">% -------</span>
+0025 <span class="comment">% psiFlag         : Set to 1 to implement the dynamic wake in multi-blade</span>
+0026 <span class="comment">%                   coordinates.  Set to zero for blade-by-blade.</span>
+0027 <span class="comment">%                   Regardless, dxdt is reported as blade-by-blade.</span>
+0028 <span class="comment">%                   If psiFlag = 1, then it is assumed that the elements</span>
+0029 <span class="comment">%                   are packed as Bl1 e1 e2 e3 ... eN, Bl2 e1 e2 ... for</span>
+0030 <span class="comment">%                   three blades.</span>
+0031 <span class="comment">% x               : The vector of states.  For each element, these are</span>
+0032 <span class="comment">%                   ad, a1, a2, Virhz, Virht, Virz, and Virt.</span>
+0033 <span class="comment">% Tar             : 3-by-3*Nel matrix of aero-to-rotorplane transforms.</span>
+0034 <span class="comment">% Trg             : Transform from rotorplane to global coordinates.</span>
+0035 <span class="comment">% Vg              : 3*Nel vector, incoming windspeed x,y,z in global</span>
+0036 <span class="comment">%                   coordinates.</span>
+0037 <span class="comment">% wg              : 3*Nel vector, structural motion, including rotor</span>
+0038 <span class="comment">%                   speed, x,y,z in global coordinates.</span>
+0039 <span class="comment">% zr              : 2*Nel vector, x,y projections of element positions</span>
+0040 <span class="comment">%                   onto the rotorplane.</span>
+0041 <span class="comment">% ch              : Airfoil chord length.</span>
+0042 <span class="comment">% aoas,kfoils     : Splined airfoil coefficient tables.</span>
+0043 <span class="comment">% foilwt          : Nfoil-by-Nel table.  Weights to use when computing</span>
+0044 <span class="comment">%                   airfoil coefficients from splined tables.</span>
+0045 <span class="comment">% aoaz            : Zero-lift angles-of-attack for each element. Should</span>
+0046 <span class="comment">%                   be computed precisely from the airfoil tables.</span>
+0047 <span class="comment">% aoast           : 2*Nel vector, containing deep-stall angles-of-attack</span>
+0048 <span class="comment">%                   for each element.  Alternating positive, negative.</span>
+0049 <span class="comment">% xas,yas         : X^a and Y^a coordinates of the reference section</span>
+0050 <span class="comment">%                   coordinate system.</span>
+0051 <span class="comment">% rho             : Air density.</span>
+0052 <span class="comment">% A               : Area of the projected element on the rotorplane.</span>
+0053 <span class="comment">% Dia             : Diameter of the projected outer node on the rotorplane.</span>
+0054 <span class="comment">% azi             : A measure of the rotor azimuth, such that</span>
+0055 <span class="comment">%                   dpsi/dt = omega.</span>
+0056 <span class="comment">% omega           : Rotor speed.</span>
+0057 <span class="comment">%</span>
+0058 <span class="comment">% Outputs:</span>
+0059 <span class="comment">% --------</span>
+0060 <span class="comment">% dxdt            : Rate of change of states x.</span>
+0061 <span class="comment">% y               : Vector of outputs which are to be passed to other</span>
+0062 <span class="comment">%                   modules.</span>
+0063 
+0064 <span class="comment">%tic</span>
+0065 <span class="comment">%del = sqrt(eps);</span>
+0066 
+0067 dxdt = zeros(size(x,1),1);
+0068 
+0069 Nel = size(x,1)/7;
+0070 
+0071 i2a = [1:2:2*Nel-1].';
+0072 i2b = [2:2:2*Nel].';
+0073 i3a = [1:3:3*Nel-2].';
+0074 i3b = [2:3:3*Nel-1].';
+0075 i3c = [3:3:3*Nel].';
+0076 i6a = [1:6:6*Nel-5].';
+0077 i6b = [2:6:6*Nel-4].';
+0078 i6c = [3:6:6*Nel-3].';
+0079 i6d = [4:6:6*Nel-2].';
+0080 i6e = [5:6:6*Nel-1].';
+0081 i6f = [6:6:6*Nel].';
+0082 i7a = [1:7:7*Nel-6].';
+0083 i7b = [2:7:7*Nel-5].';
+0084 i7c = [3:7:7*Nel-4].';
+0085 i7d = [4:7:7*Nel-3].';
+0086 i7e = [5:7:7*Nel-2].';
+0087 i7f = [6:7:7*Nel-1].';
+0088 i7g = [7:7:7*Nel].';
+0089 
+0090 psie = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a> (zr(i2b),zr(i2a));
+0091 cpe = cos(psie);
+0092 spe = sin(psie);
+0093 Virxyz = zeros(3*Nel,1);
+0094 Virxyz(i3a) = -x(i7g).*spe;
+0095 Virxyz(i3b) =  x(i7g).*cpe;
+0096 Virxyz(i3c) =  x(i7f);
+0097 
+0098 <span class="comment">% Compute the local velocity.</span>
+0099 Ua = zeros(3*Nel,1);
+0100 Ur = zeros(3*Nel,1);
+0101 Tgr = Trg.';
+0102 <span class="keyword">for</span> iel = 1:Nel  <span class="comment">% A necessary evil, due to the transform matrix.</span>
+0103    j3 = 3*(iel-1);
+0104    Tra = Tar(:,j3+[1:3]).';
+0105    Ur(j3+[1:3]) = Virxyz(j3+[1:3]) + Tgr*(Vg(j3+[1:3]) - wg(j3+[1:3]));
+0106    Ua(j3+[1:3]) = Tra*Ur(j3+[1:3]);
+0107 <span class="keyword">end</span>
+0108 Uxy = sqrt(Ua(i3a).^2 + Ua(i3b).^2);  <span class="comment">% Neglect spanwise component for airfoils.</span>
+0109 
+0110 <span class="comment">% Compute the qs angle-of-attack.</span>
+0111 aq = <a href="../../STAS-WPP/STAS-Utilities/atan2c.html" class="code" title="function phi = atan2c (y,x);">atan2c</a> (Ua(i3b),Ua(i3a));
+0112 caq = cos(aq);
+0113 saq = sin(aq);
+0114 
+0115 <span class="comment">% Dynamic aoa parameters.</span>
+0116 uc  = 2*Uxy./ch;
+0117 A1  = 0.165;
+0118 A2  = 0.335;
+0119 b1  = 0.0455;
+0120 b2  = 0.3;
+0121 K1  = (A1 + A2)*b1*b2*uc.^2;
+0122 K2  = (A1*b1 + A2*b2)*uc;
+0123 K3  = 1 - A1 - A2;
+0124 A32 = -b1*b2*uc.^2;
+0125 A33 = -(b1+b2)*uc;
+0126 tau = 8.6./uc;
+0127 
+0128 <span class="comment">%{</span>
+0129 <span class="comment">% Special logic: tau is decreased at high angles-of-attack such that</span>
+0130 <span class="comment">% the dynamic and quasi-steady aoa's match over the relevant frequency</span>
+0131 <span class="comment">% band.  [This causes problems for the matching linearization, and it's</span>
+0132 <span class="comment">% probably not worth the trouble for the sorts of cases I'll be looking</span>
+0133 <span class="comment">% at.]</span>
+0134 aoastp = aoast(i2a);
+0135 aoastn = aoast(i2b);
+0136 ind = (real(aq) &gt; aoastp);
+0137 sind = sum(ind);
+0138 tau(ind) = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>(<a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>((1 - ((aq(ind) - aoastp(ind))/0.1)*0.8), <span class="keyword">...</span>
+0139                      0.2*ones(sind,1)), ones(sind,1)).*tau(ind);
+0140 ind = (real(aq) &lt; aoastn);
+0141 sind = sum(ind);
+0142 tau(ind) = <a href="../../STAS-WPP/STAS-Utilities/minc.html" class="code" title="function z = minc (a,b)">minc</a>(<a href="../../STAS-WPP/STAS-Utilities/maxc.html" class="code" title="function z = maxc (a,b)">maxc</a>((1 + ((aq(ind) - aoastn(ind))/0.1)*0.8), <span class="keyword">...</span>
+0143                      0.2*ones(sind,1)), ones(sind,1)).*tau(ind);
+0144 <span class="comment">%}</span>
+0145 
+0146 tm1 = 1./tau;
+0147 dxdt(i7a) = -tm1.*x(i7a) + tm1.*K1.*x(i7b) + tm1.*K2.*x(i7c) + tm1.*K3.*aq;
+0148 dxdt(i7b) = x(i7c);
+0149 dxdt(i7c) = A32.*x(i7b) + A33.*x(i7c) + aq;
+0150 
+0151 <span class="comment">% Baseline airfoil coefficients: Cl,Cd,Cm,dCl/da,dCd/da,dCm/da.</span>
+0152 C  = zeros(Nel,6);
+0153 Cq = zeros(Nel,6);
+0154 Cl = zeros(Nel,1);
+0155 <span class="keyword">for</span> iel = 1:Nel
+0156    i7 = 7*(iel-1);
+0157    C(iel,:)  = <a href="airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a> (aoas,kfoils,foilwt(:,iel),x(i7+1));
+0158    Cq(iel,:) = <a href="airfoilCoefficientsSpline.html" class="code" title="function C = airfoilCoefficientsSpline (aoas,kfoils,weights,aoa)">airfoilCoefficientsSpline</a> (aoas,kfoils,foilwt(:,iel),aq(iel));
+0159    <span class="keyword">if</span> (<a href="../../STAS-WPP/STAS-Utilities/absc.html" class="code" title="function z = absc(x)">absc</a>(x(i7+1) - aoaz(iel)) &lt; eps^(0.25))
+0160       Cl(iel) = real(C(iel,4))*(aq(iel) - x(i7+1));
+0161    <span class="keyword">else</span>
+0162       Cl(iel) = (1 + (aq(iel) - x(i7+1))/(x(i7+1) - aoaz(iel)))*C(iel,1);
+0163    <span class="keyword">end</span>
+0164 <span class="keyword">end</span>
+0165 
+0166 Cd = Cq(:,2);
+0167 Cm = Cq(:,3);
+0168 
+0169 val = 0.5*rho*ch.*Lel.*(Uxy.^2);
+0170 Fa = zeros(6*Nel,1);
+0171 Fa(i6a) = val.*(-Cl.*saq + Cd.*caq);
+0172 Fa(i6b) = val.*(Cl.*caq + Cd.*saq);
+0173 Fa(i6f) = -val.*ch.*Cm + Fa(i6a).*yas - Fa(i6b).*xas;
+0174 
+0175 Frxyz = zeros(3*Nel,1);
+0176 <span class="keyword">for</span> iel = 1:Nel
+0177    j3 = 3*(iel-1);
+0178    j6 = 6*(iel-1);
+0179    Frxyz(j3+[1:3]) = Tar(:,j3+[1:3])*Fa(j6+[1:3]);
+0180 <span class="keyword">end</span>
+0181 
+0182 Frzt = zeros(2*Nel,1);
+0183 Frzt(i2a) = Frxyz(i3c);
+0184 Frzt(i2b) = -Frxyz(i3a).*spe + Frxyz(i3b).*cpe;
+0185 
+0186 <span class="comment">% Momentum balance.  First the Prandtl factor.</span>
+0187 Uz  =  Ur(i3c);
+0188 Ut  = -Ur(i3a).*spe + Ur(i3b).*cpe;
+0189 r   = sqrt(zr(i2a).^2 + zr(i2b).^2);
+0190 
+0191 pr  = <a href="prandtl.html" class="code" title="function f = prandtl (Uz,Ut,r,Dia)">prandtl</a> (Uz,Ut,r,Dia);
+0192 
+0193 <span class="comment">% Quasi-steady induced velocity.</span>
+0194 Vrxyz = zeros(3*Nel,1);
+0195 <span class="keyword">for</span> iel = 1:Nel
+0196    j3 = 3*(iel-1);
+0197    Vrxyz(j3+[1:3]) = Tgr*(Vg(j3+[1:3]) - wg(j3+[1:3]));
+0198 <span class="keyword">end</span>
+0199 Vrzts = zeros(3*Nel,1);
+0200 Vrzts(i3a) =  Vrxyz(i3c);
+0201 Vrzts(i3b) = -Vrxyz(i3a).*spe + Vrxyz(i3b).*cpe + r.*omega;  <span class="comment">% Cancel r*omega.</span>
+0202 Vrzts(i3c) =  Vrxyz(i3a).*cpe + Vrxyz(i3b).*spe;
+0203 Vir = zeros(2*Nel,1);
+0204 Vir(i2a) = x(i7f);
+0205 Vir(i2b) = x(i7g);
+0206 
+0207 Viq = <a href="ViqsNL.html" class="code" title="function Viq = ViqsNL (Fr,Vr,Vir,r,D,rho,A,f)">ViqsNL</a> (Frzt,Vrzts,Vir,r,Dia,rho,A,pr);
+0208 
+0209 <span class="comment">% Dynamic wake.</span>
+0210 Vmag = sqrt(Vrzts(i3a).^2 + Vrzts(i3b).^2 + Vrzts(i3c).^2);
+0211 aa   = -Vir(i2a)./Vrzts(i3a);
+0212 
+0213 <span class="keyword">if</span> (psiFlag == 0)
+0214 
+0215    tau1 = (1.1./(1 - 0.3*aa)).*(Dia./(2*Vmag));
+0216    tau2 = (0.39 - 0.26*(2*r./Dia).^2).*tau1;
+0217    it1  = 1./tau1;
+0218    it2  = 1./tau2;
+0219 
+0220    dxdt(i7d) = -it1.*x(i7d) + 0.4*it1.*Viq(i2a);
+0221    dxdt(i7e) = -it1.*x(i7e) + 0.4*it1.*Viq(i2b);
+0222    dxdt(i7f) =  it2.*x(i7d) - it2.*x(i7f) + 0.6*it2.*Viq(i2a);
+0223    dxdt(i7g) =  it2.*x(i7e) - it2.*x(i7g) + 0.6*it2.*Viq(i2b);
+0224 
+0225 <span class="keyword">elseif</span> (psiFlag == 1)
+0226 
+0227    tau1 = (1.1./(1 - 0.3*aa)).*(Dia./(2*Vmag));
+0228    tau2 = (0.39 - 0.26*(2*r./Dia).^2).*tau1;
+0229    tm1 = mean(tau1)*ones(size(tau1,1),1);
+0230    tm2 = mean(tau2)*ones(size(tau2,1),1);
+0231    it1  = 1./tm1;
+0232    it2  = 1./tm2;
+0233 
+0234    caz = [cos(azi) cos(azi + 2*pi/3) cos(azi + 4*pi/3)].';
+0235    saz = [sin(azi) sin(azi + 2*pi/3) sin(azi + 4*pi/3)].';
+0236 
+0237    psiB  = [1 caz(1) saz(1); <span class="keyword">...</span>
+0238             1 caz(2) saz(2); <span class="keyword">...</span>
+0239             1 caz(3) saz(3)];
+0240    Bpsi  = (1/3)*[   1         1         1    ; <span class="keyword">...</span>
+0241                   2*caz(1)  2*caz(2)  2*caz(3); <span class="keyword">...</span>
+0242                   2*saz(1)  2*saz(2)  2*saz(3)];
+0243    dBpsi = (1/3)*[   0         0         0    ; <span class="keyword">...</span>
+0244                  -2*saz(1) -2*saz(2) -2*saz(3); <span class="keyword">...</span>
+0245                   2*caz(1)  2*caz(2)  2*caz(3)];
+0246 
+0247    Nb = 3;
+0248    Neb = Nel/Nb;
+0249    <span class="keyword">for</span> iel = 1:Neb
+0250       ind = [iel Neb+iel 2*Neb+iel].';
+0251 
+0252       A1 = diag(-it1(ind));
+0253       A2 = diag(it2(ind));
+0254       A3 = diag(-it2(ind));
+0255       B1 = 0.4*diag(it1(ind));
+0256       B2 = 0.6*diag(it2(ind));
+0257       dxdt(i7d(ind)) = psiB*(A1*Bpsi - omega*dBpsi)*x(i7d(ind)) <span class="keyword">...</span>
+0258                      + psiB*B1*Bpsi*Viq(i2a);
+0259       dxdt(i7e(ind)) = psiB*(A1*Bpsi - omega*dBpsi)*x(i7e(ind)) <span class="keyword">...</span>
+0260                      + psiB*B1*Bpsi*Viq(i2b);
+0261       dxdt(i7f(ind)) = psiB*A2*Bpsi*x(i7d(ind))                 <span class="keyword">...</span>
+0262                      + psiB*(A3*Bpsi - omega*dBpsi)*x(i7f(ind)) <span class="keyword">...</span>
+0263                      + psiB*B2*Bpsi*Viq(i2a);
+0264       dxdt(i7g(ind)) = psiB*A2*Bpsi*x(i7e(ind))                 <span class="keyword">...</span>
+0265                      + psiB*(A3*Bpsi - omega*dBpsi)*x(i7g(ind)) <span class="keyword">...</span>
+0266                      + psiB*B2*Bpsi*Viq(i2b);
+0267 
+0268    <span class="keyword">end</span>
+0269 
+0270 <span class="keyword">end</span>
+0271 
+0272 y = Fa;
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

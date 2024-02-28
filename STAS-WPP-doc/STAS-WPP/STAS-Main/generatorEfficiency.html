@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of generatorEfficiency</title>
+  <meta name="keywords" content="generatorEfficiency">
+  <meta name="description" content="Run a set of steady-state calculations of generator efficiency, which is">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Main</a> &gt; generatorEfficiency.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Main&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>generatorEfficiency
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Run a set of steady-state calculations of generator efficiency, which is</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Run a set of steady-state calculations of generator efficiency, which is
+ used in the windspeed observer.
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Electric/buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>	</li>
+<li><a href="BTEfun.html" class="code" title="function [dxdt,A] = BTEfun (x,yin,params);">BTEfun</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a>	</li>
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Run a set of steady-state calculations of generator efficiency, which is</span>
+0002 <span class="comment">% used in the windspeed observer.</span>
+0003 
+0004 clear;
+0005 
+0006 [length,time,mass,current,voltage,        <span class="keyword">...</span>
+0007  velocity,force,power,stress,ndens,nvisc, <span class="keyword">...</span>
+0008  stiffness,damping,resistance,<a href="../../STAS-WPP/STAS-Electric/inductance.html" class="code" title="function [L,dL] = inductance (I0,L0,II)">inductance</a>, <span class="keyword">...</span>
+0009  capacitance,flux] = <a href="../../STAS-WPP/STAS-Utilities/getLTMnorms.html" class="code" title="function [length,time,mass,current,voltage,velocity,force,power,stress,ndens,nvisc,stiffness,damping,resistance,inductance,capacitance,flux] = getLTMnorms (fname)">getLTMnorms</a> (<span class="string">'LTMnorms.txt'</span>);
+0010 
+0011 nm = <span class="string">'DTU10MW'</span>;
+0012 
+0013 eval([<span class="string">'epar  = STASElectric_'</span> nm <span class="string">' ();'</span>]);
+0014 eval([<span class="string">'c     = STASControl_'</span>  nm <span class="string">' ();'</span>]);
+0015 
+0016 ioff = [11 13 23 37 41 62];
+0017 
+0018 np   = epar(1);
+0019 Ig   = epar(2:5);
+0020 Lg   = epar(6:9);
+0021 Rg   = epar(10);
+0022 lamr = epar(11);
+0023 Cdc  = epar(ioff(1)+1);
+0024 etac = epar(ioff(1)+2);
+0025 arat = epar(ioff(2)+1);
+0026 It   = epar(ioff(2)+[2:5]);
+0027 Lt   = epar(ioff(2)+[6:9]);
+0028 Rt   = epar(ioff(2)+10);
+0029 Ige  = epar(ioff(3)+[1:4]);
+0030 Lge  = epar(ioff(3)+[5:8]);
+0031 lamre= epar(ioff(3)+9);
+0032 KP   = epar(ioff(3)+10);
+0033 KI   = epar(ioff(3)+11);
+0034 KF   = epar(ioff(3)+12);
+0035 ag   = epar(ioff(3)+13);
+0036 aw   = epar(ioff(3)+14);
+0037 av   = epar(ioff(4)+1);
+0038 KPe  = epar(ioff(4)+2);
+0039 KIe  = epar(ioff(4)+3);
+0040 weh  = epar(ioff(4)+4);
+0041 ap   = epar(ioff(5)+1);
+0042 ais  = epar(ioff(5)+2);
+0043 avs  = epar(ioff(5)+3);
+0044 adc  = epar(ioff(5)+4);
+0045 KpDC = epar(ioff(5)+5);
+0046 KiDC = epar(ioff(5)+6);
+0047 KpQ  = epar(ioff(5)+7);
+0048 KiQ  = epar(ioff(5)+8);
+0049 Kppd = epar(ioff(5)+9);
+0050 Kipd = epar(ioff(5)+10);
+0051 Kppq = epar(ioff(5)+11);
+0052 Kipq = epar(ioff(5)+12);
+0053 KFp  = epar(ioff(5)+13);
+0054 Ite  = epar(ioff(5)+[14:17]);
+0055 Lte  = epar(ioff(5)+[18:21]);
+0056 Pnll = epar(ioff(6)+1);
+0057 
+0058 Cpnom = 0.486;
+0059 Area  = pi*(c.Ro^2);
+0060 dens  = 1.225                     / ndens;
+0061 ihgqs = -[100:100:1000].'       / current;
+0062 wgs   = 0.5*np*0.628; <span class="comment">% 0.5*np*[0.6:0.1:1].'      * time;</span>
+0063 
+0064 Ni = size(ihgqs,1);
+0065 Nw = size(wgs,1);
+0066 
+0067 Pes  = zeros(Ni*Nw);
+0068 etas = zeros(Ni*Nw);
+0069 
+0070 yin = zeros(9,1);
+0071 yin(2) = 50*2*pi                  * time;
+0072 yin(3) = 0;
+0073 yin(4) = 33000                    / voltage;
+0074 yin(5) = 0.1                      / voltage;
+0075 yin(6) = 0.1                      / current;
+0076 yin(8) = c.Vhdc;
+0077 yin(9) = 0                        / power;
+0078 
+0079 x0 = zeros(25,1);
+0080 x0(1)  = yin(6);
+0081 x0(3)  = yin(8);
+0082 x0(4)  = yin(4)*arat;
+0083 x0(5)  = yin(5)*arat;
+0084 x0(6)  = yin(6);
+0085 x0(8)  = x0(6);
+0086 x0(11) = yin(3);
+0087 x0(12) = yin(4);
+0088 x0(13) = yin(5);
+0089 x0(14) = yin(4);
+0090 x0(15) = x0(4);
+0091 x0(16) = x0(5);
+0092 x0(17) = yin(4);
+0093 x0(18) = yin(5);
+0094 x0(19) = yin(8);
+0095 x0(20) = yin(5);
+0096 x0(21) = yin(8);
+0097 x0(22) = yin(8);
+0098 x0(23) = yin(9);
+0099 x0(24) = x0(15);
+0100 x0(25) = x0(16);
+0101 
+0102 <span class="keyword">for</span> iw = 1:Nw
+0103 
+0104    wg = wgs(iw);
+0105    yin(1) = wg;
+0106    x0(10) = wg;
+0107 
+0108    <span class="keyword">for</span> ii = 1:Ni
+0109 
+0110       ind = Ni*(iw-1) + ii;
+0111 
+0112       ihgq = ihgqs(ii);
+0113       yin(7) = ihgq;
+0114       x0(2)  = yin(7);
+0115       x0(7)  = yin(7);
+0116       x0(9)  = yin(7);
+0117 
+0118       cnv = eps^0.6;
+0119       Ns = 50;
+0120       bta = ones(Ns,1);
+0121       litmax = 20;
+0122       [xs,dxs] = <a href="../../STAS-WPP/STAS-Utilities/solveNewt.html" class="code" title="function [xs,dxs] = solveNewt (fun,ys,xg,cnv,Ns,bta,litmax)">solveNewt</a> (@(x) <a href="BTEfun.html" class="code" title="function [dxdt,A] = BTEfun (x,yin,params);">BTEfun</a>(x,yin,epar),0,x0,cnv,Ns,bta,litmax);
+0123 
+0124       [dxdt,yout,A,B,C,D] = <a href="../../STAS-WPP/STAS-Electric/buildTurbineElectric.html" class="code" title="function [dxdt,yout,A,B,C,D] = buildTurbineElectric (Linflag,x,yin,params)">buildTurbineElectric</a> (1,xs,yin,epar);
+0125       Ps(ind) = (yout(2:3).')*yin(4:5) - Pnll;
+0126       W = wg/(0.5*np);
+0127       Tg = yout(1);
+0128       etag(ind) = Ps(ind)/(Tg*W);
+0129 
+0130       printf(<span class="string">'%10.4f %10.4f %10.4f %10.4f\n'</span>,W,Ps(ind),Tg*W,etag(ind));
+0131 fflush(stdout);
+0132 
+0133    <span class="keyword">end</span>
+0134 
+0135 <span class="keyword">end</span>
+0136 
+0137 
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

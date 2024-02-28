@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of eigVal_silent</title>
+  <meta name="keywords" content="eigVal_silent">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">STAS-WPP</a> &gt; <a href="index.html">STAS-Utilities</a> &gt; eigVal_silent.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for STAS-WPP\STAS-Utilities&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>eigVal_silent
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [slap,shp,ifrq] = eigVal_silent (A) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ Compute and print eigenvalues and eigenvectors of a matrix.
+
+</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="../../STAS-WPP/STAS-Main/RiccatiDT.html" class="code" title="function GG = RiccatiDT (meth,AA,BB,CC,QQ,RR,G0,tol)">RiccatiDT</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/SSDiscreteTime.html" class="code" title="function [A,B,dt] = SSDiscreteTime (meth,aa,bb,dti)">SSDiscreteTime</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Main/Ytransform.html" class="code" title="function [A,B,C,Phi,slap] = Ytransform (aa,bb,cc)">Ytransform</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/buildD42observer.html" class="code" title="">buildD42observer</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/closedLoopD42.html" class="code" title="">closedLoopD42</a>	</li>
+<li><a href="../../STAS-WPP/STAS-Test/modalTransformation.html" class="code" title="function [Am,Bm,Cm] = modalTransformation (A,B,C,freqs,tol,Yflg,wrtflg)">modalTransformation</a>	</li>
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [slap,shp,ifrq] = eigVal_silent (A)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% Compute and print eigenvalues and eigenvectors of a matrix.</span>
+0004 <span class="comment">%</span>
+0005 
+0006 [Diag,Perm,Abal] = balance(A,<span class="string">'noperm'</span>);
+0007 Neig = size(Abal,1);
+0008 DD = sparse([1:Neig],[1:Neig],Diag,Neig,Neig);
+0009 iDD = inv(DD);
+0010 [shpb,lam] = eig(Abal);
+0011 shp = DD*shpb*iDD;
+0012 f1 = diag(lam);
+0013 [si,ifrq] = sort(imag(f1));
+0014 slap = f1(ifrq);
+0015 
+0016 
+0017 
+0018 zeta = zeros(Neig,1);
+0019 <span class="keyword">for</span> j = 1:Neig
+0020    <span class="keyword">if</span> (abs(imag(slap(j))) &gt; 1e-6*abs(real(slap(j))))
+0021       R = real(slap(j))/imag(slap(j));
+0022    <span class="keyword">else</span>
+0023       R = real(slap(j)); <span class="comment">% 0;</span>
+0024    <span class="keyword">end</span>
+0025    zeta(j) = sqrt((R^2)/(1 + R^2));
+0026    <span class="keyword">if</span> (real(slap(j)) &gt; 0)
+0027       zeta(j) = -zeta(j);
+0028    <span class="keyword">end</span>
+0029 
+0030    <span class="comment">% Scale the mode shapes to unit norm length.  (Note that the</span>
+0031    <span class="comment">% shapes are not ordered the same as the sorted slap... but</span>
+0032    <span class="comment">% it doesn't matter, we're looping through all the shapes.)</span>
+0033    shp(:,j) = shp(:,j)/norm(shp(:,j),2);
+0034 
+0035 <span class="keyword">end</span>
+0036 
+0037 <span class="comment">%[[1:Neig]' zeta real(slap)./(2*pi) imag(slap)./(2*pi)]</span>
+0038 <span class="comment">%[[1:Neig]' sqrt(real(slap).^2 + imag(slap).^2) real(slap) imag(slap)]</span>
+</pre></div>
+
+<hr><address>Generated on Wed 28-Feb-2024 10:23:21 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
